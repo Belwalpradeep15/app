@@ -1,0 +1,20 @@
+<%#
+ FILENAME:     destroy.js.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-11-06
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% if @error %>
+    alert('The system was not able to update the database.\nError: <%= escape_javascript(@error.to_s) %>');
+<% end %>
+window.location.reload(true);
+

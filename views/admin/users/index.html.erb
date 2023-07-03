@@ -1,0 +1,137 @@
+<%
+=begin
+ FILENAME:     index.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   2009-12-16
+
+ LAST CHANGE:
+ $Author$
+  $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright (c) 2009 Fotech Solutions Ltd. All rights reserved.
+
+  Main user list in the same style as all other admin pages
+=end
+-%>
+
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:dialog, :menu, :window, :have_layout] %>
+        <%# For reasons I fail to understand the Javascript fails on a menu item if
+            the fotech_gui_setup_tag is cached for this page (admin/users/index). So
+            please do not put back the cache. (Steve)
+         -%>
+
+    <%= javascript_include_tag \
+            'admin/user_edit_dialog.js',
+            'fotech/common_util/string.js',
+            :cache => "__admin_users_index" %>
+    <script type="text/javascript">
+        var childWindows = new fotech.gui.ChildWindowManager(window);
+        onUnload = function() {
+            childWindows.forEach(function (key, window) { window.close(); });
+        }
+    </script>
+
+<% end %>
+
+<% content_for :body_top do %>
+  <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+  </div>
+<% end %>
+
+<%= javascript_tag do %>
+  var jsmenubar = null;
+  Event.observe(window, 'load', function() {
+    <%= MenuRenderer.menu_javascript(@menu) %>
+  });
+<% end %>
+
+<div>
+<% if !@organization.nil? -%>
+  <%= link_to I18n.t('admin.orgs.header'), {:controller => 'organizations'}, {:class => 'navigational_link'} -%> >
+<% end -%>
+<%= I18n.t('admin.users.users') %> <%= @organization.nil? ? 'All users' : @organization.name %>
+</div>
+
+<% if @organizations.empty? %>
+    <p><%= link_to I18n.t('admin.users.must_define_organizations_first'), {:controller => 'organizations'} %></p>
+<% else %>
+
+    <%= render :partial => '/admin/update_form' %>
+
+    <table class="bordered user_list">
+        <tr>
+            <th><%= I18n.t('common.headers.id') %></th>
+            <th><%= I18n.t('admin.users.full_name') %></th>
+            <th><%= I18n.t('admin.users.login') %></th>
+            <th><%= I18n.t('admin.users.orgs') %></th>
+            <th><%= I18n.t('admin.users.roles') %></th>
+            <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+        </tr>
+        <% @users.each do |user| %>
+            <tr id='row_<%= user.id %>'>
+                <td><%= user.id %></td>
+                <td><%= user.fullname %></td>
+                <td><%= user.loginname %></td>
+                <td>
+                    <ul>
+                    <% user.organizations.each do |org| -%>
+                        <li><%= org.name  %></li>
+                    <% end -%>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                    <% user.roles.each do |role| -%>
+                        <li><%= I18n.t 'admin.roles.'+role.title  %></li>
+                    <% end -%>
+                    </ul>
+                </td>
+                <td class="noprint">
+                    <%= image_tag('edit-16x16.png',
+                                  :alt => I18n.t('common.button.edit', :name => user.fullname),
+                                  :title => I18n.t('common.button.edit', :name => user.fullname),
+                                  :class => 'image_link',
+                                  :onclick => "controller.editUser(#{user.id})") %>
+
+                    <%= link_to "javascript:admin.deleteRecord('/admin/users', #{user.id})", data: { confirm: I18n.t('common.confirm_delete', :name => user.fullname) } do -%>
+                        <%= image_tag('fotech/common_gui/delete-16x16.png',
+                                      :alt => I18n.t('common.button.delete', :name => user.fullname),
+                                      :title => I18n.t('common.button.delete', :name => user.fullname),
+                                      :class => 'image_link',
+                                      :style => 'padding-left: 8px;') %>
+                    <% end %>
+                </td>
+            </tr>
+        <% end %>
+        <tr class="noprint">
+            <td colspan="5"></td>
+            <td style="text-align: center">
+                <%= image_tag('add-16x16.png',
+                              :alt => I18n.t('admin.users.add'),
+                              :title => I18n.t('admin.users.add'),
+                              :class => 'image_link',
+                              :onclick => 'controller.newUser()') %>
+            </td>
+        </tr>
+    </table>
+
+    <hr class="noprint"/>
+
+    <% if !@organization.nil? -%>
+        <%= link_to I18n.t('admin.common.return_to_orgs'), {:controller => 'organizations'}, {:class => 'navigational_link noprint'} -%>
+    <% end -%>
+
+    <div id="user_edit_dialog"  class='fotech_dialog' style="visibility:hidden;">
+    </div>
+<% end %>
+
+<% content_for :body_bottom do %>
+    <script type="text/javascript">
+      var controller = new admin.UserController("<%= form_authenticity_token %>");
+    </script>
+<% end %>

@@ -1,0 +1,207 @@
+<%
+# LAST CHANGE:
+# $Author: $
+#   $Date: $
+#    $Rev: $
+#    $URL: $
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :window, :have_layout] %>
+    <%= fotech_core_mapping_components_tag  %>
+    <%= fotech_mapping_impl_tag  %>
+    <%= javascript_include_tag \
+            'admin/fibre_line_dialog.js',
+            'admin/fibre_break_dialog.js',
+            'admin/splice_dialog.js',
+            'admin/fibre_lines.js',
+            'admin/markers.js',
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            :cache => "__admin_fibre_lines_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_fibre_lines_index" %>
+    <script type="text/javascript">
+
+        var childWindows = new fotech.gui.ChildWindowManager(window);
+        onUnload = function() {
+            childWindows.forEach(function (key, window) { window.close(); });
+        }
+    </script>
+<% end %>
+
+<% content_for :body_top do %>
+  <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+  </div>
+<% end %>
+
+<%= javascript_tag do %>
+  Event.observe(window, 'load', function() {
+    <%= MenuRenderer.menu_javascript(@menu) %>
+    admin.fibre_lines.enableMenus();
+    fotech.gui.initEditableFields(admin.fibre_lines.editableFieldChanged);
+    setViewStatus('<%= I18n.t('monitor.map.view_status', :fibre_name => I18n.t('monitor.map.view_all_lines')) %>');
+  });
+<% end %>
+<h2><%= @title %></h2>
+<% if @organizations.empty? %>
+<p><%= link_to I18n.t('admin.fibre_lines.no_organizations'), {:controller => 'organizations'} %></p>
+<% else %>
+<%= render :partial => '/admin/update_form' %>
+
+<table class="bordered full-width">
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.name') %></th>
+        <th><%= I18n.t('common.headers.organization') %></th>
+        <th><%= I18n.t('alert.type_names.helios') %></th>
+        <th><%= I18n.t('admin.helios_units.helios_unit_cycles.channel') %></th>
+        <th><%= I18n.t('admin.fibre_lines.display_type_head') %></th>
+        <th><%= I18n.t('admin.fibre_lines.vertical_head') %></th>
+        <th><%= I18n.t('admin.fibre_lines.zero_head', {:units => @distance_units}) %></th>
+        <th><%= I18n.t('common.active_length', {:units => @distance_units}) %></th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <%  maps_available = map_is_available?
+        @global_fibre_lines.each do |fibre| %>
+        <tr id='row_<%= fibre.id %>'>
+            <td><%= fibre.id %></td>
+            <td nowrap="nowrap"><span name='<%= "fibe_line_name_" + fibre.name %>' id='name_<%= fibre.id %>' class='editable'><%= fibre.name %></span></td>
+            <td>
+                <select <%= "disabled='disabled'" if @organizations.length == 1 %>
+                    onchange="admin.changeField('/admin/fibre_lines', <%= fibre.id %>, 'organization', this.value)">
+                    <% @organizations.each do |org| %>
+                        <option value='<%= org.id %>' <%= "selected='selected'" if org.id == fibre.owner_id %>><%= org.name %></option>
+                    <% end %>
+                </select>
+            </td>
+            <td>
+                <select name='<%= "helios_unit_selector_" + fibre.name %>' <%= "disabled='disabled'" unless (can? :manage, :helios_units and can? :calibrate, :fibre_lines) %>
+                    onchange="admin.changeField('/admin/fibre_lines', <%= fibre.id %>, 'helios_unit_id', this.value)">
+                    <option value=''><%= I18n.t 'admin.fibre_lines.fibre_redundancy.unassigned' %></option>
+                    <% @helios_units.each do |h| %>
+                        <option value='<%= h.id %>' <%= "selected='selected'" if h.id == fibre.helios_unit_id %>><%= h.name %></option>
+                    <% end %>
+                </select>
+            </td>
+            <td>
+                <%  numChannels = 0
+                    if fibre.helios_unit_id
+                        @helios_units.each do |h|
+                            if h.id == fibre.helios_unit_id
+                                numChannels = h.channel_count
+                            end
+                        end
+                    end
+                 %>
+                <select <%= "disabled='disabled'" unless ((numChannels > 1) and (can? :manage, :helios_units) and (can? :calibrate, :fibre_lines)) %>
+                    onchange="admin.changeField('/admin/fibre_lines', <%= fibre.id %>, 'helios_channel', this.value)">
+                    <option value=''>--</option>
+                    <% for ch in 1..numChannels %>
+                        <option value='<%= ch %>' <%= "selected='selected'" if fibre.helios_channel == ch %>><%= ch %></option>
+                    <% end %>
+                </select>
+            </td>
+            <td>
+                <select <%= "disabled='disabled'" if not can?(:calibrate, :fibre_lines) %>
+                    onchange="admin.changeField('/admin/fibre_lines', <%= fibre.id %>, 'display', this.value)">
+                    <% @display_types.each do |disp| %>
+                        <option value='<%= disp.id %>' <%= "selected='selected'" if disp.id == fibre.display_type_id %>><%= disp.description %></option>
+                    <% end %>
+                </select>
+            </td>
+            <td>
+                <select <%= "disabled='disabled'" if not can?(:manage, :fibre_lines) %>
+                    onchange="admin.changeField('/admin/fibre_lines', <%= fibre.id %>, 'vertical', this.value)">
+                    <% @app_types.each do |app| %>
+                        <option value='<%= app.id %>' <%= "selected='selected'" if app.id == @fibre_app_map[fibre.id].id %>><%= app.description %></option>
+                    <% end %>
+                </select>
+            </td>
+            <td>
+                <span id='zero_point_<%= fibre.id %>' class='editable'><%= convert(fibre.zero_point, 'm', @distance_units, @distance_precision) %></span>
+            </td>
+            <td>
+                <span id='length_<%= fibre.id %>' class='editable'><%= convert(fibre.length,'m', @distance_units, @distance_precision) %></span>
+            </td>
+            <% editable = (can?(:manage, :helios_units) ? "class='editable'" : "") %>
+            <td align="right" nowrap="nowrap" class="noprint">
+
+                <% if fibre.break_position.nil? -%>
+                    <%= image_tag('/images/fotech/fibre/event_markers/fibre_break.png', :class => 'disabled', :style => 'vertical-align: middle; height:16px;') %>
+                <% else %>
+                    <%= image_tag('/images/fotech/fibre/event_markers/fibre_break.png',
+                        :class => 'image_link',
+                        :style => 'height:16px;',
+                        :alt => I18n.t('admin.fibre_lines.broken_fibre', :name => fibre.name),
+                        :title => I18n.t('admin.fibre_lines.broken_fibre', :name => fibre.name),
+                        :onclick => "admin.fibre_lines.showFibreBreak(#{fibre.id})" ) %>
+                <% end -%>
+                <% if can? :calibrate, :fibre_lines %>
+                    <% if maps_available %>
+                        <%= image_tag('map-16x16.png', :class => 'image_link',
+                            :alt => I18n.t('admin.fibre_lines.calibrate_to_map'),
+                            :title => I18n.t('admin.fibre_lines.calibrate_to_map'),
+                            :onclick => "admin.fibre_lines.openMapCalibration(#{fibre.id})" ) %>
+                    <% else %>
+                    <% end %>
+
+                    <%= image_tag('engineering-16x16.png', :class => 'image_link',
+                        :alt => I18n.t('admin.fibre_lines.calibrate_to_eng'),
+                        :title => I18n.t('admin.fibre_lines.calibrate_to_eng'),
+                        :onclick => "admin.fibre_lines.openSectionCalibration(#{fibre.id})" ) %>
+                <% end %>
+
+                <%= image_tag('user_region_icon-16x16.png', :class => 'image_link',
+                    :alt => I18n.t('admin.fibre_lines.edit_user_regions', :name => fibre.name),
+                    :title => I18n.t('admin.fibre_lines.edit_user_regions', :name => fibre.name),
+                    :onclick => "admin.fibre_lines.openFibreRegionEdit(#{fibre.id})" ) %>
+
+
+                <% if can? :calibrate, :fibre_lines %>
+                    <%= image_tag('configure-16x16.png', :class => 'image_link',
+                        :alt => I18n.t('common.button.manual_calibration', :name => fibre.name),
+                        :title => I18n.t('common.button.manual_calibration', :name => fibre.name),
+                        :onclick => "admin.fibre_lines.openManualCalibrationEntry(#{fibre.id})" ) %>
+
+                    <a href="javascript:admin.fibre_lines.openInsertSplice(<%=fibre.id%>)"><%= I18n.t('admin.fibre_lines.splice') %></a>
+                <% end %>
+
+                <% if can? :delete, :fibre_lines %>
+                    <%= link_to "javascript:admin.deleteRecord('/admin/fibre_lines', #{fibre.id})", data: { confirm: I18n.t('common.confirm_delete', :name => fibre.name) } do -%>
+                        <%= image_tag('fotech/common_gui/delete-16x16.png', :class => 'image_link',
+                                     :alt => I18n.t('common.button.delete', :name => fibre.name),
+                                     :title => I18n.t('common.button.delete', :name => fibre.name),
+                                     :style => "padding-left: 8px;") %>
+                    <% end %>
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+    <% if can? :add, :fibre_lines %>
+        <tr class="noprint">
+            <td colspan="9"></td>
+            <td style="text-align:right">
+                <%= image_tag('add-16x16.png', :class => 'image_link',
+                    :alt => I18n.t('admin.fibre_lines.add'),
+                    :title => I18n.t('admin.fibre_lines.add'),
+                    :onclick => "admin.fibre_lines.newFibreLine()" ) %>
+            </td>
+        </tr>
+    <% end %>
+</table>
+    <hr class="noprint" />
+
+
+
+<% end %>
+
+<button class="noprint" onclick="window.opener.location.reload(true)"><%= I18n.t('admin.fibre_lines.refresh_button') %></button>
+
+<%= render :partial => 'fibre_line_dialog' %>
+<%= render :partial => 'fibre_break_dialog' %>
+<%= render :partial => 'splice_dialog' %>

@@ -1,0 +1,32 @@
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:menu, :dialog, :calendar, :have_layout], :cache => "__events_initsearch_gui" %>
+    <%= javascript_include_tag \
+        'fotech/common_util/string.js',
+        'fotech/common_util/date.js',
+        'fotech/common_util/math.js',
+        'fotech/common_gui/windows.js',
+        'monitor/search.js',
+        :cache => "__events_initsearch" %>
+    <%= stylesheet_link_tag 'search.css', :media => "all" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id='menubar' class='yuimenubar yuimenubarnav noprint'>
+    </div>
+<% end %>
+
+<% content_for :body_bottom do %>
+    <script type='text/javascript'>
+        var jsmenubar = null;
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        showCriteria();
+        <% if params[:alertId] %>
+        _doSubmit();
+        <% end %>
+    </script>
+<% end %>
+
+<div id='searchResults'>
+</div>
+
+<%= render :partial => "criteria_dialog" %>

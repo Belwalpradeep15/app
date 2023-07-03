@@ -1,0 +1,9 @@
+<p><%= @error %></p>
+<script type="text/javascript">
+    setViewStatus("");
+    setStatusMessage('<%= @error %>');
+    resetDisplayHandlers();
+    fotech.gui.enableMenuItem(jsmenubar, "viewFibreLine", false);
+    fotech.gui.enableMenuItem(jsmenubar, "showLiveFibre", false);
+
+</script>

@@ -1,0 +1,37 @@
+<%#
+ FILENAME:     _event_types.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-03-01
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+
+<script type="text/javascript">
+    // Event types, sorted by description. Each object in this array will contain the
+    // attributes id, name, description, and eventCategoryId.
+    var eventTypes = [];
+
+    <% if @eventTypes %>
+        <% @eventTypes.each do |eventType| %>
+            eventTypes[eventTypes.length] = {
+                id: <%= eventType.id %>,
+                name: "<%= eventType.name %>",
+                description: '<%= eventType.description %>',
+                image_file: '<%= eventType[:image_file] %>',
+                eventCategoryId: <%= eventType.event_category_id %>,
+                clearingInterval: <%= eventType.clearing_interval || 0 %>
+            };
+        <% end %>
+    <% end %>
+    for (var i = 0; i < eventTypes.length; i++)
+        new fotech.fibre.EventType(eventTypes[i].id, eventTypes[i].name, eventTypes[i].description, eventTypes[i].image_file);
+</script>
+

@@ -1,0 +1,25 @@
+<%#
+ FILENAME:     show.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-11-04
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<p>You are not able to view this fibre line until its display type has been set.</p>
+
+<script type="text/javascript">
+    var fibreLine = getFibreLineById(<%= @global_fibre_lines[0].id %>);
+    if (fibreLine) {
+      setViewStatusForFibre(fibreLine);
+    }
+    resetDisplayHandlers();
+    fotech.gui.enableMenuItem(jsmenubar, "viewFibreLine", false);
+</script>

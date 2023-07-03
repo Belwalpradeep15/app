@@ -1,0 +1,89 @@
+<style>
+    th {
+        text-align: left;
+        padding-left: 10px;
+    }
+</style>
+
+<p><%= I18n.t("email.auto_gen_warning") %></p>
+<table cellspacing="0" cellpadding="1" border="0">
+    <tr>
+        <th><%= I18n.t('common.headers.id') %>:</th>
+        <td><%= @alert.id %></td>
+    </tr>
+    <tr>
+        <th><%= I18n.t('common.headers.type') %>:</th>
+        <td><%= I18n.t("alert.name.#{@alert.name}") %></td>
+    </tr>
+    <tr>
+        <th><%= I18n.t('admin.alerts.headers.time') %>:</th>
+        <td><%= @alert.time.getutc.in_time_zone(@timezone) %></td>
+    </tr>
+    <tr>
+        <th><%= I18n.t('admin.alerts.headers.threat_level') %>:</th>
+        <td><%= I18n.t('alert.threat_level.'+(@alert.threat_level || 'none')) %></td>
+    </tr>
+    <tr>
+        <th><%= I18n.t('common.headers.status') %>:</th>
+        <td>
+            <%= I18n.t("alert.status.#{ @alert.status }") %>
+            <% if @alert.status == 'closed' %>
+                at <%= @alert.time_resolved.getutc.in_time_zone(@timezone) %>
+            <% elsif @alert.status == 'acknowledged' %>
+                at <%= @alert.time_acknowledged.getutc.in_time_zone(@timezone) %>
+            <% end %>
+        </td>
+    </tr>
+    <% if @alert.comments %>
+    <tr>
+        <th><%= I18n.t('admin.alerts.headers.comments') %>:</th>
+        <td><%= optional_i18n @alert.comments %></td>
+    </tr>
+    <% end %>
+</table>
+
+<p><b><%= @alert.get_on_route_info unless @alert.detail("path_path_id").nil? %></b></p>
+
+<p><b><%= I18n.t('admin.alerts.headers.panoptes_unit') %></b></p>
+<table cellspacing="0" cellpadding="1" border="0">
+    <% @identity_hash.keys.sort_by{|k|I18n.t("common.headers.#{k}")}.each do |k| %>
+        <% if @identity_hash[k] != "" %>
+            <tr>
+                <th><%= I18n.t("common.headers.#{k}") %>:</th>
+                <td><%= @identity_hash[k] %></td>
+            </tr>
+        <% end %>
+    <% end %>
+</table>
+<p><b><%= I18n.t('admin.alerts.headers.details') %></b></p>
+<table cellspacing="0" cellpadding="1" border="0">
+  <% list_details= (@alert.name=="panoptes" ?  @alert.alert_details.sort_by{|d|  d.id } : \
+     @alert.alert_details.sort_by{|d|I18n.t("alert.detail_keys.#{ d.key }")} ) %>
+  <% list_details.each do |d| -%>
+    <% if d.visible || d.key == 'location' -%>
+    <tr>
+        <th><%= I18n.t("alert.detail_keys.#{ d.key }") %>:</th>
+        <td>
+            <% if d.key == 'location'
+                lng,lat = d.value.scan(/-?\d+.\d+/)
+            %>
+                <%=raw convertLatLngForDisplay(lat,lng,'dec_deg',@latlng_format, nil).gsub('&apos;',"'")%>
+            <% else %>
+                <%=raw optional_translate(d.value, @preferences_hash) %>
+            <% end %>
+        </td>
+    </tr>
+    <% end -%>
+    <% end -%>
+</table>
+
+<p><b><%= I18n.t('admin.alerts.show.history_caption') %></b></p>
+<table cellspacing="0" cellpadding="1" border="0">
+    <% @alert.alert_responses.sort{|a,b| a.time<=>b.time}.each do |r| %>
+    <tr>
+        <td style="padding-left: 10px;"><%= r.time.getutc.in_time_zone(@timezone) %>:</td>
+        <td><%= I18n.t("alert.response.#{ r.response }") %> <%= optional_i18n r.comments %></td>
+    </tr>
+    <% end %>
+</table>
+

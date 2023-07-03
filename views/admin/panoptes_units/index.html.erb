@@ -1,0 +1,105 @@
+<%
+# COPYRIGHT:
+# This file is Copyright © 2019 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :have_layout, :tab] %>
+        <%# For reasons I don't understand the fotech_gui_setup_tag cannot be cached
+            for this page. (Steve)
+         %>
+
+    <%= javascript_include_tag \
+            'admin/panoptes_unit_dialog.js',
+            'admin/panoptes_units.js',
+            'fotech/common_util/string.js',
+            'fotech/common_util/pub/latlon.js',
+            'fotech/common_util/pub/geo.js',
+            'fotech/common_gui/windows.js',
+            :cache => "__admin_monitor_panoptes_units_index" %>
+    <script type="text/javascript">
+        var childWindows = new fotech.gui.ChildWindowManager(window);
+        onUnload = function() {
+            childWindows.forEach(function (key, window) { window.close(); });
+        }
+    </script>
+    <style>
+        .readonly {
+            background-color: rgb(216, 216, 203);
+            font-style: italic;
+            color: grey;
+        }
+    </style>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        fotech.gui.initEditableFields(admin.panoptes_units.editableFieldChanged);
+        });
+</script>
+
+<%= render :partial => '/admin/update_form' %>
+
+<table class="bordered">
+  <caption><%= I18n.t('admin.panoptes_units.header') %></caption>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.name') %></th>
+        <th><%= I18n.t('common.headers.serial_number') %></th>
+        <th><%= I18n.t('admin.helios_units.host') %></th>
+        <th><%= I18n.t('alert.detail_keys.ws_port') %></th>
+        <th><%= I18n.t('admin.alerts.headers.latitude') %>, <%= I18n.t('admin.alerts.headers.longitude') %></th>
+        <th><%= I18n.t('common.headers.active') %></th>
+    </tr>
+    <% @panoptes_units.each do |panoptes| %>
+        <tr id='row_<%= panoptes.id %>'>
+            <td><%= panoptes.id %></td>
+            <td><span id='name_<%= panoptes.id %>' class='editable'><%= panoptes.name %></span></td>
+            <td><span id='serial_<%= panoptes.id %>' class='editable'><%= panoptes.serial_number %></span></td>
+            <td><span id='host_<%= panoptes.id %>' class='editable'><%= panoptes.host_name %></span></td>
+            <td><span id='ws_port_<%= panoptes.id %>' class='editable'><%= panoptes.ws_port %></span></td>
+            <td id='latlng_<%= panoptes.id %>' class='editable'><%=raw convertLatLngForDisplay(panoptes.latitude ,panoptes.longitude, 'deg_dec', @latlng_format, @latlng_precision) if panoptes.latitude %></td>
+            <td>
+                <input name='is_active' type='checkbox' value='1'
+                    <%= panoptes.is_active ? "checked='checked'" : "" %>
+                    onchange="admin.changeField('/admin/panoptes_units', <%= panoptes.id %>, 'is_active', (this.checked ? '1' : '0'), {ajaxOptions: {onComplete:function(){fotech.gui.rootOpener().monitor.panoptes.getPanoptesStatus(<%= panoptes.id %>);}}})" />
+            </td>
+
+            <td>
+            	<button onclick="vueApp.$store.dispatch( 'fibrelinecloner/show', vueApp.$store.state.aspects.aspects.panoptes[<%= panoptes.id %>].properties.uuid.current );"><%= I18n.t('admin.panoptes_units.clone') %></button>
+            </td>
+
+            <td style="text-align:right" class="noprint">
+
+                <%= link_to "javascript:admin.deleteRecord('/admin/panoptes_units', #{panoptes.id})", data: { confirm: I18n.t('common.confirm_delete', :name => panoptes.name) } do -%>
+                    <%= image_tag('fotech/common_gui/delete-16x16.png', :class => 'image_link',
+                                  :style => "padding-left:8px;",
+                                  :alt => I18n.t('common.button.delete', :name => panoptes.name),
+                                  :title => I18n.t('common.button.delete', :name => panoptes.name)) %>
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+    <tr class="noprint">
+        <td colspan="8"></td>
+        <td style="text-align:right">
+            <%= image_tag('add-16x16.png', :class => 'image_link',
+                :alt => I18n.t('admin.panoptes_units.add'),
+                :title => I18n.t('admin.panoptes_units.add'),
+                :onclick => "admin.panoptes_units.newPanoptesUnit()" ) %>
+        </td>
+    </tr>
+</table>
+
+<%= render :partial => 'panoptes_unit_dialog' %>
+<% if can? :manage, :panoptes_units -%>
+    <%= dialog_wrapper "panoptes_unit_section_location", :title => 'admin.panoptes_units.panoptes_unit_section_location_dialog.title' %>
+<% end -%>
+
+

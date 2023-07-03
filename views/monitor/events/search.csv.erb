@@ -1,0 +1,73 @@
+<%
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+
+# COPYRIGHT:
+# This file is Copyright © 2012 Fotech Solutions Ltd. All rights reserved.
+-%>
+<% headers = [I18n.t('common.headers.id')]
+    headers << I18n.t('monitor.events.init_search.time_title')
+    headers << I18n.t('alert.detail_keys.event_type')
+    headers << I18n.t('alert.detail_keys.fibre_line_name')
+    headers << I18n.t('monitor.events.init_search.magnitude_title')
+    headers << I18n.t('monitor.events.init_search.width_title') + " (#{@distance_units})"
+    headers << I18n.t('monitor.events.init_search.velocity_title') + " (#{@velocity_units.gsub('_','/')})"
+    headers << I18n.t('common.acceleration') + " (#{@acceleration_units.gsub('_','/')})"
+    headers << I18n.t('common.headers.distance') + " (#{@distance_units})"
+    headers << I18n.t('admin.alerts.headers.latitude')
+    headers << I18n.t('admin.alerts.headers.longitude')
+    unless @paths_all.blank?
+      headers << I18n.t("alert.detail_keys.path_path_name")
+      headers << I18n.t("alert.detail_keys.path_distance") + " (#{@distance_units})"
+      headers << I18n.t("alert.detail_keys.path_direction_of_travel")
+      headers << I18n.t("alert.detail_keys.path_marker_name")
+      headers << I18n.t("alert.detail_keys.path_velocity") + " (#{@velocity_units.gsub('_','/')})"
+    end
+    -%>
+<%=raw headers.collect{|x| '"' + x + '"'}.join(',') %>
+<% @events.each do |event|
+             event_list = [event].flatten
+             event_list.each_with_index do |ev, index|
+                   fl = @global_fibre_lines.select{|f| f.id == ev.fibre_line_id}.first
+                   dist = ev.position - fl[:zero_point]
+                   dist = convert(dist, 'm', @distance_units, 2)
+                   width = convert(ev.width, 'm', @distance_units, 2)
+                   velocity = convert(ev.velocity, 'm_s', @velocity_units, 2)
+                   acceleration = convert(ev.acceleration, 'm_s2', @acceleration_units, 2)
+                   event_type = @event_types.select{|e| e.id == ev.event_type_id}.first
+                   lat = ev.latitude
+                   long = ev.longitude
+                   if lat and long and @latlng_format == 'dms'
+                       latlng_string = convertLatLngForDisplay(lat,long,'deg_dec','dms',@latlng_precision)
+                       latlng_string.gsub!('&apos;',"'")
+                       latlng_string.gsub!('&quot;','"')
+                       latlng_string.gsub!('&deg;',"d")
+                       lat,long = latlng_string.split(',')
+                   end
+
+-%>
+<% row = [ ev.id]
+    row << ev.time.to_default_s_in_tz_offset(@tz_offset)
+    row << event_type.description
+    row << fl.name
+    row << (ev.amplitude.to_f * 100.0).round / 100.0
+    row << width
+    row << velocity
+    row << acceleration
+    row << dist
+    row << lat || ''
+    row << long || ''
+    unless @paths_all.blank?
+      row << ev.tag("path_path_name")
+      row << (ev.tag("path_distance").nil? ? "" : convert(ev.tag("path_distance").to_f , 'm', @distance_units, @distance_precision))
+      row << ev.tag("path_direction_of_travel")
+      row << ev.tag("path_marker_name")
+      row << (ev.tag("path_velocity").nil? ? "" : convert(ev.tag("path_velocity").to_f, 'm_s', @velocity_units, 2))
+    end
+    -%>
+<%=raw row.collect{|x| '"'+ x.to_s.gsub(/"/,'""') +'"'}.join(',') %>
+<%        end
+      end -%>

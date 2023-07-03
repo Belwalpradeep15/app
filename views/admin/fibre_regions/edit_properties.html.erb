@@ -1,0 +1,41 @@
+<%
+  # FILENAME:     _new_region_dialog.html.erb
+  # AUTHOR:       Karina Simard
+  # CREATED ON:   10-10-06
+  #
+  # LAST CHANGE:
+  # $Author$
+  #   $Date$
+  #    $Rev$
+  #    $URL$
+  #
+  # COPYRIGHT:
+  # This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+-%>
+<div class="hd">
+  <%= I18n.t('admin.fibre_region.edit_dialog.title', :name => @region.description) %>
+</div>
+<div class="bd">
+  <%= form_with :url => "/admin/fibre_lines/#{@fibre_line.id}/fibre_regions/#{@region.id}/update_properties", :html => {:method => :put, :id => 'fibre_region_properties_edit_form' } do |f| -%>
+      <%= f.hidden_field :id %>
+      <table class="padded">
+        <tr>
+          <th><%= label :visible, I18n.t('admin.fibre_region.edit_dialog.visible') %></th>
+          <td><%= check_box_tag :visible, 1, @region[:visible] %></td>
+        </tr>
+        <tr>
+          <th><%= label :highlight_colour, I18n.t('admin.fibre_region.edit_dialog.highlight_colour') %></th>
+          <td class="noborder" nowrap="nowrap"><%= fotech_colour 'highlight_colour', @props[:highlight_colour] %></td>
+        </tr>
+        <tr>
+          <th><%= label :highlight_opacity, "#{I18n.t('admin.fibre_region.edit_dialog.highlight_opacity')} (1 - 100)" %></th>
+          <td class="noborder" nowrap="nowrap"><%= text_field_tag 'highlight_opacity', @props[:highlight_opacity] %></td>
+        </tr>
+        <tr>
+          <th><%= label :highlight_width, "#{I18n.t('admin.fibre_region.edit_dialog.highlight_width')} (1 - 20)" %></th>
+          <td><%= text_field_tag :highlight_width, @props[:highlight_width] %></td>
+        </tr>
+      </table>
+  <% end -%>
+</div>
+

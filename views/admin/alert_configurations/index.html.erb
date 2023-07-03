@@ -1,0 +1,606 @@
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag, it causes errors. %>
+    <%= fotech_gui_setup_tag [:window, :menu, :dialog, :have_layout] %>
+    <%= javascript_include_tag \
+            'admin/new_alert_config_dialog.js',
+            'admin/threat_template_dialog.js',
+            :cache => "__admin_alert_configs_index" %>
+
+    <%= stylesheet_link_tag "mainDisplay", :cache => "__admin_alert_configs_index" %>
+    <style>
+        #page_title{
+            text-align:center;
+            position:absolute;
+            z-index: 0;
+            top:0;
+            width:100%;
+        }
+        table, td, th,tr {
+            padding:0px;
+            margin:0px;
+        }
+        #threat_configuration_table input, #threat_configuration_table select{
+            width:70px;
+        }
+        #threat_configuration_table thead th{
+            text-align:center;
+            vertical-align:bottom;
+        }
+    </style>
+<% end %>
+
+<% content_for :body_top do %>
+<div id="page_title">
+    <h1><%= I18n.t('admin.alert_configs.title') %></h1>
+</div>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<div id="threat_template_dialog"  class='noprint'>
+    <div class="hd">
+        <%= I18n.t("admin.alert_configs.threat_template_dialog_header") %>
+    </div>
+    <div class="bd">
+        <%= form_with html: {:id => "threat_template_form", :onsubmit => "return false"} do %>
+            <%= I18n.t('admin.alert_configs.template_name')%><select name="template_name">
+                            <% @threat_config_templates.keys.sort_by{|x| I18n.t("admin.alert_configs.template_names.#{x}", :raise => true) rescue x.humanize}.each do |template_name| %>
+                                <option value="<%= template_name %>"><%=I18n.t("admin.alert_configs.template_names.#{template_name}", :raise => true) rescue template_name.humanize %></option>
+                            <% end %>
+                        </select>
+        <% end %>
+    </div>
+</div>
+
+<div id="new_alert_config_dialog"  class='noprint'>
+    <div class="hd">
+        <%= I18n.t('admin.alert_configs.new_dialog_header') %>
+    </div>
+    <div class="bd">
+        <%= form_with html: {:id => "new_alert_config_form", :onsubmit => "return false"}, local: true do %>
+            <input type="hidden" name="new_threat_configuration" value="1"/>
+            <%= I18n.t('admin.alert_configs.event_type_label')%> <select name="event_type_id">
+                            <% @event_types.select{|x| @threat_configurations.select{|y| y.event_type_id == x.id}.empty?}\
+                               .sort_by{|e| e.description }.each do |event_type| %>
+                                <option value="<%= event_type.id %>"><%= event_type.description %></option>
+                            <% end %>
+                        </select>
+        <% end %>
+    </div>
+</div>
+<script type="text/javascript">
+    threat_config_templates = <%= raw @threat_config_templates.to_json %>;
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+    });
+    Event.observe(window, 'load', setupValidatingForm);
+    var alertConfigForm = null;
+    function setupValidatingForm(){
+        alertConfigForm = new fotech.gui.ValidatingDialog('',{},'alert_configs_form');
+        alertConfigForm.validateFields = validateAlertConfigsForm;
+        alertConfigForm.submit = function(){
+            $('content').addClassName('disabled');
+            this.validate();
+            if(this.hasError()){
+                $('content').removeClassName('disabled');
+                return false;
+            }
+            return true;
+        };
+
+        newAlertConfigDialog = new admin.NewAlertConfigDialog();
+        newAlertConfigDialog.render(document.body);
+
+        threatTemplateDialog = new admin.ThreatTemplateDialog();
+        threatTemplateDialog.render(document.body);
+    }
+
+    function validateAlertConfigsForm() {
+        fotech.gui.FotechDialog.setBusyState('content');
+        try {
+            var field = 'threat_counting_period_s';
+            var label = 'Threat counting period';
+            this.validateNotEmpty(field, label);
+            this.validateInteger(field, label, 5,300);
+
+            field = 'alerts_retrigger_minutes';
+            label = 'Time to retrigger';
+            this.validateInteger(field, label, 1, 24 * 60);
+
+            var distance_units = fotech.gui.rootOpener().user.preferences['units-distance'];
+            var fields = this.form.select('.counting_width_row').first().select('input')
+            fields.each(function(el){
+                if(!el.name.startsWith('raw_')){
+                    return;
+                }
+                var label = I18n.t('admin.alert_configs.counting_width');
+                var isValid = this.validateNotEmpty(el.name,label);
+                isValid = isValid && this.validateFloatExclusive(el.name, label, 0);
+                if(isValid){
+                    this.form[el.name.gsub(/^raw_/,'')].value = fotech.util.convert(parseFloat(el.value), distance_units, 'm');
+                }
+            }.bind(this));
+
+            this.form.select('.decrement_value_row input').each(function(el){
+                var label = I18n.t('admin.alert_configs.decrement_value');
+                this.validateNotEmpty(el.name, label);
+                this.validateIntegerExclusive(el.name, label, null, 0);
+            }.bind(this));
+
+            this.form.select('.always_red_after_timeout_row input').each(function(el){
+                var label = "Always red after..."
+                this.validateNotEmpty(el.name, label);
+                this.validateFloatExclusive(el.name, label, 0, null);
+            }.bind(this));
+
+            //amber clearance must be <= amber threshold
+            this.form.select('.green_threshold_row input').each(function(el){
+
+                var label = I18n.t('admin.alert_configs.green_threshold');
+                var greenIsValid = this.validateNotEmpty(el.name, label);
+                greenIsValid = greenIsValid && this.validateIntegerExclusive(el.name, label, 0);
+
+                fieldname = el.name.gsub(/green/, 'amber');
+                label = I18n.t('admin.alert_configs.amber_threshold');
+                var amberIsValid = this.validateNotEmpty(fieldname, label);
+                var amberValue = null;
+                if(greenIsValid){
+                    amberIsValid = amberIsValid && this.validateIntegerExclusive(fieldname, label, parseInt(el.value));
+                    amberValue = parseInt(this.form[fieldname].value);
+                }
+
+                fieldname = el.name.gsub(/green/, 'amber');
+                fieldname = fieldname.gsub(/\[threshold\]/,'[clearance]');
+                label = I18n.t('admin.alert_configs.amber_clearance');
+                this.validateNotEmpty(fieldname, label);
+                if(amberIsValid){
+                    this.validateInteger(fieldname, label, 0, amberValue);
+                }
+                //validate that the red threshold is > amber threshold
+                fieldname = el.name.gsub(/green/, 'red');
+                label = I18n.t('admin.alert_configs.red_threshold');
+                this.validateNotEmpty(fieldname, label);
+                if(amberIsValid){
+                    this.validateIntegerExclusive(fieldname, label, amberValue);
+                }
+            }.bind(this));
+
+            this.form.select('.amber_hysteresis_row input').each(function(el){
+                var label = I18n.t('admin.alert_configs.amber_hysteresis');
+                this.validateNotEmpty(el.name, label);
+                this.validateIntegerExclusive(el.name, label,0);
+            }.bind(this));
+
+            this.form.select('.hold_threshold_row input').each(function(el){
+                var label = I18n.t('admin.alert_configs.hold_threshold');
+                var isValid = this.validateNotEmpty(el.name, label);
+                isValid = isValid && this.validateInteger(el.name, label, 0);
+
+                var fields = ['hold','low','medium','top'];
+                for(var i = 1; i < fields.length; i++){
+                    var prevField = fields[i-1];
+                    var currField = fields[i];
+                    var fieldname = el.name.gsub(/\[hold\]/,'['+currField+']');
+                    label = I18n.t('admin.alert_configs.'+currField+'_threshold');
+                    this.validateNotEmpty(fieldname, label);
+                    if(isValid){
+                        isValid = isValid && this.validateIntegerExclusive(fieldname, label, parseInt(this.form[el.name.gsub(/\[hold\]/,'['+prevField+']')].value));
+                    }
+                }
+            }.bind(this));
+
+            var fields = ['low_increment','medium_increment','top_increment'];
+            for(var i = 0; i < fields.length; i++){
+                this.form.select('.'+fields[i]+'_row input').each(function(el){
+                    var label = I18n.t('admin.alert_configs.'+fields[i]);
+                    this.validateNotEmpty(el.name, label);
+                    this.validateInteger(el.name, label, 0);
+                }.bind(this));
+            }
+        }
+        catch (e) {
+            this.addValidationFailure('','', e.message);
+        }
+        if(this.hasError()){
+            fotech.gui.FotechDialog.clearBusyState('content');
+        }
+    }
+
+    function alert_configs_enable_alerts(){
+        var form = $('alert_configs_form');
+        var disable = !form['alerts-enabled'].checked
+        var always_enabled = ['alerts-enabled', 'reset', 'apply']
+        form.getElements().each(function(e){
+            if(!always_enabled.includes(e.name) && e.type != "hidden"){
+                e.disabled = disable;
+            }
+        });
+        form.select('.is_active_checkbox').each(function(cb){
+            if(disable){
+                cb.checked = false;
+            }
+            disableThreatColumn(cb);
+            cb.disabled = disable;
+        });
+        alert_configs_enable_retrigger()
+    }
+    Event.observe(window, 'load', alert_configs_enable_alerts);
+
+    function previewSound(el){
+        if(el.value != ""){
+            var sound = new Audio(el.value);
+            sound.play();
+        }
+    }
+
+    function alert_configs_enable_retrigger(){
+        var form = $('alert_configs_form');
+        var checkBoxDisabled = !form['alerts_retrigger_enabled'].checked;
+        var isAlertDialogueEnabled = form['alerts-enabled'].checked;
+        if ( isAlertDialogueEnabled ) {
+            form['alerts_retrigger_minutes'].disabled = checkBoxDisabled;
+        }
+    }
+
+    function disableThreatColumn(cb){
+        var alertType = cb.name.match(/^[^[]*/)[0];
+        $$('[name^='+alertType+'\\[threat], [name^=raw_'+alertType+'\\[threat]').invoke(cb.checked? 'enable' : 'disable');
+        cb.enable();
+        $$('[type=hidden]').invoke('enable');
+    }
+</script>
+
+
+        <div id='alert_configs_panel'>
+            <%= form_with remote: true, html: {:id => "alert_configs_form", :onsubmit => "return alertConfigForm.submit();"} do %>
+            <fieldset style="float:left;min-height:125px;">
+                <legend><%= I18n.t('admin.alert_configs.enable_alerts') %>
+                    <input type="checkbox" name="alerts-enabled" value="true" onchange="alert_configs_enable_alerts(this)" <%= "checked" if @alerts_enabled %>></legend>
+                <table>
+                <tbody>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.alert_on_system_warnings') %></th>
+                    <td><input type="checkbox" name="alert_on_system_warnings" value="true" <%= "checked" if @alert_on_system_warnings %>></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.threat_counting_period_s') %></th>
+                    <td><input type="text" name="threat_counting_period_s" style="width:110px" value="<%= @threat_counting_period_s %>"/> s</td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.event_aggregation_enabled') %></th>
+                    <td><input type="checkbox" name="event_aggregation_enabled" value="true" <%= "checked" if @event_aggregation_enabled %>></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.portal_settings') %></th>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.alerts_require_comment_text') %></th>
+                    <td><input type="checkbox" name="alerts_require_comment_text" value="true" <%= "checked" if @alerts_require_comment_text %>></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.alerts_retrigger_enabled') %></th>
+                    <td><input type="checkbox" name="alerts_retrigger_enabled" value="false" onchange="alert_configs_enable_retrigger(this)" <%= "checked" if @alerts_retrigger_enabled %>></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alert_configs.alerts_retrigger_minutes') %></th>
+                    <td><input type="text" name="alerts_retrigger_minutes" style="width:110px" value="<%= @alerts_retrigger_minutes %>" /> m</td>
+                </tr>
+
+                <% %w(clear green amber red).each do |color| %>
+                <tr>
+                    <th><%= I18n.t("admin.alert_configs.#{color}_alerts") %></th>
+                    <td>
+                        <select name="alerts-show-<%=color%>">
+                           <option value="none" <%= 'selected' if @show_prefs[color] == 'none'%>>Show nothing</option>
+                           <option value="icons" <%= 'selected' if @show_prefs[color] == 'icons'%>>Icons only</option>
+                           <option value="icons-and-list" <%= 'selected' if @show_prefs[color] == 'icons-and-list'%>>Icons and list</option>
+                           <option value="icons-and-dialogs" <%= 'selected' if @show_prefs[color] == 'icons-and-dialogs'%>>Icons, list and dialogs</option>
+                        </select>
+                    </td>
+                </tr>
+                <% end %>
+                </tbody>
+             </table>
+             </fieldset>
+             <fieldset style="float:left;min-height:179px;">
+                 <legend><%= I18n.t('admin.alert_configs.system_alerts') %><input type="checkbox" style="width:2px;visibility:hidden"/></legend>
+             <table>
+                 <tbody>
+                <tr style="">
+                    <th style="border-bottom:1px solid black"></th>
+                    <th style="text-align:center;border-bottom:1px solid black"><%= I18n.t('admin.alert_configs.play_sound_header') %></th>
+                    <th style="text-align:center;border-bottom:1px solid black"><%= I18n.t('admin.alert_configs.play_sound_continuously_header') %></th>
+                </tr>
+                <% @system_alert_types.each do |alert_type|
+                    config_hash = @configs_hash[alert_type] || {}
+                %>
+                <tr>
+                    <th><%= Alert.description_by_name(alert_type) %></th>
+                    <td>
+                        <select name="<%=alert_type%>[sound]" onchange="previewSound(this)">
+                            <option value=""><%= I18n.t('admin.alert_configs.no_sound') %></option>
+                            <% @sounds.each do |sound_path| %>
+                            <option value="<%= sound_path %>" <%= 'selected' if config_hash['sound']==sound_path %>><%= sound_path[/[^\/]+$/]%></option>
+                            <% end %>
+                        </select>
+                    </td>
+                    <td style="text-align:center">
+                        <input type="hidden" name="<%=alert_type%>[repeat_sound]" value="FALSE"/>
+                        <input type="checkbox" name="<%= alert_type %>[repeat_sound]" value="TRUE" <%= "checked" if config_hash['repeat_sound'] == 'TRUE' %>/>
+                    </td>
+               </tr>
+                <%
+                  end %>
+               </tbody>
+          </table>
+
+          </fieldset>
+
+          <fieldset style="float:left;clear:both;">
+              <legend><%= I18n.t('admin.alert_configs.event_alerts') %></legend>
+          <table id="threat_configuration_table">
+              <thead>
+                  <tr>
+                      <th>
+                          <%= I18n.t('admin.alert_configs.general_configuration') %>
+                      </th>
+                      <% @threat_configurations.each do |t_conf| %>
+                      <th style="width:60px;">
+                          <%= Alert.description_by_name(t_conf.alert_name) %>
+                          <input type="hidden" name="<%=t_conf.alert_name%>[threat_configuration][event_type_id]" value="<%= t_conf.event_type_id %>"/>
+                          <input type="hidden" name="<%=t_conf.alert_name%>[threat_configuration][alert_name]" value="<%= t_conf.alert_name %>"/>
+                      </th>
+                      <% end %>
+                      <th><%= image_tag('add-16x16.png', :class => 'image_link',
+                    :alt => I18n.t('admin.alert_configs.new'),
+                    :title => I18n.t('admin.alert_configs.new'),
+                    :onclick => "newAlertConfigDialog.show()" ) %></th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <th style="border-bottom:1px solid black" colspan='<%= @event_alert_types.length + 1 %>'>
+                      </th>
+                  <tr>
+                  <tr>
+                      <th ><%= I18n.t('admin.alert_configs.update_position_header') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td>
+                          <select name="<%= alert_type %>[update_position_on]"/>
+                              <option value="first" <%='selected' if (@configs_hash[alert_type] || {})['update_position_on'] == 'first'%>>
+                                  <%= I18n.t('admin.alert_configs.first_event') %>
+                              </option>
+                              <option value="last" <%='selected' if (@configs_hash[alert_type] || {})['update_position_on'] == 'last'%>>
+                                  <%=I18n.t('admin.alert_configs.last_event') %>
+                              </option>
+                          </select>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr>
+                      <th ><%= I18n.t('admin.alert_configs.play_sound_header') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td>
+                        <select name="<%=alert_type%>[sound]" onchange="previewSound(this)">
+                            <option value=""><%= I18n.t('admin.alert_configs.no_sound') %></option>
+                            <% @sounds.each do |sound_path| %>
+                            <option value="<%= sound_path %>" <%= 'selected' if (@configs_hash[alert_type] || {})['sound']==sound_path %>><%= sound_path[/[^\/]+$/]%></option>
+                            <% end %>
+                        </select>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr>
+                      <th ><%= I18n.t('admin.alert_configs.play_sound_continuously_header') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td style="text-align:center">
+                          <input type="hidden" name="<%=alert_type%>[repeat_sound]" value="FALSE"/>
+                          <input type="checkbox" name="<%= alert_type %>[repeat_sound]" value="TRUE" <%= "checked" if (@configs_hash[alert_type] || {})['repeat_sound'] == 'TRUE' %>/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr>
+                      <th style="border-bottom:1px solid black" colspan='<%= @threat_configurations.length + 1 %>'>
+                          <%= I18n.t('admin.alert_configs.threat_configuration') %>
+                      </th>
+                  <tr>
+                  <tr>
+                      <th ><%= I18n.t('admin.alert_configs.is_active') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td style="text-align:center">
+                          <input type="hidden" name="<%=alert_type%>[threat_configuration][is_active]" value="FALSE"/>
+                          <input type="checkbox" class="is_active_checkbox" name="<%= alert_type %>[threat_configuration][is_active]" value="TRUE" <%= "checked" if threat_conf.is_active%> onclick="disableThreatColumn(this);"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr>
+                      <th ><%= I18n.t('data.logging') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td style="text-align:center">
+                          <input type="hidden" name="<%=alert_type%>[threat_configuration][logging_enabled]" value="FALSE"/>
+                          <input type="checkbox" class="logging_enabled_checkbox" name="<%= alert_type %>[threat_configuration][logging_enabled]" value="TRUE" <%= "checked" if threat_conf.logging_enabled%> />
+                      </td>
+                      <% end %>
+                  </tr>
+
+                  <tr class="counting_width_row">
+                      <th ><%= I18n.t('admin.alert_configs.counting_width') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td>
+                          <input type="hidden" name="<%= alert_type %>[threat_configuration][counting_width]" value="<%=threat_conf.counting_width%>"/>
+                          <input type="text" name="raw_<%= alert_type %>[threat_configuration][counting_width]" value="<%= convert(threat_conf.counting_width.to_f, 'm', @preferences['units-distance'], @preferences['precision-distance'].to_i) %>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr class="decrement_value_row">
+                      <th ><%= I18n.t('admin.alert_configs.decrement_value') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_configuration][decrement_value]" value="<%=threat_conf.decrement_value%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr class="green_threshold_row">
+                      <th ><%= I18n.t('admin.alert_configs.green_threshold') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_threshold = threat_conf.green_threshold
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_threshold][green][threshold]" value="<%=threat_threshold.threshold%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr class="amber_threshold_row">
+                      <th ><%= I18n.t('admin.alert_configs.amber_threshold') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_threshold = threat_conf.amber_threshold
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_threshold][amber][threshold]" value="<%=threat_threshold.threshold%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr class="red_threshold_row">
+                      <th ><%= I18n.t('admin.alert_configs.red_threshold') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_threshold = threat_conf.red_threshold
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_threshold][red][threshold]" value="<%=threat_threshold.threshold%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <% %w(hold low medium top).each do |level| %>
+                  <tr class="<%=level%>_threshold_row">
+                      <th ><%= I18n.t("admin.alert_configs.#{level}_threshold") %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_increment = threat_conf.get_increment_by_name(level)
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_increment][<%= level %>][threshold]" value="<%=threat_increment.threshold%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <% end %>
+
+                  <% %w(low medium top).each do |level| %>
+                  <tr class="<%=level%>_increment_row">
+                      <th ><%= I18n.t("admin.alert_configs.#{level}_increment") %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_increment = threat_conf.get_increment_by_name(level)
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_increment][<%= level %>][increment_value]" value="<%=threat_increment.increment_value%>" />
+                      </td>
+                      <% end %>
+                  </tr>
+                  <% end %>
+
+                  <tr class="amber_hysteresis_row">
+                      <th ><%= I18n.t('admin.alert_configs.amber_hysteresis') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_threshold = threat_conf.amber_threshold
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_threshold][amber][hysteresis]" value="<%=threat_threshold.hysteresis%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr class="amber_clearance_row">
+                      <th ><%= I18n.t('admin.alert_configs.amber_clearance') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                          threat_threshold = threat_conf.amber_threshold
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_threshold][amber][clearance]" value="<%=threat_threshold.clearance%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr>
+                      <th ><%= I18n.t('admin.alert_configs.always_red_after.enabled') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td style="text-align:center">
+                          <input type="hidden" name="<%= alert_type %>[threat_configuration][always_red_after_timeout_enabled]" value="FALSE"/>
+                          <input type="checkbox" class="always_red_after_timeout_enabled_checkbox" name="<%= alert_type %>[threat_configuration][always_red_after_timeout_enabled]" value="TRUE" <%= "checked" if threat_conf.always_red_after_timeout_enabled%> />
+                      </td>
+                      <% end %>
+                  </tr>
+                  <tr class="always_red_after_timeout_row">
+                      <th ><%= I18n.t('admin.alert_configs.always_red_after.seconds') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td>
+                          <input type="text" name="<%= alert_type %>[threat_configuration][always_red_after_timeout_s]" value="<%= threat_conf.always_red_after_timeout_s%>"/>
+                      </td>
+                      <% end %>
+                  </tr>
+
+                  <tr class="initial_threat_level_row">
+                      <th ><%= I18n.t('admin.alert_configs.initial_threat_level') %></th>
+                      <% @threat_configurations.each do |threat_conf|
+                          alert_type = threat_conf.alert_name
+                      %>
+                      <td>
+                			<select name="<%= alert_type %>[threat_configuration][initial_threat_level]">
+                           		<option value="clear" <%= 'selected' if threat_conf.initial_threat_level == 'clear'%>>Clear</option>
+                           		<option value="green" <%= 'selected' if threat_conf.initial_threat_level == 'green'%>>Green</option>
+                           		<option value="amber" <%= 'selected' if threat_conf.initial_threat_level == 'amber'%>>Amber</option>
+                           		<option value="red" <%= 'selected' if threat_conf.initial_threat_level == 'red'%>>Red</option>
+                			</select>
+                      </td>
+                      <% end %>
+                  </tr>
+
+                  <tr>
+                      <th style="border-bottom:1px solid black" colspan='<%= @threat_configurations.length + 1 %>'>
+                      </th>
+                  <tr>
+                  <tr>
+                      <th></th>
+                      <% @threat_configurations.each do |threat_conf| %>
+                      <td style="text-align:center">
+                           <%= link_to image_tag('apply_template-16x16.png', :title=> I18n.t('admin.alert_configs.apply_template')), "javascript:threatTemplateDialog.show_for('#{threat_conf.alert_name}')" %>
+&nbsp;&nbsp;
+                           <%= link_to image_tag('fotech/common_gui/delete-16x16.png'), {:controller => 'admin/alert_configurations', :action => 'destroy', :id => threat_conf.id, :remote => true}, data: {:confirm => I18n.t('admin.alert_configs.confirm_delete', {:name => Alert.description_by_name(threat_conf.alert_name)}), :method => :delete} %>
+                      </td>
+                      <% end %>
+                  </tr>
+              </tbody>
+          </table>
+          </fieldset>
+
+<div style="clear:both">
+                    <button type="reset" name="reset"><%= I18n.t('common.button.reset') %></button>
+                    <button type="submit" name="apply"><%= I18n.t('common.button.apply') %></button>
+<!--                    <button type="submit"><%= I18n.t('admin.alert_configs.update_helios_threat_configurations') %></button>
+-->
+</div>
+
+        <% end #form end %>
+
+        </div>
+

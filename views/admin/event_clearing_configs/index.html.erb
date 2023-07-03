@@ -1,0 +1,76 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-07-29
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :have_layout] %>
+    <%= javascript_include_tag \
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            'fotech/common_gui/form.js',
+            'fotech/common_gui/windows.js',
+            'admin/event_clearing.js',
+            :cache => "__admin_event_clearing_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', :cache => "__admin_event_clearing_index" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        fotech.gui.initEditableFields(admin.event_clearing.editableFieldChanged);
+        });
+</script>
+
+<table class="bordered">
+    <caption><%= I18n.t('admin.configuration.event_clearing.header') %></caption>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('alert.detail_keys.event_type') %></th>
+        <th><%= I18n.t('common.headers.enabled') %></th>
+        <th><%= I18n.t('admin.configuration.event_clearing.clearing_interval') %></th>
+    </tr>
+    <% @eventTypes.each do |eType| %>
+        <tr id='row_<%= eType.id %>'>
+            <td><%= eType.id %></td>
+            <td><%= eType.description %></td>
+            <td style="text-align:center"><%= check_box_tag "enable_clearing_interval_#{eType.id}", "enable", eType.clearing_interval.to_i > 0 %>
+            <td nowrap="nowrap"><div id='clearing_interval_<%= eType.id %>' class='editable' style="height:100%;width:100%"><%= eType.clearing_interval || 0%></div></td>
+        </tr>
+    <% end %>
+</table>
+
+<div>
+    <%= I18n.t('admin.configuration.event_clearing.imprecise_warning') %>
+</div>
+
+<%= render :partial => '/admin/update_form' %>
+
+<script type="text/javascript">
+    //show or hide based on enabled check box
+    $$('input[type=checkbox]').each(function(el){
+        var id = el.id.match(/\d+/);
+        if(!el.checked)
+            $('clearing_interval_' + id).hide();
+        el.observe('change', function(ev){ admin.event_clearing.toggleEnabled(Event.element(ev))});
+    });
+</script>
+
+
+

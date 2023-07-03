@@ -1,0 +1,107 @@
+<%
+# FILENAME:     alert_report.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-12-03
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <%= include_i18n %>
+        <title>Fotech Solutions Web Application</title>
+        <%= javascript_include_tag \
+            'prototype.js',
+            'fotech/common_util/dom.js',
+            'fotech/common_util/document.js',
+            'fotech/common_util/date.js',
+            :cache => "__layout_simple_report" %>
+        <%= stylesheet_link_tag "common.css", "admin/alert_report.css", :media => "all" %>
+    </head>
+    <body onload="Date.onload();">
+
+    <% @alert_groups.each_pair do |title, value|
+        alerts = value[:alerts]
+        startTime = value[:start_time]
+        endTime = value[:end_time] %>
+        <h2><%= title %> <% if startTime %>(<span class="time_span, as_localtime"><%= startTime.xmlschema %></span> - <span class="time_span, as_localtime"><%= endTime.xmlschema %></span>)<% end %></h2>
+        <table>
+            <tr>
+                <th class="id_col"><%= I18n.t('common.headers.id') %></th>
+                <th class="time_col"><%= I18n.t('admin.alerts.headers.time') %></th>
+                <th class="type_col"><%= I18n.t('common.headers.type') %></th>
+                <th class="threat_col"><%= I18n.t('admin.alerts.headers.threat_level') %></th>
+                <th class="status_col"><%= I18n.t('common.headers.status') %></th>
+                <% if !@regions.empty?%>
+                	<th class="region_col"><%= I18n.t('admin.alerts.headers.region') %></th>
+                <% end %>
+                <% unless @paths_all.blank? %>
+                    <th class="route_col"><%= I18n.t("alert.detail_keys.path_path_name") %></th>
+                    <th class="route_col"><%= I18n.t("alert.detail_keys.path_distance") %></th>
+                <% end %>
+                <th class="acknowledged_col"><%= I18n.t('alert.status.acknowledged') %></th>
+
+            </tr>
+            <% alerts.each do |a| %>
+            <tr>
+                <td class="id_col"><%= a.id %></td>
+                <td class="time_col"><span class="time_span, as_localtime"><%= a.time.xmlschema %></span></td>
+                <td class="type_col"><%= a.description %></td>
+                <td class="threat_col"><%= I18n.t('alert.threat_level.' + (a.threat_level || 'none')) %></td>
+                <td class="status_col"><%= I18n.t('alert.status.' + a.status) %></td>
+                <% if !@regions.empty?%>
+		        	<td class="region_col"><%= a.regions.join(", ") %></td>
+		        <% end %>
+                <% unless @paths_all.blank? %>
+                    <td class="route_col"><%= a.detail("path_path_name") %></td>
+                    <td class="route_col"><%= "#{convert(a.detail("path_distance").to_f, 'm', @distance_units, @distance_precision)}" + "#{@distance_units}" unless a.detail("path_distance").nil? %></td>
+                <% end %>
+		        <td class="acknowledged_col"><span class="time_span, as_localtime"><%= a.time_acknowledged.xmlschema if a.time_acknowledged %></span> <%= "#{I18n.t('admin.alerts.headers.by')} #{a.acknowledged_by}" if a.acknowledged_by %></td>
+
+            </tr>
+            <% if @include_details -%>
+            <tr>
+                <td></td>
+                <td colspan='4'>
+                    <% unless @paths_all.blank? %>
+                        <table>
+                            <tr>
+                                <td class ="detail_value_column"><%= a.on_route_info %></td>
+                            </tr>
+                        </table>
+                    <% end %>
+                    <table class="alert_details">
+                        <% a.alert_details.select{|d| d.visible}.each_with_index do |d, i| %>
+                            <tr>
+                                <td class="detail_header_column"><%= I18n.t('admin.alerts.headers.details') if i == 0%></td>
+                                <td class="detail_key_column"><%= I18n.t("alert.detail_keys.#{ d.key }") %></td>
+                                <td class="detail_value_column"><%=raw optional_translate(d.value, @preferences_hash) %></td>
+                            </tr>
+                        <% end %>
+                    </table>
+                    <table class="alert_responses">
+                        <% a.alert_responses.sort{|a,b| a.time<=>b.time}.each_with_index do |r,i| %>
+                            <tr>
+                                <td class="response_header_column"><%= I18n.t('admin.alerts.headers.responses') if i == 0%></td>
+                                <td class="response_type_column" nowrap="nowrap"><%= I18n.t("alert.response.#{ r.response }") %></td>
+                                <td class="response_time_column" nowrap="nowrap"><span class="time_span, as_localtime"><%= r.time.xmlschema %></span></td>
+                                <td class="response_comment_column"><%= optional_i18n r.comments %></td>
+                            </tr>
+                        <% end %>
+                    </table>
+                </td>
+            </tr>
+            <% end -%>
+            <% end -%>
+        </table>
+    <% end -%>
+    <%= timezone_tag %>
+    </body>
+</html>

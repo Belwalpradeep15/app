@@ -1,0 +1,12 @@
+<%= I18n.t 'admin.notifications.test_email.body' %>
+========================================
+
+<% if @settings %>
+<%= I18n.t 'admin.notifications.test_email.settings_label' %>
+----------------------------------------
+<% @settings.each_pair do |k,v| %>
+<%= k %> = <%= v %><br/>
+<% end %>
+<% else %>
+<%= I18n.t 'admin.notifications.test_email.check_panoptes_mailer_log' %>
+<% end %>

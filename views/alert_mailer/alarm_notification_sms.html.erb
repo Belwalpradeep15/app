@@ -1,0 +1,42 @@
+<% if @alert.is_event_alarm? -%>
+	<% if not @alert.detail("path_path_id").nil? -%>
+		<% distance = @alert.detail("path_distance").to_f -%>
+		<% distance = UnitConversions.convert(distance, 'm', 'm', 2) -%>
+		<% velocity = @alert.detail("path_velocity").to_f -%>
+		<% marker_name = @alert.detail("path_marker_name") -%>
+		<% route_name = @alert.detail("path_path_name") -%>
+			<% if velocity > 0 -%>
+				<% velocity = UnitConversions.convert(velocity, 'm_s', 'm_s', 2) -%>
+				<% direction = @alert.detail("path_direction_of_travel") -%>
+				<%= I18n.t('admin.notifications.email_notification.dialog.sms.content_with_route_moving',
+									:alarmName => @alert.name,
+									:id => @alert.id,
+									:distance => distance,
+									:distanceUnits => 'm',
+									:marker => marker_name,
+									:direction => @alert.detail("path_direction_of_travel"),
+									:velocity => velocity,
+									:velocityUnits => 'm/s',
+									:routeName => route_name) -%>
+			<% else -%>
+				<%= I18n.t('admin.notifications.email_notification.dialog.sms.content_with_route_stationary',
+									:alarmName => @alert.name,
+									:id => @alert.id,
+									:distance => distance,
+									:distanceUnits => 'm',
+									:marker => marker_name,
+									:routeName => route_name) -%>
+			<% end -%>
+	<% else -%>
+		<%= I18n.t('admin.notifications.email_notification.dialog.sms.content_without_route',
+				:alarmName => @alert.name,
+				:id => @alert.id,
+				:fibreDistance => optional_translate(@alert.detail("position"), @preferences_hash),
+				:distanceUnits => '',
+				:fibreLineName =>  @alert.detail("fibre_line_name")) -%>
+	<% end -%>
+<% else -%>
+	<%= I18n.t('admin.notifications.email_notification.dialog.sms.system_alarm',
+			:alarmName => @alert.name,
+			:id => @alert.id) -%>
+<% end -%>

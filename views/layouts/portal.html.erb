@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+ FILENAME:     portal.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-02-25
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <%= include_i18n %>
+        <title><%= @title || I18n.t('main.portal.title') %></title>
+        <link rel="stylesheet" href="/fontawesome-free-5.0.6/on-server/css/fontawesome-all.min.css" crossorigin="anonymous">
+        <%= fotech_gui_setup_tag [:layout], :cache => "__layout_portal_gui" %>
+        <%= javascript_include_tag 'prototype.js', 'rails-ujs.js', 'application.js',
+                'core.js',
+            	'rest.js',
+                'fotech/common_util/dom.js',
+                'fotech/common_util/document.js',
+                'fotech/common_gui/windows.js',
+                'portal/portal.js',
+                :cache => "__layout_portal" %>
+        <%= stylesheet_link_tag 'layout.css', 'common.css', 'portal/portal.css', "core.css", "coreui.css", :media => "all" %>
+        <%= yield :head %>
+    </head>
+    <body class="panoptes yui-skin-sam yui-layout portal">
+        <div id="vuepart" data-token="<%= @api_auth_token %>" data-product="panoptes-portal"></div>
+        <%= javascript_include_tag "coreui.js" %>
+        <%= yield :body_top %>
+        <%= yield %>
+        <%= yield :body_bottom %>
+    </body>
+</html>
+

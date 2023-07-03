@@ -1,0 +1,62 @@
+<%
+  # LAST CHANGE:
+  # $Author: $
+  #   $Date: $
+  #    $Rev: $
+  #    $URL: $
+  #
+  # COPYRIGHT:
+  # This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+-%>
+
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :window, :have_layout] %>
+    <%= fotech_core_mapping_components_tag  %>
+    <%= fotech_mapping_impl_tag  %>
+    <%= javascript_include_tag \
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            :cache => "__admin_paths_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_paths_index" %>
+    <script type="text/javascript">
+      var childWindows = new fotech.gui.ChildWindowManager(window);
+      onUnload = function() {
+        childWindows.forEach(function (key, window) { window.close(); });
+      }
+    </script>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<%= javascript_tag do %>
+    Event.observe(window, 'load', function() {
+    <%= MenuRenderer.menu_javascript(@menu) %>
+    setViewStatus('<%= I18n.t('admin.paths.title') %>');
+    setTimeout(function() {
+    var e = $$('div.warning_box,div.success_box');
+    for (var i = 0; i < e.length; ++i) {
+    new Effect.Fade(e[i], {duration:1});
+    }
+    }, 3500);
+    });
+
+    function check_for_upload() {
+      var f_element = $('upload_path_path_file');
+      return f_element && f_element.value != '';
+    }
+<% end %>
+<h2><%= @title %></h2>
+
+<div style="width:85%;margin:0 auto;border:1px solid black;padding:25px;text-align:center;">
+  <%= form_with url: upload_review_admin_paths_path + "?organization=#{@organization.id}", html: { multipart: true }, local: true do %>
+      <%= hidden_field_tag "organization", @organization.id %>
+      <div style="padding-top:10px;"><strong><%= I18n.t('admin.paths.label_upload', {:name => @organization.name}) %></strong></div>
+      <div style="display:inline-block;"><%= file_field_tag 'path_file', {:id => 'upload_path_path_file', :file_type_error => t('admin.fibre_region.upload.file_type_error'), :accept => ".yml,.yaml"} %></div>
+      <div style="display:inline-block;"><%= submit_tag t('common.button.upload'), :id => "pathFileUpload", :onclick => "return check_for_upload()" %></div>
+  <% end %>
+</div>

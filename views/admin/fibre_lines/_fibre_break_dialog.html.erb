@@ -1,0 +1,42 @@
+<%
+# FILENAME:     _fibre_break_dialog.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-08-30
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+
+<% if params[:form_only].nil? %>
+<div id="fibre_break_dialog" style="visibility: hidden;" class="noprint">
+    <div class="hd">
+        <%= I18n.t('alert.name.fibre_break_alert') %>
+    </div>
+    <div class="bd" id="fibre_break_dialog_body">
+<% end -%>
+        <%= form_with :id => 'fibre_break_form' do -%>
+<% if @fibre_line %>
+            <table class="padded">
+                <tr>
+                    <th><%= I18n.t('admin.fibre_lines.fibre_break_dialog.position') %></th>
+                    <td><%= convert @fibre_line.break_position, 'm', @distance_units, @distance_precision %> <%= @distance_units %></td>
+                </tr>
+            </table>
+            <%= hidden_field_tag 'break_position', '' %>
+<% end -%>
+        <% end -%>
+        <div style="width:250px"><em><%= I18n.t "admin.fibre_lines.fibre_break_dialog.permission_note"%></em></div>
+<% if params[:form_only].nil? %>
+    </div>
+</div>
+<% end -%>
+
+
+

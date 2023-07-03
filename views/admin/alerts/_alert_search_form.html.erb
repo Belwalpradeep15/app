@@ -1,0 +1,184 @@
+<%
+# FILENAME:     _alert_search_form.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-09-18
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+%>
+
+<%= form_with :url => params[:portal_request] ? '/portal/alerts' : '/admin/alerts', :method => 'get', html: { :id => 'alert_search_form' } do -%>
+    <%= hidden_field :search, 'startTimeXml' %>
+    <%= hidden_field :search, 'endTimeXml' %>
+    <%= hidden_field :search, 'limit', :value => 50 %>
+    <%= hidden_field :search, 'offset', :value => 0 %>
+
+    <%= field_set_tag check_box_tag('include_id', '1', params['include_id'],
+                                    :class => 'restrict_checkboxes',
+                                    :onclick => 'javascript: admin.alerts.SearchDialog.disableByCheckbox(this, "id_field");') + I18n.t('admin.alerts.search_dialog.restrict_by_id') do %>
+
+        <div id="id_field">
+            <%= label_tag "alert_id", I18n.t('alert.detail_keys.alert_id') %>
+            <%= text_field_tag "search[alert_id]", params['search']['alert_id'] %>
+        </div>
+    <% end %>
+
+    <% # Route conditions %>
+
+    <%= field_set_tag check_box_tag('include_route', '1', params['include_route'],
+                                    :class => 'restrict_dropdown',
+                                    :onclick => 'javascript: admin.alerts.SearchDialog.disableByCheckbox(this, "type_drop_down_list");') + I18n.t('admin.alerts.search_dialog.restrict_route') do %>
+
+        <%= hidden_field_tag "search[route_min_distance]" %>
+        <%= hidden_field_tag "search[route_max_distance]" %>
+        <%= hidden_field_tag "search[route_min_velocity]" %>
+        <%= hidden_field_tag "search[route_max_velocity]" %>
+
+        <div id="type_drop_down_list" class="dropdown_list">
+            <table>
+                <tr>
+                    <th><%= I18n.t('admin.alerts.search_dialog.route_id') %></th>
+                    <td>
+                        <% selected_route = params[:search] && params[:search][:route_id] ? params[:search][:route_id] : '' %>
+                        <%= select(:search, :route_id, options_for_select(@required_path_hash.keys, selected_route), { :prompt => "--All--" }, :onchange => "change_route_directions(this.value)") %>
+                    </td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.alerts.search_dialog.route_direction') %></th>
+                    <td>
+                        <% route_directions = selected_route.blank? ? [] : @required_path_hash[selected_route] %>
+                        <% selected_route_direction = params[:search] && params[:search][:route_direction] ? params[:search][:route_direction] : '' %>
+                        <%= select(:search, :route_direction, options_for_select(route_directions,selected_route_direction), { :prompt => "--All--" }) %>
+                    </td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('common.headers.distance') %>(<span>m</span>)</th>
+                    <td>
+                        <%= I18n.t('monitor.events.filters.min') %>
+                        <%= text_field_tag "search[route_min_distance_]", params[:search][:route_min_distance_], :size => "8" %>
+                        <%= I18n.t('monitor.events.filters.max') %>
+                        <%= text_field_tag "search[route_max_distance_]", params[:search][:route_max_distance_], :size => "8" %>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <%= I18n.t('monitor.events.filters.velocity', :units => 'm/s') %>
+                    </th>
+                    <td>
+                        <%= I18n.t('monitor.events.filters.min') %>
+                        <%= text_field_tag "search[route_min_velocity_]", params[:search][:route_min_velocity_], :size => "8" %>
+                        <%= I18n.t('monitor.events.filters.max') %>
+                        <%= text_field_tag "search[route_max_velocity_]", params[:search][:route_max_velocity_], :size => "8" %>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    <% end %>
+
+    <%= field_set_tag check_box_tag('include_type', '1', params['include_type'],
+                                    :class => 'restrict_checkboxes',
+                                    :onclick => 'javascript: admin.alerts.SearchDialog.disableByCheckbox(this, "type_check_box_list");') + I18n.t('admin.alerts.search_dialog.restrict_type') do %>
+
+        <div id="type_check_box_list" class="checkbox_list" style="max-height:100px;-webkit-columns: 100px 2;">
+            <% @alert_types.sort{ |a,b| Alert.description_by_name(a) <=> Alert.description_by_name(b) }.each do |t| %>
+                <%= check_box_tag 'search[name][]', t, params['search']['name'].include?(t) %>
+                <%= Alert.description_by_name(t) %><br />
+            <% end %>
+        </div>
+    <% end %>
+
+    <%= field_set_tag check_box_tag('include_threat', '1', params['include_threat'],
+                                    :class => 'restrict_checkboxes',
+                                    :onclick => 'javascript: admin.alerts.SearchDialog.disableByCheckbox(this, "threat_check_box_list");') + I18n.t('admin.alerts.search_dialog.restrict_threat') do %>
+
+        <div id="threat_check_box_list" class="checkbox_list" style="-webkit-columns: 100px 2;">
+            <% %w(red amber green clear).each do |t| %>
+                <%= check_box_tag 'search[threat_level][]', t, params['search']['threat_level'].include?(t) %>
+                <%= I18n.t "alert.threat_level.#{t}" %><br />
+            <% end %>
+        </div>
+    <% end %>
+
+    <%= field_set_tag check_box_tag('include_status', '1', params['include_status'],
+                                    :class => 'restrict_checkboxes',
+                                    :onclick => 'javascript: admin.alerts.SearchDialog.disableByCheckbox(this, "status_check_box_list");') + I18n.t('admin.alerts.search_dialog.restrict_status') do %>
+
+        <div id="status_check_box_list" class="checkbox_list"  style="-webkit-columns: 100px 3;">
+            <% Alert.statuses.sort{|a,b| I18n.t("alert.status.#{a}") <=> I18n.t("alert.status.#{b}") }.each do |s| %>
+                <%= check_box_tag 'search[status][]', s, params['search']['status'].include?(s) %>
+                <%= I18n.t "alert.status.#{s}" %><br />
+            <% end %>
+        </div>
+    <% end %>
+
+    <%= field_set_tag check_box_tag('include_date', '1', params['include_date'],
+                                    :class => 'restrict_checkboxes',
+                                    :onclick => 'javascript: admin.alerts.SearchDialog.disableByCheckbox(this, "date_table");') + I18n.t('admin.alerts.search_dialog.restrict_date') do %>
+
+        <table id="date_table">
+            <tr>
+                <td><%= label_tag "start_time", I18n.t('admin.alerts.search_dialog.date_time_min') %></td>
+                <td><%= fotech_calendar 'start_time', I18n.t('admin.alerts.search_dialog.select_min_date'), params[:start_time] %></td>
+                <td><%= label_tag "end_time", I18n.t('admin.alerts.search_dialog.date_time_max') %></td>
+                <td><%= fotech_calendar 'end_time', I18n.t('admin.alerts.search_dialog.select_max_date'), params[:end_time] %></td>
+            </tr>
+        </table>
+    <% end %>
+
+    <table >
+        <tr>
+            <th><%= label :search, :order_by, I18n.t('admin.alerts.search_dialog.order_by') %></th>
+            <td>
+                <%= select :search, :order_by, %w(time name status ).collect{|s| [I18n.t('admin.alerts.search_dialog.order_by_options.'+s),s]} %>
+                <%= select :search, :order_dir, %w(asc desc).collect{|s| [I18n.t('admin.alerts.search_dialog.order_dir_options.'+s),s]} %>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <%= check_box_tag 'search[include_suppressed]','1', params['search']['include_suppressed']=='1' %>
+                <%= label :search, :include_suppressed, I18n.t('admin.alerts.search_dialog.include_suppressed') %>
+            </td>
+        </tr>
+    </table>
+<% end %>
+
+<script type="text/javascript">
+    function change_route_directions(route_name){
+        $('alert_search_form')['search_route_direction'].innerHTML = '' ;
+        $('alert_search_form')['search_route_direction'].options.add(new Element('option', {value: '' , selected: 'selected'}).update('--All--'));
+        if(route_name != "") {
+            var hash = <%= raw @required_path_hash.to_json %>
+            hash[route_name].forEach(function(val) {
+                $('alert_search_form')['search_route_direction'].options.add(new Element('option', {value: val}).update(val));
+            });
+        }
+    }
+
+    function alertFilterOnSubmit(form) {
+        if (form.include_route.checked) {
+            var units = fotech.gui.rootOpener().user.preferences['units-distance'];
+            var velocity_units = fotech.gui.rootOpener().user.preferences['units-velocity'];
+            form.search_route_min_distance.value = "";
+            form.search_route_max_distance.value = "";
+            form.search_route_min_velocity.value = "";
+            form.search_route_max_velocity.value = "";
+
+            if (form.search_route_min_distance_.value)
+                form.search_route_min_distance.value = fotech.util.convert(form.search_route_min_distance_.value, 'm', units);
+            if (form.search_route_max_distance_.value)
+                form.search_route_max_distance.value = fotech.util.convert(form.search_route_max_distance_.value, 'm', units);
+            if (form.search_route_min_velocity_.value)
+                form.search_route_min_velocity.value = fotech.util.convert(form.search_route_min_velocity_.value, velocity_units, 'm_s');
+            if (form.search_route_max_velocity_.value)
+                form.search_route_max_velocity.value = fotech.util.convert(form.search_route_max_velocity_.value, velocity_units, 'm_s');
+        }
+    }
+
+</script>

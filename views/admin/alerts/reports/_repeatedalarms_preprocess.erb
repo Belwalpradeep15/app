@@ -1,0 +1,79 @@
+<% @processed_data = { :titles => [], :data => [], :totals => [] } %>
+<% if !@data.blank? %>
+    <%# process the headers into translated forms %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.threat_level') %>
+    <% @processed_data[:titles] << I18n.t('common.headers.type') %>
+    <% @processed_data[:titles] << 'Patch' %>
+
+    <% @processed_data[:titles] << I18n.t('admin.marker.title')  %>
+    <% @processed_data[:titles] << I18n.t('common.headers.position') + " (#{@distance_units})" %>
+    <% @processed_data[:titles] << I18n.t('alert.detail_keys.position') + " (#{@distance_units})" %>
+    <% @processed_data[:titles] << I18n.t('common.headers.id') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.frequency') %>
+
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.oldest_event_time') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.newest_event_time') %>
+
+    <%# @processed_data[:titles] << I18n.t('admin.alerts.headers.green_time') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.amber_time') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.red_time') %>
+
+    <% @processed_data[:titles] << I18n.t('alert.status.acknowledged') + " " + I18n.t('admin.alerts.headers.on1') %>
+    <% @processed_data[:titles] << I18n.t('alert.status.resolved') + " " + I18n.t('admin.alerts.headers.on1') %>
+
+    <% @processed_data[:titles] << I18n.t('alert.status.resolved') + " " + I18n.t('alert.response.comment') %>
+    <%# Now, go through each alert and convert the data accordingly %>
+    <% threshold = (params[:search][:threshold] || 0).to_i %>
+
+    <% @data.each do | id, alert | %>
+        <% @row = [] %>
+
+        <% frequency = (alert[:frequency].nil? ? 0 : alert[:frequency] ).to_i %>
+
+        <% @row << alert[:threat_level].collect { |x| I18n.t("alert.threat_level.#{x}") + "::threat_level_#{x}" }.join( ';' ) %>
+        <% @row << alert[:description] %>
+        <% @row << (alert[:patch].nil? ? '' : (alert[:patch]/100) ) %>
+
+        <% markernames = [] %>
+        <% markerpositions = [] %>
+        <% alert[:path_distance].each_with_index do | distance, i | %>
+            <% if ( !alert[:path_marker].nil? ) %>
+                <% markernames << ( alert[:path_marker][i].nil? ? '' : alert[:path_marker][i] ) %>
+            <% else %>
+                <% markernames << "" %>
+            <% end  %>
+            <% markerpositions << ( alert[:path_distance][i].nil? ? '' : optional_translate( alert[:path_distance][i], @preferences_hash ).to_f ).to_s %>
+        <% end %>
+        <% @row << markernames.join( ';' ) %>
+        <% @row << markerpositions.join( ';' ) %>
+        <% @row << alert[:position].collect{ |x| optional_translate( x, @preferences_hash ).to_f }.join(';') %>
+
+        <% @row << alert[:id].join(';') %>
+        <% @row << frequency %>
+
+        <% @row << alert[:oldest_event_time].collect{ |x| ( x.nil? ? '' : x.to_time.to_default_s_in_tz_offset(@tz_offset)) }.join(';') %>
+        <% @row << alert[:newest_event_time].collect{ |x| ( x.nil? ? '' : x.to_time.to_default_s_in_tz_offset(@tz_offset)) }.join(';') %>
+
+        <% @row << alert[:amber_time].collect{ |x| ( x.nil? ? '' : x.to_time.to_default_s_in_tz_offset(@tz_offset)) }.join(';') %>
+        <% @row << alert[:red_time].collect{ |x| ( x.nil? ? '' : x.to_time.to_default_s_in_tz_offset(@tz_offset)) }.join(';') %>
+
+        <% @row << alert[:time_acknowledged].collect{ |x| ( x.nil? ? '' : x.to_time.to_default_s_in_tz_offset(@tz_offset)) }.join(';') %>
+        <% @row << alert[:time_resolved].collect{ |x| ( x.nil? ? '' : x.to_time.to_default_s_in_tz_offset(@tz_offset)) }.join(';') %>
+
+        <% @responses = [] %>
+        <% alert[:alert_responses].each do |re| %>
+            <% @response = "" %>
+            <% re.each do |r| %>
+                <% if r.response == "resolve" %>
+                    <% @response = optional_i18n( r.comments ) %>
+                    <% break %>
+                <% end %>
+            <% end %>
+            <% @responses << @response %>
+        <%end %>
+        <% @row << @responses.join(';') %>
+        <% if ( frequency >= threshold ) %>
+            <% @processed_data[:data] << @row %>
+        <% end %>
+    <% end %>
+<% end %>

@@ -1,0 +1,65 @@
+<%#
+ LAST CHANGE:
+ $Author: $
+   $Date: $
+    $Rev: $
+    $URL: $
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% if @close %>
+    <script type="text/javascript">
+        window.opener.location.reload(true);
+        window.close();
+    </script>
+<% else %>
+
+    <% content_for :head do %>
+        <%= fotech_gui_setup_tag [:dialog, :menu, :window, :have_layout], :cache => "__admin_fibre_lines_map_calibrate_gui" %>
+        <%= fotech_core_mapping_components_tag  %>
+        <%= fotech_mapping_impl_tag  %>
+        <%= javascript_include_tag \
+                'admin/map_for_calibration.js',
+                'admin/fibre_coords_dialog.js',
+                'admin/fibre_lines.js',
+                'admin/markers.js',
+                'fotech/common_util/string.js',
+                'fotech/common_util/math.js',
+                :cache => "__admin_fibre_lines_map_calibrate" %>
+        <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_fibre_lines_show" %>
+        <script type="text/javascript">
+            onUnload = function() {
+                window.opener.setTimeout('admin.fibre_lines.enableMenus()', 1000);
+            }
+        </script>
+    <% end %>
+
+    <% content_for :body_top do %>
+      <%= render :partial => "fibre_coords_dialog", :locals => { :action => "update" } %>
+    <% end %>
+
+    <% content_for :body_bottom do %>
+        <script type="text/javascript">
+            if (fotech.map.Map.haveMapAPI) {
+                Event.observe(window, 'load', function() {
+                    var options = {layers: <%= raw APP_CONFIG['monitor']['map_layers'].to_json %>,
+                                   initialLayer: '<%= @initial_map_type %>'}
+                    var map = new map_for_calibration(options, fotech.gui.rootOpener().user.preferences['fibre-line-colour']);
+                    map.displayEditableRoute(<%= raw "#{@fibre_line.id}, #{@fibre_line.route.to_json}, #{@calibrations.to_json}" %>);
+                    document.title = "<%= I18n.t('admin.fibre_lines.map_cal.title', :name => escape_javascript(@fibre_line.name)) %>";
+                });
+            }
+            else {
+                $('map').insert('<%= I18n.t('admin.fibre_lines.map_cal.no_view') %>');
+                <% unless APP_CONFIG['monitor']['map_provider'] == 'none' %>
+                    setMapUnavailableMessage();
+                <% end %>
+            }
+        </script>
+    <% end %>
+
+    <div id="map" style="height: 100%">
+    </div>
+<% end %>

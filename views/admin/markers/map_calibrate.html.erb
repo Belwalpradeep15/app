@@ -1,0 +1,124 @@
+<%#
+ LAST CHANGE:
+ $Author: $
+   $Date: $
+    $Rev: $
+    $URL: $
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+<% if @close %>
+    <script type="text/javascript">
+        window.opener.location.reload(true);
+        window.close();
+    </script>
+<% else %>
+
+    <% content_for :head do %>
+        <%= fotech_gui_setup_tag [:dialog, :menu, :window, :have_layout], :cache => '__admin_markers_map_calibrate_gui' %>
+        <%= fotech_core_mapping_components_tag  %>
+        <%= fotech_mapping_impl_tag  %>
+        <%= javascript_include_tag \
+                'admin/markers.js',
+                 'admin/admin.js',
+                'admin/marker_new_dialog.js',
+                'fotech/common_util/string.js',
+                'fotech/common_util/math.js',
+                :cache => '__admin_markers_map_calibrate' %>
+        <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => '__admin_markers_show' %>
+    <% end %>
+
+    <% content_for :body_bottom do %>
+        <%= render :partial => 'monitor/fibre_lines/fibre_lines' %>
+
+        <script type="text/javascript">
+            if (fotech.map.Map.haveMapAPI) {
+                Event.observe(window, 'load', function() {
+                    var options = {layers: <%= raw APP_CONFIG['monitor']['map_layers'].to_json %>,
+                                   initialLayer: '<%= @initial_map_type %>'};
+                    var _map = new fotech.map.Map('map', fotech.map.Map.mapProvider,
+                        fotech.gui.rootOpener().user.preferences, options.layers, options.initialLayer);
+                    _map.render();
+
+                    var marker_editor = new fotech.map.MarkerEditor(_map, "name", null);
+
+                    // Add Markers
+                    <% Marker.with_lat_lng.where(organization_id: @organization).each do |marker|
+                        next if marker.latitude.nil? or marker.marker_types[0].nil? %>
+                            marker_editor.addMarker(<%=marker.id%>, new LatLon(<%=marker.latitude%>,<%=marker.longitude%>), '<%=marker.name%>','<%= marker.marker_types[0].icon_path %>');
+                    <% end %>
+
+                    fibre_route_layer = new fotech.map.FibreRouteLayer(_map, fotech.gui.rootOpener().globalAlertManager,
+                        new fotech.map.TrackStyle(fotech.gui.rootOpener().user.preferences['fibre-line-colour'], 5, .5, false));
+
+                    // add Fibre lines
+                    var routes = {};
+                    for(var line in fibreLines) {
+                        if (!fibreLines.hasOwnProperty(line)) continue;
+
+                        line = fibreLines[line];
+                        var route = new fotech.map.FibreRoute(line.id,
+                            line.name,
+                            line.route,
+                            line.geoSpatialCalibrations);
+                        routes[line.id] = route;
+                        fibre_route_layer.addFibreRoute(route);
+                    }
+
+                    _map.zoomToBounds();
+
+                    // TODO: this subscription stuff probably needs to be moved off into its own space
+                    // need to handle a new marker, and also editing an old one
+                    // if this dialog is the only interface we provide, then we also need:
+                    // a) a delete option - say a button on the form
+                    // b) dialog title change (New / Edit)
+                    // c) need to store the rest of the information about the markers someplace (id, type etc)
+                    //    because the editor doesn't care about it so it doesn't store it - or else load from DB with a 'get' for existing
+                    //    markers - that's probably the most elegant, though not necessarily the fastest.
+                    // d) before hiding the form, except through the 'dismiss' button, prompt to save changes
+
+                    new_callback = function (id, location ) {
+                        admin.markers.newMarker(<%= @organization.id %>);
+                        // Note: this technically only needs to be called if the dialog object wass destroyed.
+                        marker_editor.setConnectorLineDialogDest(admin.markers._marker_dialog);
+
+                        // TODO:  before just replacing stuff in the form, prompt if it's going to over-write editted information
+                        // TODO:  also if current contents are a _new_ marker, shouldn't throw away unless dismiss is
+                        //        explicitly clicked.
+                        admin.markers._marker_dialog.populateFields(id, "", "", location.lat(), location.lon(), null);
+                    };
+
+                    moved_callback = function (id, location ) {
+                        //TODO: Only call this when the button icon is dropped...
+                        admin.markers.change_lat_lon_field(id, location, <%= @organization.id %>);
+                    };
+
+                    clicked_callback = function (id, location ) {
+                        //TODO: Create a dialog similar to the view given on index.html.erb for an individual marker ;
+                    };
+
+                    hide_callback = function (enabled) {
+                        if (!enabled && admin.markers._marker_dialog) {
+                            // TODO: before hiding, it would be nice to prompt if something has been editted
+                            admin.markers._marker_dialog.hide();
+                        }
+                    };
+                    marker_editor.subscribe(new_callback, moved_callback, clicked_callback, hide_callback);
+                });
+            }
+            else {
+                $('map').insert('<%= I18n.t('admin.fibre_lines.map_cal.no_view') %>');
+                <% unless APP_CONFIG['monitor']['map_provider'] == 'none' %>
+                    setMapUnavailableMessage();
+                <% end %>
+            }
+        </script>
+    <% end %>
+
+    <div id="map" style="height: 100%">
+    </div>
+<% end %>
+
+<%= render :partial => '/admin/update_form' %>
+<%= dialog_wrapper 'marker_new', :title => 'admin.markers.marker_new_dialog', :content => render(:partial => '/admin/markers/marker_form') %>

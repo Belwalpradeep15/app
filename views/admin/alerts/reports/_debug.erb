@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Hello</title>
+    </head>
+    <body>
+        <pre>
+            <% [ @outstanding_alerts, @daily_alerts, @alert_groups, @data ].each do | @datapoint | %>
+                <% if !@datapoint.blank? %>
+                    <pre><%=h JSON.pretty_generate( JSON[@datapoint.to_json()] ) %></pre>
+                <% end %>
+            <% end %>
+        </pre>
+    </body>
+</html>

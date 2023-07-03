@@ -1,0 +1,19 @@
+<% if !@data.blank? -%>
+<% titles = [] -%>
+<% @data.sort.each do | region, data | -%>
+<%= "Region," -%>
+<% data.sort.each do | date, count | -%>
+<% titles << date -%>
+<% end -%>
+<% break -%>
+<% end -%>
+<%= titles.collect{|x| "\"#{x}\""}.join(',') %>
+<% @data.sort.each do | region, data | -%>
+<% row = [] -%>
+<% row << region -%>
+<% data.sort.each do | date, count | -%>
+<% row << count -%>
+<% end -%>
+<%= row.collect{|x| "\"#{x}\""}.join(',') %>
+<% end -%>
+<% end -%>

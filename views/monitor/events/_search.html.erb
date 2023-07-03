@@ -1,0 +1,99 @@
+<%
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+-%>
+
+<% if @events.size > 0 %>
+    <table id='results' class='bordered'>
+        <tr>
+            <th style="width:10px"></th>
+            <th><%= I18n.t('common.headers.id') %></th>
+            <th><%= I18n.t('monitor.events.init_search.time_title') %></th>
+            <th><%= I18n.t('alert.detail_keys.event_type') %></th>
+            <th><%= I18n.t('alert.detail_keys.fibre_line_name') %></th>
+            <th><%= I18n.t('monitor.events.init_search.magnitude_title') %></th>
+            <th><%= I18n.t('monitor.events.init_search.width_title') %></th>
+            <th><%= I18n.t('monitor.events.init_search.velocity_title') %></th>
+            <th><%= I18n.t('common.acceleration') %></th>
+            <th><%= I18n.t('common.headers.distance') %></th>
+            <% unless @paths_all.blank? %>
+                <th><%= I18n.t("alert.detail_keys.path_path_name") %></th>
+                <th><%= I18n.t("alert.detail_keys.path_distance") %></th>
+            <% end %>
+            <th class="noprint"></th>
+        </tr>
+        <% @events.each do |event|
+             event_list = event.is_a?(Array) ? event : [event]
+             event_list.each_with_index do |ev, index|
+                   fl = @global_fibre_lines.select{|f| f.id == ev.fibre_line_id}.first
+                   dist = ev.position - fl[:zero_point]
+                   dist = convert(dist, 'm', @distance_units, 2)
+                   width = convert(ev.width, 'm', @distance_units, 2)
+                   velocity = convert(ev.velocity, 'm_s', @velocity_units, 2)
+                   acceleration = convert(ev.acceleration, 'm_s2', @acceleration_units, 2)
+                   event_type = @event_types.select{|e| e.id == ev.event_type_id}.first -%>
+                <% if index > 0 %>
+                    <tr class="track_<%=ev.event_track_id%>" style="display:none">
+                    <td style="border-width:0px"></td>
+                <% else %>
+                    <tr>
+                    <td>
+                        <% if event_list.length > 1 && ev == event_list.first %>
+                       		<img src="/images/show_list.png" id=<%="more_#{ev.event_track_id}"%> onclick=more_dropdown(<%="#{ev.event_track_id}"%>)>
+                       		<img src="/images/hide_list.png" id=<%="less_#{ev.event_track_id}"%> style="display:none" onclick=less_dropdown(<%="#{ev.event_track_id}"%>)>
+                        <% end %>
+                    </td>
+                <% end %>
+                <td><%= ev.id %></td>
+                <td nowrap='nowrap'><span id="localTime<%= ev.id %>"></span>
+					<script type="text/javascript">
+						var date = Date.parseXMLDateTime("<%= ev.time.xmlschema %>");
+						$('localTime<%= ev.id %>').update(date.format(Date.format.column, false));
+					</script>
+				</td>
+                <td nowrap='nowrap'><%= event_type.description %></td>
+                <td nowrap='nowrap'><%= fl.name %></td>
+                <td nowrap='nowrap'><%= (ev.amplitude.to_f * 100.0).round / 100.0 %></td>
+                <td nowrap='nowrap'><%= width %><%= @distance_units %></td>
+                <td nowrap='nowrap'><%= velocity %><%= @velocity_units.gsub('_','/') %></td>
+                <td nowrap='nowrap'><%= acceleration %><%= @acceleration_units.gsub('_','/') %></td>
+                <td nowrap='nowrap'><%= dist %><%= @distance_units %></td>
+                <% unless @paths_all.blank? %>
+                    <td nowrap="nowrap"><%= ev.tag("path_path_name") %></td>
+                    <td nowrap="nowrap"><%= "#{(convert(ev.tag("path_distance").to_f, 'm', @distance_units, @distance_precision))}" + "#{@distance_units}"  unless ev.tag("path_distance").nil? %></td>
+                <% end %>
+                <% unless params[:portal_request] %>
+                <td nowrap='nowrap' class='noprint'>
+                    <a href="javascript: window.opener.postEvent(<%= ev.id %>,<%= ev.fibre_line_id %>)"><%= I18n.t('monitor.events.init_search.post') %></a>
+                </td>
+                <% end %>
+            </tr>
+            <% end %>
+        <% end %>
+    </table>
+    <%= timezone_tag %>
+    <%= link_to image_tag('/images/download_csv-16x16.png') + " " + I18n.t('admin.fibre_region.download'), params.merge({:controller => 'monitor/events', :action => 'search', :format => 'csv'}) %>
+<% end %>
+
+<script type='text/javascript'>
+    resultCount = <%= @event_ids.size %>;
+    <% if @event_ids.size == 0 %>
+      alert('<%= I18n.t("common.no_records") %>');
+    <% elsif @event_ids.size > 100 %>
+        setStatusMessage('<%= I18n.t("common.records_found", :record_count => @event_ids.size) %>', null);
+    <% elsif @overLimit %>
+      var but = new Element('a', {'href': 'javascript: downloadWithNoLimit("<%= url_for params.merge({:controller => 'monitor/events', :action => 'search', :format => 'csv', :limit => ''})%>")'}).update('<%= I18n.t("monitor.events.init_search.download_all_results") %>');
+        setStatusMessage('<%= I18n.t("common.too_many_records", :count => @event_ids.size) %>&nbsp;&nbsp;', but);
+        eventIdsStr = "<%= @event_ids.join(",") %>";
+    <% else %>
+        setStatusMessage('<%= I18n.t("common.records_found", :record_count => @event_ids.size) %>', null);
+        eventIdsStr = "<%= @event_ids.join(",") %>";
+    <% end %>
+    enable();
+</script>

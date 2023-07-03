@@ -1,0 +1,38 @@
+<%#
+ FILENAME:     _splice_dialog.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   2013-02-19
+
+ LAST CHANGE:
+ $Author:  $
+   $Date:  $
+    $Rev:  $
+    $URL:  $
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+
+ Dialog used to add a new fibre line to the system.
+ %>
+
+<div id="splice_dialog" style="visibility: hidden;" class="noprint">
+    <div class="hd">
+        <%= I18n.t('admin.fibre_lines.splice_dialog.title') %>
+    </div>
+    <div class="bd">
+        <%= form_with :id => 'splice_form' do -%>
+            <table class="padded">
+                <tr>
+                    <th><%= I18n.t('common.headers.position') %></th>
+                    <td><%= text_field_tag 'raw_position', nil %> (<%= @distance_units %>)</td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.common.length') %></th>
+                    <td><%= text_field_tag 'raw_length', nil %> (<%= @distance_units %>)</td>
+                </tr>
+            </table>
+            <%= hidden_field_tag 'position', nil %>
+            <%= hidden_field_tag 'length', nil %>
+        <% end -%>
+    </div>
+</div>

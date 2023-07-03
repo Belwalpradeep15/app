@@ -1,0 +1,110 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2009-12-13
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:colourchooser, :have_layout] %>
+        <% "For reasons I don't understand the fotech_gui_setup_tag cannot be cached
+            for this page. This seems to be the case for all the admin index pages. (Steve)"
+         -%>
+    <%= javascript_include_tag \
+            'admin/admin.js',
+            'admin/preferences.js',
+            :cache => "__admin_preferences_index" %>
+    <%= stylesheet_link_tag \
+            'admin/preferences.css',
+            :cache => "__admin_preferences_index" %>
+<% end %>
+
+<%= render :partial => '/admin/update_form' %>
+
+<% @preference_defs.each do |section| %>
+    <div id="<%= section[:id] %>" class="preference_section">
+        <table class="noborder">
+            <tr><th colspan="2"><%= I18n.t("prefs.section.#{section[:id]}.label") %></th></tr>
+            <% section[:preferences].each do |pref| %>
+                <tr id="row_<%= pref[:key] %>">
+                    <% if pref[:type] == 'boolean' %>
+                        <td class="noborder" nowrap="nowrap" colspan="2">
+                            <% should_be_checked = pref[:value] == 'true' %>
+                            <%= check_box_tag "#{pref[:key]}", 1, should_be_checked,
+                                :onchange => "admin.changeField(prefixOrPortal('/admin') + '/preferences', '#{pref[:key]}', '#{pref[:key]}', (this.checked ? 'true' : 'false'))" %>
+                                <%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.label") %>
+                        </td>
+                    <% elsif pref[:type] == 'list' %>
+                        <td class="noborder" nowrap="nowrap"><%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.label") %>:</td>
+                        <td class="noborder" nowrap="nowrap">
+                            <select id="<%= pref[:key] %>" name="<%= pref[:key] %>"
+                                onchange="admin.changeField(prefixOrPortal('/admin') + '/preferences', '<%= pref[:key] %>', '<%= pref[:key] %>', this.value)">
+                                <% pref[:values].each do |val| %>
+                                    <% selected = "" %>
+                                    <% selected = 'selected="selected"' if val[:value] == pref[:value] %>
+                                    <option value="<%= val[:value] %>" <%= selected %>>
+                                      <%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.#{val[:value]}") %>
+                                    </option>
+                                <% end %>
+                            </select>
+                        </td>
+                    <% elsif pref[:type] == 'dynamic_list' %>
+                        <td class="noborder" nowrap="nowrap"><%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.label") %>:</td>
+                        <td class="noborder" nowrap="nowrap">
+                            <select id="<%= pref[:key] %>" name="<%= pref[:key] %>"
+                                onchange="admin.changeField(prefixOrPortal('/admin') + '/preferences', '<%= pref[:key] %>', '<%= pref[:key] %>', this.value)">
+                                <% pref[:values].each do |val| %>
+                                    <% selected = "" %>
+                                    <% selected = 'selected="selected"' if val[:value] == pref[:value] %>
+                                    <option value="<%= val[:value] %>" <%= selected %>>
+                                      <%= optional_i18n val[:label] %>
+                                    </option>
+                                <% end %>
+                            </select>
+                        </td>
+                    <% elsif pref[:type] == 'colour' %>
+                        <td class="noborder" nowrap="nowrap"><%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.label") %>:</td>
+                        <td class="nobroder" nowrap="nowrap">
+                            <%= fotech_colour pref[:key], pref[:value] %>
+                            <script type="text/javascript">
+                                $('<%= pref[:key] %>').observe('color:set', function(ev) {
+                                    admin.changeField(prefixOrPortal('/admin') + '/preferences', '<%= pref[:key] %>', '<%= pref[:key] %>', ev.memo.color);
+                                    });
+                            </script>
+                        </td>
+                    <% elsif pref[:type] == 'integer' %>
+                        <td class="noborder" nowrap="nowrap"><%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.label") %>:</td>
+                        <td>
+                            <%= text_field_tag pref[:key],  pref[:value],
+                                :onchange => "if(admin.validIntegerPrefField(this)) admin.changeField(prefixOrPortal('/admin') + '/preferences', '#{pref[:key]}', '#{pref[:key]}', this.value)" %>
+                        </td>
+                      <% elsif pref[:type] == 'float' %>
+                        <td class="noborder" nowrap="nowrap"><%= I18n.t("prefs.section.#{section[:id]}.#{pref[:key]}.label") %>:</td>
+                        <td>
+                            <%= text_field_tag pref[:key],  pref[:value],
+                                :onchange => "if(admin.validFloatPrefField(this)) admin.changeField(prefixOrPortal('/admin') + '/preferences', '#{pref[:key]}', '#{pref[:key]}', this.value)" %>
+                        </td>
+                      <% else %>
+                        <%= pref[:label] %>
+                    <% end %>
+                </tr>
+            <% end %>
+        </table>
+    </div>
+<% end %>
+
+<br/>
+<center>
+    <button type="button" onclick="admin.preferences.resetToDefaults()"><%= I18n.t('prefs.reset') %></button>
+    &nbsp;&nbsp;&nbsp;
+    <button type="button" onclick="window.close()"><%= I18n.t('prefs.close') %></button>
+</center>
+

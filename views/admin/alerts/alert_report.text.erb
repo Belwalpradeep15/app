@@ -1,0 +1,28 @@
+<%
+# FILENAME:     alert_report.text.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-12-03
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+<% @alert_groups.each_pair do |title, value|
+    alerts = value[:alerts]
+    startTime = value[:start_time]
+    endTime = value[:end_time]
+-%>
+<%= title %><%= " for #{startTime.strftime('%Y-%m-%d %H:%M:%S')} - #{endTime.end_of_day.strftime('%Y-%m-%d %H:%M:%S')}" if startTime %>
+------------------------------------------------------------------------------------------------------------------
+Id        Time                Type                 Threat Status         Acknowledged
+------------------------------------------------------------------------------------------------------------------
+<% alerts.each do |a| -%>
+<%= a.id.to_s.ljust(10) %><%= a.time.strftime('%Y-%m-%d %H:%M:%S').ljust(20) %><%= a.description.ljust(21) %><%= I18n.t('alert.threat_level.'+(a.threat_level || 'none')).ljust(7)%><%= I18n.t('alert.status.' + a.status).ljust(15) %><%= a.time_acknowledged.strftime('%Y-%m-%d %H:%M:%S') if a.time_acknowledged %><%= "#{I18n.t('admin.alerts.headers.by')} #{a.acknowledged_by}" if a.acknowledged_by %>
+<% end -%>
+
+<% end -%>

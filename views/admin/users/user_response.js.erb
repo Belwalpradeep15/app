@@ -1,0 +1,24 @@
+<%#
+ FILENAME:     user_response.js.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   2009-11-30
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% if @error %>
+    alert('The system was not able to update the database.\nError: <%= escape_javascript(@error.to_s) %>');
+    fotech.gui.FotechDialog.clearBusyState('user_dialog');
+<% else %>
+	window.location.reload(true);
+<% end %>
+
+
+

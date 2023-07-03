@@ -1,0 +1,76 @@
+<%
+# FILENAME:     _activeAlerts.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-09-22
+#
+# LAST CHANGE:
+# $Author:$
+#   $Date:$
+#    $Rev:$
+#    $URL:$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% isFixed ||= false
+   options ||= {}
+   dialogLocations = options['dialogLocations'] || "[['content','tl','tl'],['content','br','br']]"
+   height = options['height'] || '300px'
+   threatLevelsToPopup = SystemPreference.where("key like 'alerts-show-%' and value = 'icons-and-dialogs'").collect{|x| x.key.gsub(/alerts-show-/,'')}
+   threatLevelsToShow = SystemPreference.where("key like 'alerts-show-%' and value in ('icons-and-list','icons-and-dialogs')").collect{|x| x.key.gsub(/alerts-show-/,'')}
+
+%>
+
+
+<div id="multiple_alerts_dialog">
+    <div class="hd">
+        <%= I18n.t('admin.alerts.title') %>
+    </div>
+    <div class="bd legend" style="height:<%= height %>;overflow-y:auto;">
+        <ul>
+            <li>
+                <legend><%= I18n.t('admin.alerts.title_today') %></legend>
+                <ul class="coreDateMarker" data-core-mad data-core-days-away=0></ul>
+            </li>
+            <li>
+                <legend><%= I18n.t('admin.alerts.title_yesterday') %></legend>
+                <ul class="coreDateMarker" data-core-mad data-core-days-away=1></ul>
+            </li>
+            <li>
+                <legend><%= I18n.t('admin.alerts.title_older') %></legend>
+                <ul class="coreDateMarker" data-core-mad data-core-days-away=2></ul>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<% content_for :head do %>
+    <%= javascript_include_tag 'alerts_dialog.js' %>
+    <%= javascript_include_tag 'fotech/common_util/debounce.js' %>
+
+<% end %>
+
+<script>
+    var active_alerts_dialog = new AlertsDialog('multiple_alerts_dialog', {isFixed: <%= isFixed ? 'true' : 'false' %>,
+        dialogLocations:<%= dialogLocations.html_safe %> ,
+        alertTypes:alertTypes,
+        threatLevelsToShow:[<%= threatLevelsToShow.collect{|x| "'#{x}'"}.join(',').html_safe %>],
+        threatLevelsToPopup:[<%= threatLevelsToPopup.collect{|x| "'#{x}'"}.join(',').html_safe %>],
+        tearoff: <%= @tearoff || 'false' %>,
+        noAdd: <%= @noAdd ? 'true': 'false' %>
+    });
+
+    function populateAlarmList(){
+        var alertList = [];
+        /* Avoid including any alerts by default and instead post populate them
+         * via Ajax/REST call as this avoids problems regarding aggregate panoptes
+         * boxes not having access to the remotely generatated and hosted alerts
+         * via the local database, it also speeds up rendering the portal */
+        FotechRest.alerts( function(){} );
+    }
+    window.addEventListener( 'vueLoaded', function(){
+        console.log( 'App is loaded, populating alarm list' );
+        populateAlarmList();
+    });
+</script>

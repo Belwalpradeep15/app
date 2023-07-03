@@ -1,0 +1,18 @@
+<%#
+ FILENAME:     update.js.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   10-09-07
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% if @error %>
+    alert('The system was not able to update the database.\nError: <%= escape_javascript(@error.to_s) %>');
+<% end %>

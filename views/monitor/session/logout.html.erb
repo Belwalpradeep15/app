@@ -1,0 +1,17 @@
+<% content_for :head do %>
+    <%= javascript_include_tag 'fotech/common_util/cookies.js' %>
+<% end %>
+
+<p>
+  <%= I18n.t('main.logout.message', :path => (link_to(I18n.t('main.logout.path_description'), :controller => "main", :action => "index"))) %>
+</p>
+
+<% if @includeScript %>
+   <script type="text/javascript">
+       onLoad = function() {
+           var cookies = new fotech.util.Cookies(document);
+           cookies.removeAll();
+           window.location = "/";
+       }
+   </script>
+<% end %>

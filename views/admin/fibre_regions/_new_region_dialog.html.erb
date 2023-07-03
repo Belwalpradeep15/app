@@ -1,0 +1,44 @@
+<%
+# FILENAME:     _new_region_dialog.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-10-06
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+        <%= form_with :id => 'new_region_form' do -%>
+            <%= hidden_field :fibre_region, :fibre_region_type_id, :value => @region_types.select{|t|t.name == 'user'}.first.id%>
+            <table class="padded">
+                <tr>
+                    <th><%= label :fibre_region, :description, I18n.t('common.headers.description') %> </th>
+                    <td><%= text_field :fibre_region, :description %></td>
+                </tr>
+                <!-- only one type for now
+                <tr>
+                    <th><%= label :fibre_region, :fibre_region_type_id, I18n.t('admin.fibre_region.fibre_region_type') %></th>
+                    <td><%= select :fibre_region, :fibre_region_type_id,
+                        @region_types.collect{|t| [I18n.t("admin.fibre_region_type.#{t.name}"), t.id]},
+                        {:include_blank => true}%></td>
+                </tr>
+                -->
+                <tr>
+                    <th><%= label :fibre_region, :starting_position, I18n.t('admin.fibre_region.starting_position') %></th>
+                    <td><%= text_field :fibre_region, :starting_position %></td>
+                </tr>
+                <tr>
+                    <th><%= label :fibre_region, :ending_position, I18n.t('admin.fibre_region.end') %></th>
+                    <td><%= text_field :fibre_region, :ending_position %><%= hidden_field :fibre_region, :length%></td>
+                </tr>
+            </table>
+        <% end -%>
+
+
+
+

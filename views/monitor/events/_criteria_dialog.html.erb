@@ -1,0 +1,105 @@
+<div id="criteria_dialog" class="noprint">
+    <div class="hd">
+        <%= I18n.t('admin.alerts.search_dialog.title') %>
+    </div>
+    <div class="bd">
+        <%= form_with :id => 'criteria_form' do -%>
+            <%= hidden_field_tag 'tz_offset'%>
+            <script>
+                $('tz_offset').value = new Date().getTimezoneOffset();
+            </script>
+            <%= hidden_field_tag 'currentLineId' %>
+            <%= hidden_field_tag 'spatialBounds' %>
+            <%= hidden_field_tag 'depthBounds' %>
+            <%= hidden_field_tag 'fibreLineIds' %>
+            <%= hidden_field_tag 'selectedEventTypeIds' %>
+            <%= hidden_field_tag 'startTimeXml' %>
+            <%= hidden_field_tag 'endTimeXml' %>
+
+            <table class="nospace">
+                <tr>
+                    <td id='currentLineCheckbox'>
+                        <%= check_box_tag "restrictToCurrentFibreLine" %>
+                        <%= label_tag "restrictToCurrentFibreLine", I18n.t('monitor.events.filters.restrict_fibre') %> <span id='fibreLineName'></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td id='spatialCheckbox'>
+                        <%= check_box_tag "restrictToSpatialFilter" %>
+                        <%= label_tag "restrictToSpatialFilter", I18n.t('monitor.events.filters.restrict_spatial') %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='bordered'>
+                        <table class='nospace'>
+                            <tr>
+                                <td>
+                                    <%= check_box_tag 'restrictTime', "1", false, :onchange=>"jssearch.enable()" %>
+                                    <%= label_tag "restrictTime", I18n.t('monitor.events.init_search.restrict_date') %>
+                                </td>
+                            </tr>
+                            <tr id='timeRow'>
+                                <td>
+                                    <%= label_tag "startTimeId", I18n.t('monitor.events.init_search.date_time_min')%>
+                                    <%= fotech_calendar 'startTime', I18n.t('admin.alerts.search_dialog.select_min_date')%>
+                                    <%= label_tag "endTimeId", I18n.t('monitor.events.filters.max')%>
+                                    <%= fotech_calendar 'endTime', I18n.t('admin.alerts.search_dialog.select_max_date')%>
+                                </td>
+                            </tr>
+                            <tr id="timeFormatRow">
+                                <td style="font-size:x-small"><em><%= t 'common.time.format' %></em></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='bordered'>
+                        <table class='nospace'>
+                            <tr>
+                                <td>
+                                    <%= check_box_tag 'restrictId', "1", !params[:alertId].nil? || !params[:eventId].nil?, :onchange=>"jssearch.enable()" %>
+                                    <%= label_tag "restrictId", I18n.t('admin.alerts.search_dialog.restrict_by_id') %>
+                                </td>
+                            </tr>
+                            <tr id='restrictIdRow'>
+                                <td>
+                                    <%= I18n.t('alert.detail_keys.alert_id') %>
+                                    <%= text_field_tag 'alertId', params[:alertId], {:style => "width:75px"} %>
+                                    <%= I18n.t('monitor.events.filters.event_id') %>
+                                    <%= text_field_tag 'eventId', params[:eventId], {:style => "width:75px"} %>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='bordered'>
+                        <%= render :partial => 'on_route_filter' %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='bordered'>
+                        <%= render :partial => 'event_type_filter' %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class='bordered'>
+                        <%= render :partial => 'magnitude_filter' %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= check_box_tag "includeSuppressedEvents" %>
+                        <%= label_tag "includeSuppressedEvents", I18n.t('monitor.events.filters.include_suppressed') %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= I18n.t('monitor.events.init_search.limit') %>
+                        <%= text_field_tag 'limit', params[:limit] || 100, {:style => "width:50px;"} %>
+                    </td>
+                </tr>
+            </table>
+        <% end -%>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+<%
+# FILENAME:     _legend.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-08-18
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+<% menu ||= nil
+   isFixed ||= false %>
+<div id="legend">
+</div>
+<script type="text/javascript">
+    <% if menu %>
+        var __monitorLegendMenuItemName = "<%= menu %>";
+    <% end %>
+    var __monitorLegendFixedBox = <%= isFixed %>;
+</script>
+<%= javascript_include_tag 'monitor/legend.js' %>
+
+

@@ -1,0 +1,31 @@
+	<style type="text/css">
+		div.error_dialog {
+			width: 25em;
+			padding: 0 4em;
+			margin: 4em auto 0 auto;
+			border: 1px solid #f00;
+      background-color: #F2F2F2;
+		}
+		h1 { font-size: 100%; color: #f00; line-height: 1.5em; }
+	</style>
+
+  <div id="error_dialog" class="error_dialog">
+    <h1><%= I18n.t('errors.five_hundred.header') %></h1>
+    <p><%= I18n.t('errors.five_hundred.message2', :email => mail_to(APP_CONFIG["repository"]["support_email"],
+                                                                    nil,
+                                                                    :encode => 'hex',
+                                                                    :subject => "Repository Error, Reference Code: #{@reference_code}"))  %>
+    </p>
+    <p><small>Error reference code: <%= @reference_code || '-' %></small></p>
+    <p><small><%= link_to "Click here to logout", "/monitor/session/logout"%></small></p>
+	<% if dismiss_button %>
+      <p>
+        <center>
+          <%=
+            # Todo: Replace this with button_tag, as button_to_function is not available in rails 522.
+            #button_to_function(I18n.t('common.button.dismiss')) {|page| page.hide "error_dialog"}
+          %>
+        </center>
+      </p>
+    <% end %>
+  </div>

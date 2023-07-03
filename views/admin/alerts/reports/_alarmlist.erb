@@ -1,0 +1,23 @@
+<% render :partial => '/admin/alerts/reports/alarmlist_preprocess' -%>
+<% content_for :content do %>
+<section class="alarmslist">
+    <table>
+        <thead>
+            <tr>
+            <% @processed_data[:titles].each do | title | %>
+                <th><%= title %></th>
+            <% end %>
+            </tr>
+        </thead>
+        <tbody>
+            <% @processed_data[:data].each do | alarm | %>
+            <tr>
+                <% alarm.each do | column | %>
+                    <td><%= column %></td>
+                <% end %>
+            </tr>
+            <% end %>
+        </tbody>
+    </table>
+</section>
+<% end %>

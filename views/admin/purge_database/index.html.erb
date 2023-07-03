@@ -1,0 +1,62 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2011-01-10
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2011 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:menu, :have_layout] %>
+    <%= javascript_include_tag \
+        'admin/purge_database.js',
+        :cache => "__admin_purge_database_index" %>
+    <%= stylesheet_link_tag \
+        'mainDisplay',
+        :cache => "__admin_purge_database_index" %>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() { <%= MenuRenderer.menu_javascript(@menu) %> });
+</script>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<%= form_with do %>
+    <table>
+        <caption><%= I18n.t('admin.purge_database.title') %></caption>
+        <thead><tr></tr></thead>
+        <tbody>
+            <tr>
+                <td><%= check_box_tag "purge_events" %></td>
+                <td><%= I18n.t('common.headers.events') %></td>
+            </tr>
+            <tr>
+                <td><%= check_box_tag "purge_alerts" %></td>
+                <td><%= I18n.t('admin.purge_database.alerts') %></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <%= I18n.t('admin.purge_database.older_than') %>
+                    <input type="text" name="older_than" id="older_than" size="8" value="30"/>
+                    <%= I18n.t('admin.purge_database.days') %>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <%= submit_tag I18n.t('admin.purge_database.begin'), :id => 'begin_purge_button', :onclick =>"javascript: admin.purge_database.begin(this.form); return false;" %>
+    <br />
+    <span id="response"></span>
+<% end %>
+
+

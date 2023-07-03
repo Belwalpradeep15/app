@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+ FILENAME:     fullpage.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-12-29
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+
+ This layout is used for pages that are not tiled into sections but should be treated
+ as one large document.
+ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <title><%= (@title ? @title : "Fotech Solutions Monitor Web Application") %></title>
+        <link rel="stylesheet" href="/fontawesome-free-5.0.6/on-server/css/fontawesome-all.min.css" crossorigin="anonymous">
+        <%= javascript_include_tag :cache => "__layout_fullpage" %>
+        <%= stylesheet_link_tag "layout.css", "common.css", :media => "all" %>
+
+        <%= yield :head %>
+    </head>
+    <body class="panoptes yui-skin-sam">
+        <div id="vuepart" data-token="<%= @api_auth_token %>" data-product="panoptes"></div>
+        <%= javascript_include_tag "coreui.js" %>
+        <%= yield :body_top %>
+        <div id="header">
+            <%= fotech_banner_tag %>
+        </div>
+        <div id="content">
+            <%= yield %>
+        </div>
+        <div id="footer">
+            <%= fotech_statusbar_tag %>
+        </div>
+        <%= yield :body_bottom %>
+    </body>
+</html>
+
+

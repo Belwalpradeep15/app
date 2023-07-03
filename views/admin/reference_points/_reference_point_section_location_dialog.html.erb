@@ -1,0 +1,48 @@
+<%
+# FILENAME:     _reference_point_section_location_dialog.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-09-12
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% if @section_diagrams.empty? %>
+    <%= I18n.t('admin.reference_points.reference_point_section_location_dialog.nothing_to_see') %>
+<% else %>
+    <%= form_with :url => edit_section_location_admin_organization_reference_point_url(@organization,@reference_point), :id => 'reference_point_section_location_form' do -%>
+        <%= select :dummy, :section_diagrams, @section_diagrams.collect{|d| [d.filename, d.id] }, {},
+                    {:onchange => 'admin.ReferencePointSectionLocationDialog.switchDiagram(this)'}%>
+        <% @section_diagrams.each_with_index do |diagram, index|%>
+            <%  location = @section_locations.select{|l| l.document_id == diagram.id}.first
+                xoffset = location.x_offset rescue 'null'
+                yoffset = location.y_offset rescue 'null'%>
+            <div id="section_diagram_<%= diagram.id %>" class="section_diagram_div" style="<%= 'display:none' unless index == 0 %>">
+                <div class="diagram_container" style="position:relative;">
+                    <img id="diagram_image_<%= diagram.id %>" src="/admin/fibre_lines/<%= diagram.fibre_lines.first.id %>/section_image"
+                        style="max-height:500px;max-width:500px;"
+                        onclick="admin.ReferencePointSectionLocationDialog.imageClicked(<%=diagram.id%>, event);"
+                        onload="admin.ReferencePointSectionLocationDialog.imageOnload(<%=diagram.id%>, <%=xoffset%>,<%=yoffset%>)"/>
+                    <img id="reference_point_icon_<%=diagram.id%>" src="/images/fotech/common_gui/reference_point-16x16.png" style='position:absolute;<%= "display:none" if location.nil?%>'/>
+                </div>
+
+                <%= hidden_field_tag "x_offset_#{diagram.id}", xoffset %>
+                <%= hidden_field_tag "y_offset_#{diagram.id}", yoffset %>
+                <div style="text-align:center">
+                    <button type="button" id="reference_point_icon_clear_<%= diagram.id%>" onclick="admin.ReferencePointSectionLocationDialog.clearReferencePointFrom(<%=diagram.id%>);">
+                        <%= I18n.t('admin.common.clear_from_diagram') %>
+                    </button>
+                </div>
+            </div>
+        <% end %>
+    <% end %>
+<% end %>
+
+
+

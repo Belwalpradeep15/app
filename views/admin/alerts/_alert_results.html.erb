@@ -1,0 +1,153 @@
+<%#
+ FILENAME:     _alert_results.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   10-09-21
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+
+<% if @alerts.size == 0 %>
+<p><%= @no_alert_message %></p>
+<% else %>
+
+<table class="bordered">
+    <caption>
+        <% if @showAll %>
+            <%= I18n.t('admin.alerts.title_all') %>
+        <% else %>
+            <%= I18n.t('admin.alerts.title') %>
+        <% end %>
+    </caption>
+    <tr>
+        <% if can?(:acknowledge, :alerts) or can?(:respond, :alerts) or can?(:manage, :alerts) %>
+            <th rowspan="2"><%= check_box_tag :check_all_top, 1, false, :onclick => "admin.alerts.toggleAllCheckboxes(this);" %></th>
+        <% end %>
+        <th rowspan="2"><%= I18n.t('common.headers.id') %></th>
+        <th rowspan="2"><%= I18n.t('admin.alerts.headers.time') %></th>
+        <th rowspan="2"><%= I18n.t('common.headers.type') %></th>
+        <th rowspan="2"><%= I18n.t('admin.alerts.headers.threat_level') %></th>
+        <th rowspan="2"><%= I18n.t('admin.alerts.headers.highest_threat_level') %></th>
+        <th rowspan="2"><%= I18n.t('common.headers.status') %></th>
+        <% if !@regions.empty? %>
+        	<th rowspan="2"><%= I18n.t('admin.alerts.headers.region') %></th>
+        <% end %>
+        <% unless @paths_all.blank? %>
+            <th rowspan="2"><%= I18n.t("alert.detail_keys.path_path_name") %></th>
+            <th rowspan="2"><%= I18n.t("alert.detail_keys.path_distance") %></th>
+        <% end %>
+        <th colspan="2"><%= I18n.t('alert.status.acknowledged') %></th>
+        <!-- comment column header
+        <th colspan="2"><%= I18n.t('admin.alerts.headers.commented') %></th>
+        -->
+        <% unless params[:portal_request] %>
+        <th rowspan="2" class="noprint"><%= I18n.t('common.headers.events') %></th>
+        <% end %>
+
+        <th rowspan="2" class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <tr>
+        <th><%= I18n.t('admin.alerts.headers.on1') %></th>
+        <th><%= I18n.t('admin.alerts.headers.by') %></th>
+        <!-- comment column headers
+        <th><%= I18n.t('admin.alerts.headers.on1') %></th>
+        <th><%= I18n.t('admin.alerts.headers.by') %></th>
+        -->
+    </tr>
+    <% @alerts.each do |a| %>
+        <tr id='row_<%= a.id %>' class="threat_level_<%=a.threat_level%>">
+            <% if can?(:acknowledge, :alerts) or can?(:respond, :alerts) or can?(:manage, :alerts) %>
+                <td><%= check_box_tag "alert_list[]", a.id, false, :class => "select_check_box", :'data-uuid' => a.uuid %></td>
+            <% end %>
+            <td><%= a.id %></td>
+            <td><span id="localTime_<%= a.id %>" class="as_localtime"><%= a.time.xmlschema %></span></td>
+            <td><%= a.description %></td>
+            <td><%= I18n.t('alert.threat_level.' + (a.threat_level || 'none')) %></td>
+            <td><%= I18n.t('alert.threat_level.' + ((a.red_time && 'red') || (a.amber_time && 'amber') || (a.green_time && 'green') || 'none')) %></td>
+            <td><%= I18n.t('alert.status.' + a.status) %></td>
+            <% if !@regions.empty? %>
+            	<td><%= a.regions.join(", ") %></td>
+            <% end %>
+            <%  unless @paths_all.blank? %>
+                <td ><%= a.detail("path_path_name") %></td>
+                <td ><%= "#{convert(a.detail("path_distance").to_f, 'm', @distance_units, @distance_precision)}" + "#{@distance_units}" unless a.detail("path_distance").nil? %></td>
+            <% end %>
+            <td><span id="localAckedOn_<%= a.id %>" class="as_localtime"><%= a.time_acknowledged.xmlschema if a.time_acknowledged %></span></td>
+            <td><%= a.acknowledged_by %></td>
+            <!-- comment columns
+            <td><span id="localCommentedOn_<%= a.id %>"></span></td>
+            <td><%= a.last_commented_by %></td>
+            -->
+            <% unless params[:portal_request] %>
+            <td class="nopring" nowrap="nowrap">
+                <% if a.event_count.to_i > 0 %>
+                <!--% if a.events.count > 0 %-->
+                <a href='javascript: fotech.gui.rootOpener().openEventSearchWindowForAlert(<%=a.id%>,<%= raw params[:search].to_json %>)'><%= I18n.t('main.menu.view.title')%></a>
+                <a href='javascript: fotech.gui.rootOpener().downloadEventsForAlert(<%=a.id%>,<%= raw params[:search].to_json %>)'><%= I18n.t('admin.alerts.buttons.download_events')%></a>
+                <% else %>
+                --
+                <% end %>
+            </td>
+            <% end %>
+
+            <td class="noprint" nowrap="nowrap">
+                <%= image_tag('view-16x16.png', :class => 'image_link',
+                        :alt => I18n.t('common.button.view', :name => a.id),
+                        :title => I18n.t('common.button.view', :name => a.id),
+                        :onclick => "viewAlertWindow(#{a.id})") %>
+                <% if can? :acknowledge, :alerts %>
+                    <%= image_tag('acknowledge-16x16.png', :class => "image_link #{a.status == 'new' ? '' : 'disabled'}",
+                        :alt => I18n.t('admin.alerts.buttons.acknowledge', :name => a.id),
+                        :title => I18n.t('admin.alerts.buttons.acknowledge', :name => a.id),
+                        :onclick => "localNewResponse(#{a.id}, '#{a.name}', 'acknowledge', #{a.status == 'new' ? true : false})") %>
+                <% end %>
+                <% if can? :respond, :alerts %>
+                    <!-- add comment button
+                    <%= image_tag('comment_add-16x16.png', :class => "image_link #{a.status == 'resolved' ? 'disabled' : ''}",
+                        :alt => I18n.t('common.button.comment', :name => a.id),
+                        :title => I18n.t('common.button.comment', :name => a.id),
+                        :onclick => "localNewResponse(#{a.id}, '#{a.name}', 'comment', #{a.status == 'resolved' ? false : true})") %>
+                    -->
+                    <%= image_tag('dismiss-alert-16x16.png', :class => "image_link #{a.status == 'resolved' ? 'disabled' : ''}",
+                        :alt => I18n.t('admin.alerts.buttons.resolve', :name => a.id),
+                        :title => I18n.t('admin.alerts.buttons.resolve', :name => a.id),
+                         :onclick => "localNewResponse(#{a.id}, '#{a.name}', 'resolve', #{a.status == 'resolved' ? false : true})") %>
+               <% end %>
+                <% if can? :manage, :alerts %>
+                    <%= image_tag('fotech/common_gui/delete-16x16.png',
+                        :class => 'image_link',
+                        :alt => I18n.t('common.button.delete', :name => a.id),
+                        :title => I18n.t('common.button.delete', :name => a.id),
+                        :style => "padding-left: 8px;",
+                        :onclick => "admin.deleteRecord('#{params[:portal_request] ? '/portal/alerts/delete' : '/admin/alerts'}', #{a.id})") %>
+                <% end %>
+            </td>
+        </tr>
+        <script type="text/javascript">
+            //Date.fixDate("localCommentedOn_<%= a.id %>", "<%= Time.parse(a.last_commented_on + "Z").xmlschema if a.last_commented_on %>");
+        </script>
+    <% end %>
+</table>
+<%= render :partial => '/admin/alerts/reports/pagination', :locals => { :count => @alerts[0].alert_count } %>
+
+<% if can? :manage, :alerts %>
+    <%= submit_tag 'delete_all', :value => I18n.t('common.button.delete_selected'), :onclick => "admin.alerts.massDelete()" %>
+<% end %>
+<% if can? :acknowledge, :alerts %>
+    <%= submit_tag 'acknowledge_all', :value => I18n.t('common.button.acknowledge_selected'), :onclick => "admin.alerts.massResponse('acknowledge',#{@alerts_require_comment_text})" %>
+<% end %>
+<% if can? :respond, :alerts %>
+    <%= submit_tag 'resolve_all', :value => I18n.t('common.button.resolve_selected'), :onclick => "admin.alerts.massResponse('resolve',#{@alerts_require_comment_text})" %>
+<% end %>
+<br />
+<% #the odd url forming is because using the params (similar to the events download link) would, for some bizarre reason, insert a & right after the ? which caused the csv file to load no matter what the headers were set to, and only when refreshing the loaded csv did it download automatically. %>
+<%= link_to image_tag('/images/download_csv-16x16.png') + " " + I18n.t('admin.fibre_region.download'), "#", {:onclick => "downloadAlertCSV('#{@csv_link}&tz_offset='+new Date().getTimezoneOffset()); return false;"} %>
+
+<% end %>

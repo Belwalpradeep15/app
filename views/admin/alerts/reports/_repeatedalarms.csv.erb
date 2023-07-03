@@ -1,0 +1,5 @@
+<% render :partial => '/admin/alerts/reports/repeatedalarms_preprocess' -%>
+<%= @processed_data[:titles].collect{|x| "\"#{x}\""}.join(',') %>
+<% @processed_data[:data].each do | alarm | -%>
+<%= alarm.collect{|x| '"'+ x.to_s.split("::")[0].to_s.gsub(/"/,'""') +'"'}.join(',') %>
+<% end -%>

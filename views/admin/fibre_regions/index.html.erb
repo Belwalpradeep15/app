@@ -1,0 +1,144 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-10-06
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :colourchooser, :dialog, :menu, :have_layout] %>
+
+    <%= javascript_include_tag \
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            'fotech/common_gui/form.js',
+            'fotech/common_gui/windows.js',
+            'admin/fibre_regions.js',
+            'admin/markers.js',
+            'admin/new_fibre_region_dialog.js',
+            'admin/fibre_region_properties_dialog.js',
+            :cache => "__admin_fibre_region_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', :cache => "__admin_fibre_region_index" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        fotech.gui.initEditableFields(admin.fibre_regions.editableFieldChanged);
+        });
+
+<% if flash[:error] %>
+   alert("<%=flash[:error]%>");
+<% end %>
+</script>
+
+
+<div style="padding:5px;margin:5px;border:1px solid black;width:25%">
+    <%= I18n.t('admin.fibre_region.fibre_line_details', :fibre_name => @fibre_line.name) %>
+    <table>
+        <tr>
+            <th><%= I18n.t 'admin.fibre_lines.zero_head', :units => @distance_units %></th>
+            <td>
+                <%= convert @fibre_line.get_zero_point , 'm', @distance_units, @distance_precision %>
+                <%= hidden_field_tag 'fibre_zero_point', @fibre_line.get_zero_point %>
+            </td>
+        </tr>
+        <tr>
+            <th><%= I18n.t 'common.active_length', :units => @distance_units %></th>
+            <td>
+                <% physicalFibreLength = @fibre_line.get_physical_fibre_length %>
+                <%= convert physicalFibreLength, 'm', @distance_units, @distance_precision %>
+                <%= hidden_field_tag 'fibre_active_length', physicalFibreLength %>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<table class="bordered">
+<caption>
+<%= I18n.t('admin.fibre_region.header', :fibre_name => @fibre_line.name) %>
+</caption>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.description') %></th>
+        <!-- <th><%= I18n.t('admin.fibre_region.type') %></th> only one type for now-->
+        <th><%= I18n.t('admin.fibre_region.starting_position') %> (<%= @distance_units %>)</th>
+        <th><%= I18n.t('admin.fibre_region.end') %> (<%= @distance_units %>)</th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <% @regions.each do |region| %>
+        <tr id='row_<%= region.id %>'>
+            <td><%= region.id %></td>
+            <td nowrap="nowrap" id='description_<%= region.id %>' class='editable'><%= region.description %></td>
+            <td nowrap="nowrap" id='starting_position_<%= region.id %>' class='editable'><%= convert region.starting_position, 'm', @distance_units, @distance_precision %></td>
+            <td nowrap="nowrap" id='ending_position_<%= region.id %>' class='editable'><%= convert region.ending_position, 'm', @distance_units, @distance_precision %></td>
+            <td>
+                <%= image_tag('edit-16x16.png',
+                              :alt => I18n.t('common.button.edit_properties', :name => I18n.t('admin.alerts.headers.region')),
+                              :title => I18n.t('common.button.edit_properties', :name => I18n.t('admin.alerts.headers.region')),
+                              :class => 'image_link',
+                              :onclick => "controller.editFibreRegionProperties(#{@fibre_line.id}, #{region.id})") %>
+
+                <%= link_to "javascript:admin.deleteRecord('/admin/fibre_lines/#{@fibre_line.id}/fibre_regions', #{region.id})", :confirm => I18n.t('common.confirm_delete', :name => region.description) do -%>
+                    <%= image_tag('fotech/common_gui/delete-16x16.png', :class => 'image_link',
+                                  :alt => I18n.t('common.button.delete', :name => region.description),
+                                  :title => I18n.t('common.button.delete', :name => region.description),
+                                  :style => "padding-left: 8px;") %>
+                <% end %>
+</td>
+        </tr>
+    <% end %>
+    <tr class="noprint">
+        <td colspan="4"></td>
+        <td style="text-align:center">
+            <%= image_tag('add-16x16.png', :class => 'image_link',
+                :alt => I18n.t('admin.fibre_lines.add'),
+                :title => I18n.t('admin.fibre_lines.add'),
+                :onclick => "controller.newFibreRegion(#{@fibre_line.id})" ) %>
+        </td>
+    </tr>
+</table>
+
+<%= link_to image_tag('/images/download_csv-16x16.png') + " " + I18n.t('admin.fibre_region.download'), "/admin/fibre_lines/#{@fibre_line.id}/fibre_regions.csv" %>
+<fieldset style="width:320px; margin-top:30px;">
+    <legend><%= I18n.t('admin.fibre_region.upload_csv_file') %></legend>
+
+
+<%= form_with url: "/admin/fibre_lines/#{@fibre_line.id}/fibre_regions/upload_regions", html: { :id => "regionUploadForm", :multipart => true}, local: true do %>
+    <%= file_field_tag 'region_csv', :file_type_error => I18n.t('admin.fibre_region.upload.file_type_error') %>
+    <%= submit_tag I18n.t('common.button.upload'), :id => "regionFileUpload", :onclick => 'this.form.addClassName("disabled")' %>
+<br/>
+    <%= t 'admin.fibre_region.upload.note' %>
+<% end %>
+</fieldset>
+
+
+
+<%= render :partial => '/admin/update_form' %>
+
+<%= dialog_wrapper "new_region", :title => 'admin.fibre_region.new_dialog.title',
+                                 :content => render(:partial => '/admin/fibre_regions/new_region_dialog'),
+                                 :solid_bg => true %>
+<div id="edit_fibre_region_properties_dialog" class="fotech_dialog nooverlay" style="visibility: hidden;"></div>
+
+<% content_for :body_bottom do %>
+    <script type="text/javascript">
+        var controller = new admin.FibreRegionsController("<%= form_authenticity_token %>");
+    </script>
+<% end %>
+
+
+

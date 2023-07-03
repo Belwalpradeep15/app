@@ -1,0 +1,102 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-08-05
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:window, :menu, :dialog, :have_layout, :calendar] %>
+    <%= javascript_include_tag \
+            'fotech/common_util/date.js',
+            'fotech/common_util/string.js',
+            'alerts.js',
+            'admin/admin.js',
+            'admin/alerts.js',
+            'fotech/fibre/event_type.js',
+            :cache => "__admin_alerts_index" %>
+    <%= stylesheet_link_tag "mainDisplay", :cache => "__admin_alerts_index" %>
+    <script type="text/javascript">
+
+        var childWindows = new fotech.gui.ChildWindowManager(window);
+        onUnload = function() {
+            childWindows.forEach(function (key, window) { window.close(); });
+        }
+        downloadAlertCSV = function(url){
+            window.location = url;
+        }
+    </script>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        admin.alerts.createResponseDialog();
+    });
+    function localNewResponse(alertId, alertName, response, enabled) {
+        if (enabled) {
+            try {
+                vueApp.$store.dispatch( 'alerts/displayResolver', {
+                    id: 'local_' + alertId, resolution: response, mode: 'floating',
+                    onComplete: function() {
+                        var parentRequiresRefresh = true;
+
+                        if(window.location.pathname.startsWith('/portal')) {
+                            parentRequiresRefresh = window.location.pathname.startsWith('/portal/alerts');
+                        }
+
+                        if ( parentRequiresRefresh && window.parent ){
+                            window.parent.location.reload();
+                        }
+                        vueApp.$store.dispatch( 'panels/removeAll', {} );
+                        window.location.reload();
+                    } 
+                } );
+            } catch ( e ) {
+
+            }
+        }
+        //    admin.alerts.newResponse(alertId, alertName, response, false);
+    }
+    var shouldCloseThisWindow = false;
+    var shouldRefreshThisWindow = true;
+</script>
+
+<div id="alert_results">
+
+
+<%= render :partial => '/admin/alerts/alert_results' %>
+
+</div>
+<%= timezone_tag %>
+
+<%= render :partial => '/admin/update_form' %>
+<%= render :partial => 'response_dialog' %>
+<%= dialog_wrapper 'alert_search', {:title => 'admin.alerts.search_dialog.title',
+                                    :content => render( :partial => 'alert_search_form'),
+                                    :help_tag => params[:portal_request] ? nil : 'Alert_Search_dialog_box',
+                                    :solid_bg => true} %>
+
+<% if @showSearchDialog %>
+    <script type="text/javascript">
+        admin.alerts.showAlertSearchDialog();
+    </script>
+<% end %>
+
+    <script type="text/javascript">
+        Date.onload();
+    </script>

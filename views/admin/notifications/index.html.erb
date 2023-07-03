@@ -1,0 +1,106 @@
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag, it causes errors. %>
+    <%= fotech_gui_setup_tag [:window, :menu, :dialog, :tab, :have_layout] %>
+    <%= javascript_include_tag \
+            'admin/xml_submit_event_list_dialog.js',
+            :cache => "__admin_notifications_index" %>
+    <%= stylesheet_link_tag "mainDisplay", :cache => "__admin_notifications_index" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+<%= render :partial => 'event_list_dialog' %>
+
+<script type="text/javascript">
+    var eventListSelectDialog = null;
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        eventListSelectDialog = new admin.XmlSubmitEventListDialog();
+    });
+
+    function openSelectEventsDialog(button){
+        eventListSelectDialog.setLinkedForm(button.form);
+        eventListSelectDialog.showByButton(button)
+    }
+
+    function notification_submit_form(form) {
+        try {
+            fotech.gui.ValidatingDialog.clearAllErrors(form);
+            if (form.xml_submit_alarms.checked || form.xml_submit_heartbeats.checked || form.xml_submit_health.checked || form.xml_submit_events.checked) {
+                if (form.xml_notifications_url.value.strip().length == 0) {
+                    fotech.gui.ValidatingDialog.hiliteError(form.xml_notifications_url);
+                    alert("<%= I18n.t('common.validations.not_empty', :value => I18n.t('admin.common.url')) %>");
+                    return false;
+                }
+            }
+
+            if (form.xml_submit_events.checked){
+                if(form.xml_included_events.value.length == 0){
+                    fotech.gui.ValidatingDialog.hiliteError(form.xml_submit_events);
+                    alert("<%= I18n.t('common.validations.not_empty', :value => I18n.t('admin.notifications.selected_events')) %>");
+                    return false;
+                }
+            }
+
+            disableRow('notifications_panel_' + form.organization_id.value);
+            form.getElements().invoke('enable');
+            new Ajax.Request('/admin/notifications', { method: 'post', parameters: Form.serialize(form) });
+        }
+        catch (e) {
+            alert(e);
+        }
+        return false;
+    }
+</script>
+
+<h1><%= I18n.t('admin.notifications.title') %></h1>
+
+<% if @organizations.empty? %>
+    <p>
+    ERROR: No organizations to configure. The only way you should see this message is if
+    the Fotech staff have not yet created an organization. If you see this message, and
+    are not a Fotech employee, you will need to contact Fotech support.
+    </p>
+<% elsif @organizations.length == 1 %>
+    <%= render :partial => 'organization_panel', :locals => { :org => @organizations[0] } %>
+<% else %>
+    <div id="organization_tabs" class="yui-navset">
+        <ul class="yui-nav">
+            <% @organizations.each do |org| %>
+                <li id="organization_tab_<%= org.id %>"><a href="#tab<%= org.id %>"><%= escape_html(org.name) %><span>&nbsp;</span></a></li>
+            <% end %>
+        </ul>
+        <div class="yui-content">
+            <% @organizations.each do |org| %>
+                <div id="organization_panel_<%= org.id %>">
+                    <%= render :partial => 'organization_panel', :locals => { :org => org } %>
+                </div>
+            <% end %>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var orgTabObject = new YAHOO.widget.TabView("organization_tabs");
+        orgTabObject.selectTab(0);
+    </script>
+<% end %>
+<hr/>
+<!-- send test email -->
+<div>
+<h3><%= I18n.t 'admin.notifications.test_email_button' %></h3>
+<%= form_with url: '/admin/notifications/send_test', html: {:id => "test_email_form" } do %>
+    <%= I18n.t 'admin.notifications.test_email_label' %>
+    <input type="text" name="test_email_address" />
+    <button><%= I18n.t 'admin.notifications.test_email_button' %></button>
+<% end %>
+    <% if flash[:test_email_message] %>
+    <script>
+        alert('<%= flash[:test_email_message].gsub(/\n/,'\n').gsub("'", "\\\\'") %>')
+    </script>
+    <% end %>
+</div>
+
+
+<%= render :partial => '/admin/update_form' %>
+<%= render :partial => 'email_notifications_list_dialog' %>

@@ -1,0 +1,41 @@
+<%
+# FILENAME:     add_response.js.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-08-09
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% if @error %>
+    alert("<%= I18n.t('admin.alerts.add_response.error_msg', :error => escape_javascript(@error.to_s)) %>");
+    <% if @formId %>
+        enableRow('<%= @formId %>');
+    <% end %>
+    <% if @dialogId %>
+        fotech.gui.FotechDialog.clearBusyState('<%= @dialogId %>');
+    <% end %>
+<% elsif params[:portal_request] %>
+    fotech.gui.FotechDialog.clearBusyState('<%= @dialogId %>');
+    admin.alerts._response_dialog.hide();
+<% else %>
+    <% if @shouldClose %>
+        if (shouldCloseThisWindow) {
+            if (window.opener.shouldRefreshThisWindow){
+                window.opener.location.reload(true);
+            }
+            window.close();
+        }
+        else {
+            window.location.reload(true);
+        }
+    <% else %>
+        window.location.reload(true);
+    <% end %>
+<% end %>

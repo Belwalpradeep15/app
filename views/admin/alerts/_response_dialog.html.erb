@@ -1,0 +1,42 @@
+<%
+# FILENAME:     _response_dialog.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-08-05
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<div id="response_dialog" style="visibility: hidden;">
+    <div class="hd">
+        <%= I18n.t('admin.alerts.response_dialog.title') %>
+    </div>
+    <div class="bd">
+        <%= form_with :id => "response_form" do -%>
+            <input type="hidden" name="alert_id" value=""/>
+            <input type="hidden" name="response" value=""/>
+            <input type="hidden" name="comment_required" value=""/>
+            <p><b><%= I18n.t('admin.alerts.response_dialog.response_type') %>:</b> <span id="response_dialog_response_type"></span></p>
+            <p><b><%= I18n.t('admin.alerts.common.alert_type') %>:</b> <span id="response_dialog_alert_type"></span></p>
+            <% if APP_CONFIG['alarms'] && APP_CONFIG['alarms']['comment_tag'] %>
+                <p><b><%= APP_CONFIG['alarms']['comment_tag']['label'] %></b>
+                    <select name="comment_tag">
+                        <% APP_CONFIG['alarms']['comment_tag']['items'].each do |item| %>
+                            <option value="<%= item %>"><%= item %></option>
+                        <% end %>
+                    </select>
+                </p>
+            <% end %>
+            <p>
+                <%= I18n.t('admin.alerts.response_dialog.comment') %><br />
+                <textarea name="comments" rows="4" cols="60"></textarea>
+            </p>
+        <% end -%>
+    </div>
+</div>

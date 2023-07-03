@@ -1,0 +1,77 @@
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:window, :menu, :dialog, :have_layout, :calendar] %>
+<% end %>
+
+
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() { 
+        <%= MenuRenderer.menu_javascript(@menu) %> 
+    });
+</script>
+
+
+<table>
+    <tr>
+        <th rowspan='2'></th>
+        <th rowspan='2'><%= I18n.t 'common.headers.name' %></th>
+        <th rowspan='2' colspan="2"><%= I18n.t 'admin.schedule.start_time' %></th>
+        <th rowspan='2' colspan="2"><%= I18n.t 'admin.schedule.end_time' %></th>
+        <th rowspan='2'><%= I18n.t 'admin.schedule.repeating' %></th>
+        <th colspan='7'><%= I18n.t 'admin.schedule.repeats_on' %></th>
+        <th rowspan='2'><%= I18n.t 'admin.schedule.repeat_end_date' %></th>
+        <th></th>
+    </tr>
+    <tr>
+        <% %w(sunday monday tuesday wednesday thursday friday saturday).each_with_index do |day, index| %>
+        <th><%= I18n.t("admin.schedule.#{day}") %></th>
+        <% end -%>
+    </tr>
+ <% Schedule.all.each do |schedule| %>
+    <tr>
+        <td><%= schedule.id %></td>
+        <td><%= schedule.name %></td>
+
+        <% start_date_time =  Time.convert_UTC_to_local_time(schedule.start_date, schedule.start_time) %>
+
+        <td><%= start_date_time.strftime("%Y-%m-%d") %></td>
+        <td><%= start_date_time.strftime("%H:%M") %></td>
+
+        <% end_date_time = Time.convert_UTC_to_local_time(schedule.end_date, schedule.end_time) %> 
+        <td><%= end_date_time.strftime("%Y-%m-%d") unless schedule.is_repeating %></td>
+        <td><%= end_date_time.strftime ("%H:%M") %></td>
+        <td style="text-align:center"><%= schedule.is_repeating ? '&#10003;'.html_safe : '&#10007;'.html_safe %></td>
+        <% repeating_days = Time.convert_UTC_alarm_repeating_days_into_local(start_date_time.to_date,schedule.start_date.to_date,schedule.repeats_on) %>
+        <% split_repeats_on = repeating_days.split(',') %>
+        <% (0..6).to_a.each do |i| %>
+        <td style="border:1px solid grey">
+            <% if schedule.is_repeating %>
+            <%= '&#10003;'.html_safe if split_repeats_on.include?(i) || split_repeats_on.include?(i.to_s) %>
+            <% end %>
+        </td>
+        <% end %>
+        <% repeat_ends_on_datetime = Time.convert_UTC_to_local_time(schedule.repeat_ends_on, schedule.end_time) if schedule.is_repeating %> 
+        <td><%= repeat_ends_on_datetime.strftime("%Y-%m-%d") if schedule.is_repeating %></td>
+        <td>
+            <%= link_to image_tag('edit-16x16.png'), {:controller => 'admin/schedule', :action => 'edit', :id => schedule.id, :tz_offset => params[:tz_offset]} %>
+            &nbsp;&nbsp;
+            <%= link_to image_tag('fotech/common_gui/delete-16x16.png'), {:controller => 'admin/schedule', :action => 'destroy', :id => schedule.id, :tz_offset => params[:tz_offset]}, {:method => :delete} %>
+        </td>
+    </tr>
+<% end %>
+    <tr>
+        <th colspan="15"></th>
+        <th style="text-align:center"><%= link_to image_tag('add-16x16.png'), '/admin/schedule/new?tz_offset='+params[:tz_offset]+'' %></th>
+    </tr>
+</table>
+<div> 
+    <%= (I18n.t('common.time.timezone', :timezone => ("GMT " + Time.zone.formatted_offset)))  %>
+</div>
+
+

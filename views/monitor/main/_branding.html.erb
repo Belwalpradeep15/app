@@ -1,0 +1,32 @@
+<%
+# FILENAME:     _branding.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-03-01
+  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+# 
+# This div is to show branding for the portal, it will specifically look for APP_CONFIG['portal']['branding']
+# for a list of icons.  failing that it will just show the default fotech icon
+ -%>
+
+<div id="branding">
+    <div class="bd">
+    <%  branding = APP_CONFIG['portal']['layout']['branding'] rescue nil
+        branding ||= [{'image'=>'/images/fotech/common_gui/fotech_branding.png','title'=>'Fotech Solutions','width'=>'250px'}]
+     branding.each do |brand| %>
+     <center>
+     <div style='float:left;width:<%= brand['width'] %>;text-align:center;'>
+        <img src='<%= brand['image'] %>' title='<%= brand['title'] %>' alt='<%=brand['title']%>' width='<%=brand['width']%>'/>
+     </div>
+     </center>
+    <% end %>
+    <div style="clear:both;"></div>
+    </div>
+</div>

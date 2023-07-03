@@ -1,0 +1,85 @@
+<%
+# This file is Copyright © 2016 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag, it causes errors. %>
+    <%= fotech_gui_setup_tag [:window, :editable, :menu, :dialog, :tab, :have_layout] %>
+    <%= javascript_include_tag \
+            'admin/markers.js',
+            'admin/admin.js',
+            'admin/marker_new_dialog.js',
+            'admin/marker_types.js',
+            'admin/marker_type_new_dialog.js',
+            'fotech/common_util/pub/latlon.js',
+            'fotech/common_util/pub/geo.js',
+            'pages/admin/markers.js',
+            :cache => "__admin_markers_index" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<%= javascript_tag do %>
+  var jsmenubar = null;
+  Event.observe(window, 'load', function() {
+    <%= MenuRenderer.menu_javascript(@menu) %>
+    fotech.gui.initEditableFields(admin.markers.editableFieldChanged);
+  });
+  var childWindows = new fotech.gui.ChildWindowManager(window);
+  onUnload = function() {
+    childWindows.forEach(function (key, window) { window.close(); });
+  }
+<% end %>
+
+
+<div>
+<fieldset style="float:left;min-width:325px;">
+
+<legend><%= I18n.t('admin.markers.title') %></legend>
+
+<% if @organizations.empty? %>
+    <p>
+    ERROR: No organizations to configure. The only way you should see this message is if
+    the Fotech staff have not yet created an organization. If you see this message, and
+    are not a Fotech employee, you will need to contact Fotech support.
+    </p>
+<% elsif @organizations.length == 1 %>
+    <%= render :partial => 'marker_panel', :locals => { :org => @organizations[0] } %>
+<% else %>
+    <div id="organization_tabs" class="yui-navset">
+        <ul class="yui-nav">
+            <% @organizations.each do |org| %>
+                <li id="organization_tab_<%= org.id %>"><a href="#tab<%= org.id %>"><%= escape_html(org.name) %><span>&nbsp;</span></a></li>
+            <% end %>
+        </ul>
+        <div class="yui-content">
+            <% @organizations.each do |org| %>
+                <div id="organization_panel_<%= org.id %>">
+                    <%= render :partial => 'marker_panel', :locals => { :org => org } %>
+                </div>
+            <% end %>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var orgTabObject = new YAHOO.widget.TabView("organization_tabs");
+        orgTabObject.selectTab(0);
+    </script>
+<% end %>
+<hr/>
+</fieldset>
+</div>
+
+<div>
+<fieldset style="float:left;min-width:325px;">
+<legend><%= I18n.t('admin.markers.types') %></legend>
+<%= render :partial => 'marker_type_panel' %>
+</fieldset>
+</div>
+
+
+<%= render :partial => '/admin/update_form' %>
+<%= dialog_wrapper "marker_type_new", :title => 'admin.markers.marker_type_new_dialog', :content => render(:partial => '/admin/markers/marker_type_form'), :html => { :multipart => true }  %>
+<%= dialog_wrapper "marker_new", :title => 'admin.markers.marker_new_dialog', :content => render(:partial => '/admin/markers/marker_form') %>

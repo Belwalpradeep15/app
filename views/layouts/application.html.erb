@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+ FILENAME:     application.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-02-20
+
+ DESCRIPTION:  Basic layout for the monitor application.
+
+ LAST CHANGE:
+ $Author: $
+   $Date: $
+    $Rev: $
+    $URL: $
+
+ COPYRIGHT:
+ This file is Copyright (c) 2009 by Fotech Solutions Ltd. All rights reserved.
+ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <%= include_i18n.html_safe %>
+        <link rel="stylesheet" href="/fontawesome-free-5.0.6/on-server/css/fontawesome-all.min.css" crossorigin="anonymous">
+        <title><%= (@title ? @title : "Fotech Solutions Monitor Web Application") %></title>
+        <%= javascript_include_tag 'prototype.js', 'rails-ujs.js', 'application.js', :cache => "__layout_application_framework" %>
+        <%= fotech_gui_setup_tag [:layout], :cache => "__layout_application_gui" %>
+        <%= javascript_include_tag \
+                'core.js',
+            	'rest.js',
+                'fotech/common_util/dom.js',
+                'fotech/common_util/document.js',
+                'fotech/common_util/ObjectManager.js',
+                'layout',
+                'events',
+                :cache => "__layout_application" %>
+        <%= stylesheet_link_tag "layout",
+                                "common.css",
+                                "core.css",
+                                "coreui.css",
+                                :media => "all" %>
+
+        <script type="text/javascript">
+            // Override these in your :head section if you want them to actually do something.
+            var onLoad = function() {};
+            var onResize = function() {};
+            var onUnload = function() {};
+            var onDOMReady = function() {};
+
+            function _global_OnDOMReady() {
+                var layout = new YAHOO.widget.Layout({
+                                                     units: [ { position: 'top', body: 'header', height: '54px' },
+                                                             { position: 'bottom', body: 'footer', height: '30px' },
+                                                             { position: 'center', body: 'content', scroll: true }]});
+                layout.render();
+                onDOMReady();
+            }
+
+            // Called when the window is unloaded.
+            function _global_OnUnload() {
+                onUnload();
+                if (window.opener)
+                    window.opener.setTimeout(window.opener.enableMenus, 1000);
+
+                if (typeof(GUnload) != 'undefined')
+                    GUnload();
+            }
+
+            YAHOO.util.Event.onDOMReady(_global_OnDOMReady);
+        </script>
+
+        <%= yield :head %>
+    </head>
+    <body class="panoptes yui-skin-sam yui-layout" onload="onLoad()" onresize="onResize()" onunload="_global_OnUnload()">
+        <div id="vuepart" data-preserve-opener data-token="<%= @api_auth_token %>" data-product="panoptes"></div>
+        <%= javascript_include_tag "coreui.js" %>
+        <%= yield :body_top %>
+        <div id="header">
+            <%= fotech_banner_tag %>
+        </div>
+        <div id="content">
+            <%= yield %>
+        </div>
+        <div id="footer" class="noprint">
+            <%= fotech_statusbar_tag %>
+        </div>
+        <%= yield :body_bottom %>
+    </body>
+</html>
+

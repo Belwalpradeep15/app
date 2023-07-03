@@ -1,0 +1,37 @@
+<%#
+ FILENAME:     index.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-01-06
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:menu, :dialog, :have_layout], :cache => "__admin_performance_index_gui" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<h1><%= I18n.t('admin.perf.index.title') %></h1>
+
+<div id="results">
+    <p><%= I18n.t('admin.perf.index.compute_stats') %></p>
+</div>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        fotech.gui.FotechDialog.setBusyState('content');
+        new Ajax.Updater('results', '/admin/performance/statistics', { method: 'get', evalScripts: true });
+        });
+</script>

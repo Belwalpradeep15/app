@@ -1,0 +1,96 @@
+<%
+  # WARNING: BE EXTREMELY CAREFUL CHANGING CODE IN THIS FILE
+  # TODO: Reduce duplicate code used for partial => 'monitor/fibre_lines/fibre_lines':
+  # Code in markers_controller, shcedule_controller, main_controller, and portal_controller
+  #	should be refactored and put into a common location. I have not done that now as an even
+  #	better solution would be to refactor the map display to be a "partial" that could
+  #	be included in all the pages where a map would be useful.
+  # See issue #17978.
+
+  # _fibre_lines.html.erb
+  #
+  # translates the ruby fibre lines array into a set of javascript arrays and objects that can be
+  # used to display fibre lines on maps, diagrams, etc.
+  # TODO: I'd like if this was made into a more unified object - there are functions that
+  #       do all sorts of things to the fibreLines array
+  # TODO: I'm not convinced that this is in the right location
+-%>
+
+
+<script type="text/javascript">
+  var fibreLines = [];
+  var fibreLinesById = {};
+  var fibreLineRegions = [];
+
+  // Displays the fibre line id of the single fibre if a single fibre is displayed. If we are
+  // in one of the overview displays the single form of this will be null but the plural form
+  // may be non-null.
+
+  var displayedFibreLineId = null;
+  var displayedFibreLineIds = [];
+
+  <% if @global_fibre_lines -%>
+      <% @global_fibre_lines.each do |line| -%>
+          <% activeRange = @activeRanges[line.id] -%>
+          <% if activeRange %>
+              fibreLine = <%=raw line.to_json %>;
+              fibreLine.eventCategoryIds = {};
+              <% if @categoryIds %>
+                <% @categoryIds[line.id].each do |id| -%>
+                    fibreLine.eventCategoryIds[<%= id %>] = true;
+                <% end -%>
+              <% end -%>
+              var host_name = '<%= line.helios_unit_id.nil? ? 'null' : @helios_data[line.helios_unit_id].host_name %>';
+              var channel_id = '<%= line.helios_channel.nil? ? 'null' : line.helios_channel %>'
+
+              fibreLine.activeRegion = { startingPosition: <%= activeRange[:startDistance] %>, length: <%= activeRange[:length] %> };
+              fibreLine.heliosUnit = {}
+              fibreLine.heliosUnit['id'] = <%=line.helios_unit_id.nil? ? 'null':line.helios_unit_id%>;
+              fibreLine.heliosUnit['host_name'] = host_name;
+              fibreLine.heliosUnit['channel_id'] = channel_id;
+
+              fibreLine.organizationId = fibreLine.owner_id; // TODO: unfortunate, since it's already there as owner_id...
+              fibreLine.viewType = '<%= line.display_type.name %>';
+              fibreLine.zeroPoint = <%= line.get_zero_point %>;
+              fibreLine.physicalFibreLength = <%= line.get_physical_fibre_length %>;
+              fibreLine.route = <%= raw line.route.to_json %>;
+
+              fibreLine.geoSpatialCalibrations = [];
+              fibreLine.geoSpatialCalibrations.length = fibreLine.route.length;
+              // TODO: this is messy, should probably be cleaned up in the Ruby - but I don't have time
+              var cals = <%= raw (line.calibrations || []).to_json %>;
+              cals.each(function (c) {
+                  fibreLine.geoSpatialCalibrations[c.parent_point] = c.distance;
+              });
+
+              fibreLine.diagramCalibrations = <%= raw line.section_calibration.to_json %>;
+
+              fibreLines[fibreLines.length] = fibreLine;
+              fibreLinesById[fibreLine.id] = fibreLine;
+
+              <% line.fibre_regions.select{|r| r.visible}.each do |region| %>
+                fibreLineRegions.push({
+                  id: <%= region.id %>,
+                  name: "<%= escape_javascript region.description %>",
+                  lineId: <%= line.id %>,
+                  positions: <%= raw ({
+                    :starting_position => region.starting_position,
+                    :ending_position => region.ending_position,
+                    :length => region.length
+                  }).to_json %>,
+                  properties: <%= raw region.region_properties.to_json %>
+                });
+              <% end %>
+          <% end %>
+      <% end %>
+  <% end %>
+
+// Given a fibre line id, return the fibre line object.
+function getFibreLineById(fibreLineId) {
+  if (fibreLinesById.hasOwnProperty(fibreLineId))
+    return fibreLinesById[fibreLineId];
+  else
+    return null;
+}
+
+</script>

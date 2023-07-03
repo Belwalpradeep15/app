@@ -1,0 +1,22 @@
+"<%= t('admin.alerts.headers.latitude') %> (<%= @latlng_units%>)","<%= t('admin.alerts.headers.longitude') %> (<%= @latlng_units%>)","<%= t('common.headers.distance') %> (<%= @distance_units %>)"
+<%	@calibrations.each do |cal|
+
+		row = [] 
+		lat = cal.latitude
+		long = cal.longitude
+		if @latlng_units == 'dms'
+	        latlng_string = convertLatLngForDisplay(lat,long,'deg_dec','dms',@latlng_precision)
+	        latlng_string.gsub!('&apos;',"'")
+	        latlng_string.gsub!('&quot;','"')
+	        latlng_string.gsub!('&deg;',"d")
+	        lat,long = latlng_string.split(',');
+	    end
+		row << '"' + lat.to_s + '"'
+		row << '"' + long.to_s + '"'
+		if !cal.distance.nil?
+			row << convert(cal.distance, 'm', @distance_units, @distance_precision)
+		end
+		
+		-%>
+<%= row.join(',').html_safe %>
+<% end -%>

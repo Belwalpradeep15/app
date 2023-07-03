@@ -1,0 +1,32 @@
+<!--suppress ALL -->
+<div id="xml_event_list_dialog"  class='noprint'>
+    <div class="hd">
+        <%= I18n.t('admin.notifications.event_list_label') %>
+    </div>
+    <div class="bd">
+        <%= form_with html: {:id => "xml_event_list_form", :onsubmit => "return false", :style => "max-height:300px;overflow:scroll;"} do %>
+            <input type="checkbox" name="select_all_checkbox" onclick="eventListSelectDialog.selectAll(this.checked);"/><%= I18n.t('common.all') %>
+            <hr/>
+            <%=I18n.t('admin.notifications.active_event_list_label') %> <br/>
+            <% @active_event_types.sort_by{|e| e.description }.each do |event_type| %>
+                <input type="checkbox"
+                name="xml_selected_events"
+                value="<%= event_type.id %>" > <span><%= event_type.description %></span><br/>
+            <% end %>
+            <hr/>
+            <%=I18n.t('admin.notifications.inactive_event_list_label') %>
+            <a id="show_inactive_event_types_list" href="javascript:eventListSelectDialog.showInactiveList(true);"><%= I18n.t("common.show") %> </a>
+            <a id="hide_inactive_event_types_list" href="javascript:eventListSelectDialog.showInactiveList(false);" style="display:none;"><%= I18n.t("common.hide") %>
+            </a><div id="inactive_event_types_list" style="display:none;">
+
+            <% @inactive_event_types.sort_by{|e| e.description }.each do |event_type| %>
+                <input type="checkbox"
+                    name="xml_selected_events"
+                    value="<%= event_type.id %>" >
+                    <span><%= event_type.description %></span><br/>
+
+            <% end %>
+        </div>
+        <% end %>
+    </div>
+</div>

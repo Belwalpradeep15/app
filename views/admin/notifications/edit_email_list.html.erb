@@ -1,0 +1,84 @@
+<div class="hd">
+    <%= I18n.t('admin.notifications.email_notification.dialog.title') %>
+    <% if @emailList.id %>
+        <%= ": #{ @emailList.name }" %>
+    <% end %>
+</div>
+<div class="bd">
+    <%= form_with :id => 'email_notifications_list_form' do -%>
+        <%= hidden_field_tag 'is_email_list_form', 'true' %>
+        <%= hidden_field_tag 'id', @emailList.id %>
+        <%= hidden_field_tag 'organization_id', @emailList.organization_id %>
+        <table class="padded">
+            <tr>
+                <th><%= I18n.t('common.headers.active') %>:</th>
+                <td><%= check_box_tag 'is_active', '1', @emailList.is_active %></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('common.headers.name') %>:</th>
+                <td><%= text_field_tag 'name', @emailList.name, :size => 55 %></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.notifications.email_recipients') %>:</th>
+                <td><%= text_field_tag 'recipients', @emailList.recipients, :size => 55 %></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td class="info"><%= I18n.t('admin.notifications.multiple_recipients_hint') %></td>
+            </tr>
+            <tr>
+            	<th><%= I18n.t('admin.notifications.email_notification.dialog.message_format') %></th>
+            	<td nowrap="nowrap">
+            	<select name="message_format">
+            		<option value="Email" <%= selected="#{ @emailList.message_format == 'Email' ? 'selected' : '' }" %>> <%= I18n.t('admin.notifications.email_notification.dialog.email.label') %></option>
+            		<option value="SMS" <%= selected="#{ @emailList.message_format == 'SMS' ? 'selected' : '' }" %>> <%= I18n.t('admin.notifications.email_notification.dialog.sms.label') %></option>
+            	</select>
+            	</td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.notifications.email_subject') %>:</th>
+                <td><%= text_field_tag 'subject', @emailList.subject, :size => 55 %></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.notifications.days') %>:</th>
+                <td nowrap="nowrap">
+                    <%= check_box_tag 'sunday', '1', @emailList.sunday %><%= I18n.t('admin.schedule.sunday') %>&nbsp;
+                    <%= check_box_tag 'monday', '1', @emailList.monday %><%= I18n.t('admin.schedule.monday') %>&nbsp;
+                    <%= check_box_tag 'tuesday', '1', @emailList.tuesday %><%= I18n.t('admin.schedule.tuesday') %>&nbsp;
+                    <%= check_box_tag 'wednesday', '1', @emailList.wednesday %><%= I18n.t('admin.schedule.wednesday') %>&nbsp;
+                    <%= check_box_tag 'thursday', '1', @emailList.thursday %><%= I18n.t('admin.schedule.thursday') %>&nbsp;
+                    <%= check_box_tag 'friday', '1', @emailList.friday %><%= I18n.t('admin.schedule.friday') %>&nbsp;
+                    <%= check_box_tag 'saturday', '1', @emailList.saturday %><%= I18n.t('admin.schedule.saturday') %>
+                </td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.schedule.time') %>:</th>
+                <td nowrap="nowrap">
+                    <%= text_field_tag 'start_time', (@emailList.start_time ? @emailList.start_time.strftime('%H:%M') : ''), :size => 8, :placeholder => I18n.t('admin.notifications.time_hint') %>
+                    <%= I18n.t('admin.schedule.to') %>
+                    <%= text_field_tag 'end_time', (@emailList.end_time ? @emailList.end_time.strftime('%H:%M') : ''), :size => 8, :placeholder => I18n.t('admin.notifications.time_hint') %>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" nowrap="nowrap">
+                    <%= check_box_tag 'include_event_alarms', '1', @emailList.include_event_alarms %>
+                    <%= I18n.t('admin.notifications.include_event_alarms') %>&nbsp;
+                    <%= I18n.t('admin.notifications.for_levels') %>
+                    <select name="event_alarm_levels">
+                        <option value="clear,green,amber,red" <%= selected="#{ @emailList.event_alarm_levels == 'clear,green,amber,red' ? 'selected' : '' }" %>><%= I18n.t('admin.notifications.emails_levels.clear_and_above') %></option>
+                        <option value="green,amber,red" <%= selected="#{ @emailList.event_alarm_levels == 'green,amber,red' ? 'selected' : '' }" %>><%= I18n.t('admin.notifications.emails_levels.green_and_above') %></option>
+                        <option value="amber,red" <%= selected="#{ @emailList.event_alarm_levels == 'amber,red' ? 'selected' : '' }" %>><%= I18n.t('admin.notifications.emails_levels.amber_and_above') %></option>
+                        <option value="red" <%= selected="#{ @emailList.event_alarm_levels == 'red' ? 'selected' : '' }" %>><%= I18n.t('admin.notifications.emails_levels.red') %></option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" nowrap="nowrap">
+                    <%= check_box_tag 'include_system_alarms', '1', @emailList.include_system_alarms %>
+                    <%= I18n.t('admin.notifications.include_system_alarms') %>
+                </td>
+            </tr>
+        </table>
+    <% end -%>
+</div>
+

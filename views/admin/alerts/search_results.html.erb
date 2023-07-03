@@ -1,0 +1,29 @@
+<%#
+ FILENAME:     search_results.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   10-09-21
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<%= render :partial => '/admin/alerts/alert_results' %>
+
+<script type='text/javascript'>
+    <% if @formId %>
+        enableRow('<%= @formId %>'); 
+    <% end %>
+    <% if @dialogId %>
+        fotech.gui.FotechDialog.clearBusyState('<%= @dialogId %>');
+    <% end %>
+    
+</script>
+
+
+

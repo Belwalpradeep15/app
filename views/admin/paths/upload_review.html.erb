@@ -1,0 +1,152 @@
+<%
+  # LAST CHANGE:
+  # $Author: $
+  #   $Date: $
+  #    $Rev: $
+  #    $URL: $
+  #
+  # COPYRIGHT:
+  # This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+-%>
+
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :window, :have_layout] %>
+    <%= fotech_core_mapping_components_tag  %>
+    <%= fotech_mapping_impl_tag %>
+    <%= javascript_include_tag \
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            :cache => "__admin_paths_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_paths_index" %>
+    <script type="text/javascript">
+      var childWindows = new fotech.gui.ChildWindowManager(window);
+      onUnload = function() {
+        childWindows.forEach(function (key, window) { window.close(); });
+      }
+    </script>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<%= javascript_tag do %>
+    Event.observe(window, 'load', function() {
+    <%= MenuRenderer.menu_javascript(@menu) %>
+    setViewStatus('<%= I18n.t('admin.paths.title') %>');
+    setTimeout(function() {
+    var e = $$('div.warning_box,div.success_box');
+    for (var i = 0; i < e.length; ++i) {
+    new Effect.Fade(e[i], {duration:1});
+    }
+    }, 3500);
+    });
+<% end %>
+<h2><%= @title %></h2>
+
+<h3 style="text-decoration: underline;">
+  <%= I18n.t('admin.paths.pending_changes') %>
+</h3>
+
+<%= form_with url: upload_commit_admin_paths_path, html: { multipart: true }, local: true do %>
+    <%= hidden_field_tag :organization, @organization.id %>
+    <%= hidden_field_tag :path_data, Base64.encode64(@filtered.to_json) %>
+
+<div style="padding:20px 0;">
+  <% @filtered.each do |path|
+    original_path = @originals["path_#{path['_original']}"] || path
+    action_class = {'add' => 'green', 'edit' => 'blue', 'delete' => 'red'}[path['action']];
+  %>
+      <div style="margin-bottom:30px;">
+        <div></div>
+        <div>
+          <%= check_box_tag "process[]", path['_uuid'], true %><em style="color:<%= action_class %>"><%= I18n.t("common.button.#{path['action']}", :name => '') %></em> <span style="font-size:110%;font-weight:bold;text-decoration:underline;"><%= path['name'] %></span>
+        </div>
+
+        <div>
+          <div style="display:inline-block">
+            <span class="small" style="padding-left:10px;font-size:70%;color:#333;text-decoration:underline;"><%= I18n.t('admin.paths.label_marker') %></span>
+            <% if path['marker_name'] != original_path['marker_name'] %>
+              <span style="color:grey;"><%= original_path['marker_name'] %> =&gt; </span>
+            <% end %>
+            <%= path['marker_name'] %>
+          </div>
+          <div style="display:inline-block">
+            <span class="small" style="padding-left:10px;font-size:70%;color:#333;text-decoration:underline;"><%= I18n.t('admin.paths.label_direction') %></span>
+            <% if path['label_towards'] != original_path['label_towards'] or path['label_away'] != original_path['label_away'] %>
+                <span style="color:grey;"><%= original_path['label_away'] %> / <%= original_path['label_towards'] %> =&gt; </span>
+            <% end %>
+            <%= path['label_away'] %> / <%= path['label_towards'] %>
+          </div>
+        </div>
+        <table class="bordered full-width">
+          <thead>
+          <tr>
+            <th style="width:20px;"></th>
+            <th style="width:60px">&nbsp;</th>
+            <th><%= I18n.t('common.headers.id') %></th>
+            <th><%= I18n.t('alert.detail_keys.fibre_line_name') %></th>
+            <th><%= I18n.t('admin.fibre_region.starting_position') %></th>
+            <th><%= I18n.t('admin.fibre_region.ending_position') %></th>
+            <th><%= I18n.t('admin.paths.marker_offset') %></th>
+          </tr>
+          </thead>
+          <tbody>
+          <% if path['path_segments'].length == 0 %>
+              <tr>
+                <td colspan="7" align="center"><%= I18n.t('common.no_records') %></td>
+              </tr>
+          <% end %>
+          <% path['path_segments'].each do |segment|
+            original_segment = @originals["segment_#{segment['_original']}"] || segment
+            td_class = segment['action'] == 'delete' ? 'text-decoration:line-through;color:red;' : ''
+            action_class = {'add' => 'green', 'edit' => 'blue', 'delete' => 'red'}[segment['action']];
+          %>
+              <tr>
+                <td><%= check_box_tag "process[]", segment['_uuid'], true%></td>
+                <td style="font-style:italic;color:<%= action_class %>">
+                  <%= I18n.t("common.button.#{segment['action']}", :name => '') %>
+                </td>
+                <td style="<%= td_class %>"><%= segment['action'] == 'add' ? '' : segment['id'] %></td>
+                <td style="<%= td_class %>">
+                  <% if segment['fibre_line_id'] != original_segment['fibre_line_id'] %>
+                      <span style="color:grey;"><%= original_segment['fibre_line_name'] || original_segment['fibre_line_id'] %> =&gt; </span>
+                  <% end %>
+                  <%= segment['fibre_line_name'] || segment['fibre_line_id'] %>
+                </td>
+                <td style="<%= td_class %>">
+                  <% if segment['start_distance'] != original_segment['start_distance'] %>
+                      <span style="color:grey;"><%= convert(original_segment['start_distance'], 'm', @distance_units, @distance_precision) %> =&gt; </span>
+                  <% end %>
+                  <%= convert(segment['start_distance'], 'm', @distance_units, @distance_precision) %>
+                </td>
+                <td style="<%= td_class %>">
+                  <% if segment['end_distance'] != original_segment['end_distance'] %>
+                      <span style="color:grey;"><%= convert(original_segment['end_distance'], 'm', @distance_units, @distance_precision) %> =&gt; </span>
+                  <% end %>
+                  <%= convert(segment['end_distance'], 'm', @distance_units, @distance_precision) %>
+                </td>
+                <td style="<%= td_class %>">
+                  <% if segment['distance_from_marker'] != original_segment['distance_from_marker'] %>
+                      <span style="color:grey;"><%= convert(original_segment['distance_from_marker'], 'm', @distance_units, @distance_precision) %> =&gt; </span>
+                  <% end %>
+                  <%= convert(segment['distance_from_marker'], 'm', @distance_units, @distance_precision) %>
+                </td>
+              </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+  <% end %>
+</div>
+
+<div style="display:inline-block; margin-right:15px;">
+  <%= link_to "#{I18n.t('common.button.cancel')}", {:action => 'upload', :organization => @organization.id} %>
+</div>
+<div style="display:inline-block">
+  <%= submit_tag I18n.t('common.button.submit'), {:style => 'width:150px;'} %>
+</div>
+<% end %>

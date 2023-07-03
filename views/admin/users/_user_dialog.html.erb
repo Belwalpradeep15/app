@@ -1,0 +1,73 @@
+<%#
+ FILENAME:     _user_dialog.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   2009-11-23
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+
+ Dialog used to add a new user to the system.
+ %>
+
+<div id="user_dialog"  class='fotech_dialog noprint' style="visibility: hidden;">
+    <div class="hd">
+        <%= I18n.t('admin.users.update_dialog.new_title') %>
+    </div>
+    <div class="bd">
+        <%= form_with :id => 'user_form' do -%>
+            <table class="padded">
+                <tr>
+                    <th><%= I18n.t('admin.users.full_name') %></th>
+                    <td><%= text_field_tag 'fullname', nil, :size => 55 %></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.users.update_dialog.login') %></th>
+                    <td><%= text_field_tag 'loginname', nil, :size => 55 %></td>
+                </tr>
+                <tr>
+                    <th><label for="roles[]"><%= I18n.t('admin.users.update_dialog.roles') %></label></th>
+                    <td>
+                        <% @roles.each do |role| -%>
+                            <% if role.title != 'system_admin' %>
+                                <%= check_box_tag 'roles[]', role.id %>
+                            <% else %>
+                                <%= check_box_tag 'roles[]', role.id , false, {:onclick => 'this.form.organization.disabled = this.checked'} %>
+                            <% end %>
+                            <%= I18n.t('admin.roles.'+role.title) %> <br />
+                        <% end -%>
+                    </td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('common.headers.organization') %></th>
+                    <td>
+                        <div id="organizationList">
+                            <% if @organizations.length > 1 %>
+                            <select id="organization" name="organization">
+                                <% @organizations.each do |org| %>
+                                    <option value='<%= org.id %>'><%= org.name %></option>
+                                <% end %>
+                            </select>
+                            <% else %>
+                            <%= hidden_field_tag 'organization', @organizations.first.id %> <%=@organizations.first.name %>
+                            <% end %>
+
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <%= render :partial => 'authentication' %>
+        <% end -%>
+    </div>
+</div>
+
+
+
+
+
+

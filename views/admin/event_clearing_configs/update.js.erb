@@ -1,0 +1,28 @@
+<%
+# FILENAME:     update.js.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-07-30
+  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+ 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% if @error %>
+  alert('<%= I18n.t("admin.users.update_dialog.error", :error => escape_javascript(@error.to_s)) %>');
+    window.location.reload(true);
+<% else %>
+    <% if @formId %>
+        enableRow('<%= @formId %>'); 
+    <% end %>
+    <% if @dialogId %>
+        fotech.gui.FotechDialog.clearBusyState('<%= @dialogId %>');
+    <% end %>
+    //update the event array
+    fotech.gui.rootOpener().getEventType(<%= @eType.id %>).clearingInterval = <%= @eType.clearing_interval || 0 %>;
+<% end %>

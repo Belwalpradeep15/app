@@ -1,0 +1,31 @@
+<%#
+ FILENAME:     _organization_dialog.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   11-10-24
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2011 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<div id="organization_dialog"  class='fotech_dialog noprint' style="visibility: hidden;">
+    <div class='hd'>
+       <%= I18n.t('common.headers.organization') %>
+    </div>
+    <div class='bd'>
+        <%= form_with :id => 'organization_form', :url => '/admin/organizations', :loading => "fotech.gui.FotechDialog.setBusyState('organization_form')" do -%>
+            <table class="padded ">
+                <tr><td><%= I18n.t('common.headers.name') %></td><td><%= text_field_tag 'name', nil, :size => 35 %></td></tr>
+            </table>
+        <% end -%>
+    </div>
+</div>
+
+
+
+

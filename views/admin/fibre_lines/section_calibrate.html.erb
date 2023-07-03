@@ -1,0 +1,176 @@
+<%#
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% if @close %>
+    <script type="text/javascript">
+        window.opener.location.reload(true);
+        window.close();
+    </script>
+<% else %>
+
+    <% content_for :head do %>
+        <% if Rails.env.development? %>
+            <%= javascript_include_tag 'fotech/mapping/pub/leaflet/leaflet-src.js' %>
+        <% else %>
+            <%= javascript_include_tag 'fotech/mapping/pub/leaflet/leaflet.js' %>
+        <% end %>
+        <%= stylesheet_link_tag 'fotech/mapping/pub/leaflet/leaflet.css' , :media => "all" %>
+        <%= fotech_core_mapping_components_tag  %>
+        <%= fotech_gui_setup_tag [:dialog, :menu, :window, :have_layout], :cache => "__admin_fibre_lines_leaflet_section_calibrate_gui" %>
+        <%= javascript_include_tag \
+                'admin/section_coords_dialog.js',
+                'admin/fibre_lines.js',
+                'fotech/common_util/string.js',
+                'fotech/common_util/math.js',
+                'fotech/fibre/types.js',
+                :cache => "__admin_fibre_lines_leaflet_section_calibrate" %>
+        <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_fibre_lines_show" %>
+        <script type="text/javascript">
+            onUnload = function() {
+                window.opener.setTimeout('admin.fibre_lines.enableMenus()', 1000);
+            }
+        </script>
+    <% end %>
+
+    <% content_for :header do %>
+        <div style="display: block;">
+      <%= form_for(:attachable, :url => "/admin/fibre_lines/#{@fibreLine.id}/section_image", :html => {:multipart => true, :id => "upload_form", :onsubmit => "return validate();"}) do |form| %>
+        <table class="nospace noborder">
+            <tr>
+                <th class="noborder"><%= I18n.t('admin.fibre_lines.section_cal.diagram_label') %></th>
+                <td id="diagramFilename" class="noborder" nowrap="nowrap">
+                    <select id="document_id" name="document_id" style="width:300px">
+                        <option value='' <%= "selected=selected" unless @document %>><%= I18n.t('admin.fibre_lines.section_cal.upload_new_file') %></option>
+                        <% @documents.each do |doc|%>
+                        <option value='<%= doc.id %>' <%= "selected=selected" if @document_id == doc.id %>><%= doc.filename %></option>
+                        <% end %>
+                    </select>
+                    <span id="assignFile">
+                        <%= submit_tag(I18n.t('common.button.submit')) %>
+                    </span>
+                    <span id="uploadNewFile">
+                        <%= form.file_field :uploaded_data, :onchange => 'return enableSubmitButton();' %>
+                        <%= submit_tag(I18n.t('common.button.upload'), :id => 'upload_submit', :disabled => true) %>
+                    </span>
+                </td>
+                <td><i><%= I18n.t('admin.fibre_lines.section_cal.distance_units', :units => @distance_units) %></i></td>
+              </tr>
+          </table>
+      <% end %>
+    </div>
+
+<iframe id="upload_frame" name="upload_frame" style="display: none;"></iframe>
+<% end %>
+
+    <% content_for :body_top do %>
+      <%= render :partial => "section_coords_dialog", :locals => { :action => "update" } %>
+        <div>
+
+    <% end %>
+
+    <% content_for :body_bottom do %>
+        <script type="text/javascript">
+
+    function documentIdChanged(){
+        var uploading = $('document_id').value == '';
+        if(uploading){
+            $('assignFile').hide();
+            $('uploadNewFile').show();
+        } else {
+            $('assignFile').show();
+            $('uploadNewFile').hide();
+        }
+    }
+    $('document_id').observe('change', documentIdChanged);
+    Event.observe(window, 'load', documentIdChanged);
+
+    function validate() {
+        var value = document.getElementById('attachable_uploaded_data').value;
+        if ($('document_id').value == '' && !value) {
+            alert('You must select a file to upload.');
+            return false;
+        }
+        fotech.gui.FotechDialog.setBusyState('content');
+        return true;
+    }
+
+    function enableSubmitButton() {
+        filename = $F('attachable_uploaded_data');
+        if(filename.match(/\.(png|jpg|jpeg|gif)$/i)){
+            $('upload_submit').enable();
+            return true;
+        }
+        alert(I18n.t('admin.fibre_lines.section_cal.invalid_file_type'));
+        $('attachable_uploaded_data').value = "";
+        $('upload_submit').disable();
+        return false;
+    }
+
+    var fibreLine = null;
+    <% if @fibreLine %>
+        fibreLine = fotech.gui.rootOpener().getFibreLineById(<%= @fibreLine.id %>);
+        if(fibreLine == null) {  //this will be null for newly created fibrelines where the main page is not refreshed
+            fibreLine = <%= raw @fibreLine.to_json %>;
+        }
+        <% if @fibreLine.section_calibration %>
+
+            fibreLine.diagramCalibrations = <%= raw @fibreLine.section_calibration.to_json %>;
+
+            <% if @document %>
+                fibreLine.diagramCalibrations.imageUrl = "/admin/fibre_lines/<%= @fibreLine.id %>/section_image";
+            <% end %>
+        <% end %>
+        document.title = "Section (Engineering Diagram) Calibration: <%= escape_javascript(@fibreLine.name) %>";
+    <% end %>
+
+Event.observe(window, 'fotech:layout', function(){
+    //set up globalLayout
+    if(layout.getUnitByPosition('top').get('height') != 30){
+        layout.getUnitByPosition('top').set('height', 30);
+        return;
+    }
+
+});
+
+    var diagram = null;
+    Event.observe(window, 'load', function() {
+        if (!fibreLine.diagramCalibrations)
+          return;
+
+        diagram = new fotech.Diagram("map", {
+            imageURL: fibreLine.diagramCalibrations.imageUrl,
+            height:<%= @diagramHeight || 0%>,
+            width:<%= @diagramWidth || 0%>
+        });
+
+        //    diagram._init(fibreLine, {editing:true,
+        //                            divId: 'map',
+        //height:<%= @diagramHeight || 0%>,
+        //                            width:<%= @diagramWidth || 0%>});
+
+
+        diagram.render();
+
+        var _routeEditor = new fotech.map.DrawPolygonControl({}, fotech.gui.rootOpener().user.preferences['fibre-line-colour'],
+        SectionCalibrationDialog.editDialog.bind(SectionCalibrationDialog));
+        diagram.addControl(_routeEditor);
+        if (fibreLine.diagramCalibrations.fibre_distances) {
+            var route_map_like = fotech.map.FibreRoute.DiagramDataToMapData(fibreLine.diagramCalibrations);
+            _routeEditor.load(fibreLine.id, route_map_like.route_array, route_map_like.calibrations);
+        }
+    });
+        </script>
+        </div>
+    <% end %>
+    <div id="map" style="height:100%;width:100%;">
+    </div>
+
+<% end %>

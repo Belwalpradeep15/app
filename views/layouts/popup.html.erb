@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+ FILENAME:     popup.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-02-27
+
+ DESCRIPTION:  Basic layout for the monitor application popup windows.
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright (c) 2009 by Fotech Solutions Ltd. All rights reserved.
+ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <%= include_i18n %>
+        <title><%= (@title ? @title : "Fotech Solutions Monitor Web Application") %></title>
+        <link rel="stylesheet" href="/fontawesome-free-5.0.6/on-server/css/fontawesome-all.min.css" crossorigin="anonymous">
+        <%= fotech_gui_setup_tag [:layout], :cache => "__layout_popup_gui" %>
+        <%= javascript_include_tag \
+            'core.js',
+            'rest.js',
+            'fotech/common_util/dom.js',
+            'fotech/common_util/document.js',
+            'events.js',
+            'layout.js',
+            :cache => "__layout_popup" %>
+        <%= stylesheet_link_tag "layout", "common.css", "core.css" "coreui.css", :media => "all" %>
+        <script type="text/javascript">
+            function onUnload() {
+                window.opener.setTimeout('enableMenus()', 1000);
+            }
+
+            // Override these in your :head section if you want them to actually do something.
+            var onLoad = function() {};
+            var onResize = function() {};
+            var onDOMReady = function() {};
+        </script>
+        <%= yield :head %>
+    </head>
+    <body class="panoptes yui-skin-sam yui-layout" onload="onLoad()" onresize="onResize()" onunload="onUnload()">
+        <div id="vuepart" data-token="<%= @api_auth_token %>" data-product="panoptes" data-preserve-opener></div>
+        <%= javascript_include_tag "coreui.js" %>
+        <div id="header">
+            <%= yield :header %>
+        </div>
+        <div id="content" style="height: 100%;">
+            <%= yield %>
+        </div>
+        <div id="footer">
+            <%= yield :footer %>
+        </div>
+        <script type="text/javascript">
+            YAHOO.util.Event.onDOMReady(function() {
+                var layout = new YAHOO.widget.Layout({
+                                                     units: [ { position: 'top', body: 'header', height: "<%= @headerHeight %>px" },
+                                                             { position: 'bottom', body: 'footer', height: "<%= @footerHeight %>px" },
+                                                             { position: 'center', body: 'content' }]});
+                layout.render();
+                onDOMReady();
+            });
+        </script>
+    </body>
+</html>
+

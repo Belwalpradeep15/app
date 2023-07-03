@@ -1,0 +1,38 @@
+<div id="filter_dialog" class='fotech_dialog nooverlay noprint'>
+<div class="hd">
+    <%= I18n.t('monitor.events.event_filter_dialog.title') %>
+</div>
+<div class="bd">
+    <form id="filter_form" method="post">
+        <table class="nospace">
+            <tr>
+                <td id='filterFormCurrentLineCheckbox'>
+                    <%= check_box_tag "restrictToCurrentFibreLine" %>
+                    <%= I18n.t('monitor.events.filters.restrict_fibre') %> <span id='filterFormFibreLineName'></span>
+                </td>
+            </tr>
+            <tr>
+                <td id='filterFormSpatialCheckbox'>
+                    <%= check_box_tag "restrictToSpatialFilter" %>
+                    <%= I18n.t('monitor.events.filters.restrict_spatial') %>
+                </td>
+            </tr>
+            <tr>
+                <td class='bordered'>
+                    <%= render :partial => '/monitor/events/on_route_filter' %>
+                </td>
+            </tr>
+            <tr>
+                <td class='bordered'>
+                    <%= render :partial => '/monitor/events/event_type_filter' %>
+                </td>
+            </tr>
+            <tr>
+                <td class='bordered'>
+                    <%= render :partial => '/monitor/events/magnitude_filter' %>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>

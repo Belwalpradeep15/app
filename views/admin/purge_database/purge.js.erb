@@ -1,0 +1,26 @@
+<%
+# FILENAME:     purge.js.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2011-01-10
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2011 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% if @error.nil? %>
+    $('response').innerHTML = "<p><%= I18n.t('admin.purge_database.response', {:no_events => @noEventsPurged, :no_alerts => @noAlertsPurged}) %></p>";
+<% else %>
+    $('response').innerHTML = "<p><b>Error:</b> <%= @error %></p>";
+<% end %>
+$('begin_purge_button').disabled = false;
+
+
+
+
+

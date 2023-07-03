@@ -1,0 +1,197 @@
+
+<%
+# FILENAME:     _alert_details.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-11-15
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<input type="hidden" id="ackRequired" name="ackRequired" value=<%=@alerts_require_comment_text%>/>
+
+<% if @alert.time_resolved and (not @showResolvedAlerts) %>
+    <script type="text/javascript">
+        fotech.gui.rootOpener().globalAlertManager.remove(<%= @alert.id %>);
+    </script>
+<% else %>
+    <%# Find the threat UUID %>
+    <% threat_uuid = @alert.alert_details.find_by_key("threatUUID") -%>
+
+    <section class="alert_data_details"
+        id = "alert_data_details_<%= @alert.id %>"
+        data-alert-id = "<%= @alert.id %>"
+        data-alert-time = "<%= @alert.time.xmlschema %>"
+        data-alert-resolved = "<%= @alert.time_resolved.nil? ? "" : @alert.time_resolved %>"
+        data-alert-acknowledged = "<%= @alert.time_acknowledged.nil? ? "" : @alert.time_acknowledged %>"
+        data-alert-uuid = "<%= threat_uuid.nil? ? "" : threat_uuid.value %>"
+        <% location = @alert.alert_details.find_by_key('position') %>
+        <% location_details = location.nil? ? '' : location.value %>
+        data-alert-location = "<%= optional_translate( location_details, { 'precision-distance' => 1, 'units-distance' => 'm' } ) %>"
+        data-alert-status = "<%= @alert.status %>"
+        data-alert-anonymous = "<%= (has_role? :anonymous)? true : false %>"
+        data-alert-audio = "<%= (!@alert.detail_list('fibre_line_id').nil? && !@alert.detail_list('fibre_line_id').empty? && !@alert.alert_details.find_by_key('position').nil?) ? true : false %>"
+        data-alert-last-action = "<%= @sorted_alerts[ -1 ].response %>"
+    >
+        <table style="width:100%" class="spaced alert_details threat_level_<%= @alert.threat_level || 'none' %>">
+            <tr>
+                <td rowspan="5" class="alert_icon_cell">
+                    <%= alert_display_icon @alert %>
+                </td>
+                <th><%= I18n.t('common.headers.id') %>:</th>
+                <td><%= @alert.id %></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('common.headers.type') %>:</th>
+                <td><%= alert_type_display_string @alert %></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.alerts.headers.time') %>:</th>
+                <td><span id='localAlertTime_<%= @alert.id %>'></span></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.alerts.headers.threat_level') %>:</th>
+                <td><%= I18n.t('alert.threat_level.' + (@alert.threat_level || 'none')) %></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('common.headers.status') %>:</th>
+                <td>
+                    <%= I18n.t("alert.status.#{ @alert.status }") %>
+                    <% if @alert.status == 'closed' %>
+                        at <span id='localTimeDismissed_<%= @alert.id %>'></span>
+                    <% elsif @alert.status == 'acknowledged' %>
+                        at <span id='localTimeAcknowledged_<%= @alert.id %>'></span>
+                    <% end %>
+                   <% if @alert.is_suppressed %>
+                        (<%= I18n.t('common.suppressed') %>)
+                    <% end %>
+                </td>
+            </tr>
+            <% unless @alert.on_route_info.nil? %>
+                <tr><td colspan='3'></td></tr>
+                <tr>
+                    <td colspan='3'><%= @alert.on_route_info %></td>
+                </tr>
+            <% end %>
+            <% if @alert.comments %>
+            <tr>
+                <th><%= I18n.t('admin.alerts.headers.comments') %>:</th>
+                <td colspan='2'><%= optional_i18n @alert.comments %></td>
+            </tr>
+            <% end %>
+        </table>
+        <div style="max-height:150px;overflow:auto">
+            <table class="spaced alert_details">
+                <% list= (@alert.name=="panoptes" ? @alert.alert_details : \
+                @alert.alert_details.sort_by{|d| I18n.t("alert.detail_keys.#{d.key}")} )%>
+                <% list.each do |d| %>
+                    <% if d.visible %>
+                        <tr>
+                            <th colspan='2'><%= I18n.t("alert.detail_keys.#{ d.key }") %>:</th>
+                            <td><%=raw optional_translate(d.value, @preferences_hash) %></td>
+                        </tr>
+                    <% end %>
+                <% end %>
+            </table>
+        </div>
+        <p></p>
+        <div class="alert_responses">
+            <table id="scrolling_head_<%= @alert.id %>" class="bordered alert_details_list">
+                <caption><%= I18n.t('admin.alerts.show.history_caption') %></caption>
+                <thead>
+                    <tr align="center">
+                        <th class="response_type_column"><%= I18n.t('common.headers.type') %></th>
+                        <th class="time_column"><%= I18n.t('admin.alerts.headers.time') %></th>
+                        <th class="user_column"><%= I18n.t('admin.alerts.headers.user') %></th>
+                        <th class="comment_column"><%= I18n.t('admin.alerts.headers.comments') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <% @sorted_alerts.each do |r| %>
+                    <tr
+                        data-response-data-id = "<%= r.id %>"
+                        data-response-data-time = "<%= r.time.xmlschema %>"
+                    >
+                        <% level = '' %>
+                        <% comments = optional_i18n r.comments %>
+                        <% if !comments.nil? %>
+                            <% [ "green", "amber", "clear", "red" ].each do | tag | %>
+                                <% keyword = I18n.t( "alert.threat_level.#{tag}" ).downcase %>
+                                <% if comments.include?( keyword ) %>
+                                    <% level = keyword %>
+                                <% end %>
+                            <% end %>
+                        <% end %>
+                        <%# Highlight certain keywords to aid with quickly ascertaining what's going on %>
+                        <% marker = '' %>
+                        <% case r.response
+                            when 'escalate' %>
+                            <% marker = '<span class="fa fa-chevron-circle-up"></span>' %>
+                        <% when 'downgrade' %>
+                            <% marker = '<span class="fa fa-chevron-circle-down"></span>' %>
+                        <% when 'received' %>
+                            <% marker = '<span class="fa fa-bell"></span>' %>
+                        <% when 'retrigger' %>
+                            <% marker = '<span class="fa fa-sync-alt"></span>' %>
+                        <% when 'acknowledge' %>
+                            <% marker = '<span class="fa fa-check-circle"></span>' %>
+                            <% level = 'acknowledge' %>
+                        <% end %>
+
+                        <td class="response_type_column <%= r.response %> <%= level %>" word-wrap="normal">
+                            <span class="marker"><%=raw marker %></span>
+                            <%= I18n.t("alert.response.#{ r.response }") %>
+                        </td>
+                        <td class="time_column" nowrap="nowrap"><span id="localResponseTime_<%= r.id %>"></span></td>
+                        <td class="user_column" nowrap="nowrap"><%= r.user ? r.user.fullname : I18n.t("admin.alerts.common.system")%></td>
+                        <td class="comment_column">
+                            <%= comments %>
+                        </td>
+                    </tr>
+                <% end %>
+                </tbody>
+            </table>
+        </div>
+        <center>
+            <% if can? :acknowledge, :alerts %>
+                <button onclick="admin.alerts.newResponse(<%= @alert.id %>, '<%= @alert.name %>', 'acknowledge', <%= @alerts_require_comment_text %>)"
+                        title="<%= I18n.t('admin.alerts.buttons.acknowledge', :name => @alert.id) %>"
+                        <%= ( @alert.status == 'new' or @alert.status == 'acknowledged' ) ? '' : 'disabled="true"' %>
+                        >
+                    <%= I18n.t('common.button.acknowledge') %>
+                </button>
+            <% end %>
+            <% if can? :respond, :alerts %>
+                <!--
+                <button onclick="admin.alerts.newResponse(<%= @alert.id %>, '<%= @alert.name %>', 'comment')"
+                        title="<%= I18n.t('admin.alerts.buttons.comment', :name => @alert.id) %>"
+                        <%= @alert.status == 'resolved' ? 'disabled="true"' : '' %>
+                        >
+                    <%= I18n.t('alert.response.comment') %>
+                </button>
+                -->
+                <button onclick="admin.alerts.newResponse(<%= @alert.id %>, '<%= @alert.name %>', 'resolve', <%= @alerts_require_comment_text %>)"
+                        title="<%= I18n.t('admin.alerts.buttons.resolve', :name => @alert.id) %>"
+                        <%= @alert.status == 'resolved' ? 'disabled="true"' : '' %>
+                        >
+                    <%= I18n.t('admin.alerts.show.resolve') %>
+                </button>
+                <% if (!@alert.detail_list('fibre_line_id').nil? && !@alert.detail_list('fibre_line_id').empty? && !@alert.alert_details.find_by_key('position').nil?) -%>
+                <button onclick="addAudioButton('<%= @alert.id %>', '<%= @alert.detail_list('fibre_line_id') %>')" title="Audio" >
+                    <%= I18n.t('monitor.audio.listen') %>
+                </button>
+                <% end -%>
+            <% end %>
+        </center>
+        <div class="update_notifier">
+        </div>
+        <%= timezone_tag %>
+    </section>
+
+<% end %>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+ FILENAME:     simple.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-11-07
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+
+ This layout should be used for "simple" pages that do not want a header or footer and
+ who should have a scrollbar for large content.
+ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <%= include_i18n %>
+        <title>Fotech Solutions Web Application</title>
+        <link rel="stylesheet" href="/fontawesome-free-5.0.6/on-server/css/fontawesome-all.min.css" crossorigin="anonymous">
+        <%= fotech_gui_setup_tag [:layout], :cache => "__layout_simple_gui" %>
+        <%= javascript_include_tag 'prototype.js', 'rails-ujs.js', 'application.js',
+            'core.js',
+            'rest.js',
+            'fotech/common_util/dom.js',
+            'fotech/common_util/document.js',
+            :cache => "__layout_simple" %>
+        <%= stylesheet_link_tag "layout", "common.css", "core.css", "coreui.css", :media => "all" %>
+        <script type="text/javascript">
+            // Override these in your :head section if you want them to actually do something.
+            var onUnload = function() {};
+            var onLoad = function() {};
+            var onResize = function() {};
+            var onDOMReady = function() {};
+
+            onDOMReady = function() {
+                layout = new YAHOO.widget.Layout({
+                                         units: [ { position: 'top', body: 'header', height: '0px' },
+                                                 { position: 'bottom', body: 'footer', height: '30px' },
+                                                 { position: 'center', body: 'content', scroll: true }]});
+                layout.render();
+                layout.on('resize', function(){Event.fire(window, 'fotech:layout');})
+                Event.fire(window, 'fotech:layout');
+            }
+        </script>
+        <%= yield :head %>
+        <script type="text/javascript">
+            YAHOO.util.Event.onDOMReady(onDOMReady);
+        </script>
+    </head>
+    <body class="yui-skin-sam yui-layout" onunload="onUnload()">
+        <%= yield :body_top %>
+        <div id="header">
+            <%= yield :header %>
+        </div>
+        <div id="content">
+            <%= yield %>
+        </div>
+        <div id="footer">
+            <%= fotech_statusbar_tag %>
+        </div>
+        <%= yield :body_bottom %>
+    </body>
+</html>
+
+
+

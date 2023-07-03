@@ -1,0 +1,38 @@
+<div id="basic_alert_dialog"> 
+  <div class="hd"><div id="alarmTitle">Alarm!</div></div> 
+  <div class="bd">
+    <div class="std_alarm">
+        <div id="alarmImages">
+            <img id="component_image" src="/images/fotech/fibre/alerts/panoptes_large.png" />
+            <img id="alert" src="/images/alert_large.png" style="opacity:0.4;filter:alpha(opacity=40)" />
+        </div>
+        <div style="margin-left: 95px;">
+            <div><label for="alarmType"><%= I18n.t('common.headers.type') %>:</label><div id="alarmTypeText" class="common_alarm">Some value</div></div>
+            <div><label for="alarmTime"><%= I18n.t('main.portal.basic_alert.alertTime') %></label><div id="alarmTimeText" class="common_alarm">Some value</div></div>
+            <div><label for="alarmStatus"><%= I18n.t('common.headers.status') %>:</label><div id="alarmStatusText" class="common_alarm">Some value</div></div>
+            <div><label for="alarmComment"><%= I18n.t('main.portal.basic_alert.alertComment') %></label><div id="alarmCommentText" class="common_alarm">The Panoptes Unit has detected an internal component failure.</div></div>
+        </div>
+    </div>
+
+    <div id="dtl_alarm" class="dtl_alarm">
+        <div><label for="alarmType"><%= I18n.t('common.headers.type') %>:</label><div id="alarmTypeText" class="common_detail">Some value</div></div>
+        <div><label for="alarmTime"><%= I18n.t('main.portal.basic_alert.alertTime') %></label><div id="alarmTimeText" class="common_detail">Some value</div></div>
+        <div><label for="alarmStatus"><%= I18n.t('common.headers.status') %></label>:<div id="alarmStatusText" class="common_detail">Some value</div></div>
+        <div><label for="alarmComment"><%= I18n.t('main.portal.basic_alert.alertComment') %></label><div id="alarmCommentText" class="common_detail">Some value</div></div>
+        <div><label for="alarmDistance"><%= I18n.t('main.portal.basic_alert.alertDistance') %></label><div id="alarmDistanceText" class="common_detail">Some value</div></div>
+    </div>
+
+    <div id="hst_alarm" class="hst_alarm">
+        <table border="1" cellspacing="0" cellpadding='2'>
+            <caption><%= I18n.t('admin.alerts.show.history_caption') %></caption>
+            <tr class="header">
+                <th><%= I18n.t('common.headers.type') %></th>
+                <th><%= I18n.t('admin.alerts.headers.time') %></th>
+                <th><%= I18n.t('admin.alerts.headers.comments') %></th>
+            </tr>
+        </table>
+    </div>
+  </div> 
+</div> 
+
+

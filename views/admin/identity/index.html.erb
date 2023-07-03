@@ -1,0 +1,113 @@
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag, it causes errors. %>
+    <%= fotech_gui_setup_tag [:window, :menu, :dialog, :have_layout] %>
+    <%= stylesheet_link_tag "mainDisplay", :cache => "__admin_identity_index" %>
+    <%= javascript_include_tag 'fotech/common_util/math.js' %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() { <%= MenuRenderer.menu_javascript(@menu) %> });
+
+    function new_uuid(form) {
+        form.identity_uuid.value = fotech.util.uuid();
+        return false;
+    }
+
+    function submit_form(form, rowId, url) {
+        try {
+            disableRow(rowId);
+            new Ajax.Request(url, { method: 'post', parameters: Form.serialize(form) });
+        }
+        catch (e) {
+            alert(e);
+        }
+        return false;
+    }
+</script>
+
+<h1><%= I18n.t('admin.identity.title') %></h1>
+
+<% prefs = @identity_preferences %>
+<div id='identity_panel'>
+    <%= form_with({:id => "identity_form"}) do %>
+        <table class="bordered">
+            <tbody>
+                <tr>
+                    <th><%= I18n.t('common.headers.name') %></th>
+                    <td colspan="2"><input type='text' name='identity_name' size='40' <%= disabled_if(! can?(:manage, :system)) %> value="<%= escape_html(prefs['identity_name']) %>"/></td>
+                </tr>
+                <tr>
+                  <th><%= I18n.t('common.headers.serial_number') %></th>
+                  <td colspan="2"><input type='text' name='identity_serial_number' size='40' <%= disabled_if(! can?(:manage, :system)) %> value="<%= escape_html(prefs['identity_serial_number']) %>"/></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('common.headers.uuid') %></th>
+                    <td>
+                        <input type='text' name='identity_uuid' size='50' readonly="readonly" <%= disabled_if(! can?(:manage, :system)) %> value="<%= prefs['identity_uuid'] %>"/>
+                    </td>
+                    <td>
+                        <% if can? :manage, :system %>
+                            <button type='button' onclick="return new_uuid(this.form);"><%= I18n.t('common.button.new') %></button>
+                        <% end %>
+                    </td>
+                </tr>
+
+                <% if can? :manage, :system %>
+                <tr class='buttons'>
+                    <td colspan='3'>
+                        <button type='reset'><%= I18n.t('common.button.reset') %></button>
+                        <button type='submit' onclick="return submit_form(this.form, 'identity_panel', '/admin/identity/update_system');"><%= I18n.t('common.button.submit') %></button>
+                    </td>
+                </tr>
+                <% end %>
+            </tbody>
+        </table>
+    <% end %>
+</div>
+
+<% if @organizations.empty? %>
+<p>
+ERROR: No organizations to configure. The only way you should see this message is if
+the Fotech staff have not yet created an organization. If you see this message, and
+are not a Fotech employee, you will need to contact Fotech support.
+</p>
+<% else %>
+    <% @organizations.each do |org| %>
+        <% prefs = org.identity_preferences_cache %>
+        <div id="identity_panel_<%= org.id %>">
+            <%= form_with({:id => "identity_form_#{org.id}"}) do %>
+                <input type='hidden' name='organization_id' value="<%= org.id %>"/>
+                <p/>
+                <table class='bordered'>
+                    <caption>
+                        <%= I18n.t('common.headers.custom') %>
+                        <%= "(#{escape_html(org.name)})" if @organizations.length > 1 %>
+                    </caption>
+                    <tbody>
+                        <tr>
+                            <th><%= I18n.t('common.headers.name') %></th>
+                            <td><input type='text' name='identity_custom_name' size='40' value="<%= escape_html(prefs['identity_custom_name']) %>"/></td>
+                        </tr>
+                        <tr>
+                            <th><%= I18n.t('common.headers.id') %></th>
+                            <td><input type='text' name='identity_custom_id' size='40' value="<%= escape_html(prefs['identity_custom_id']) %>"/></td>
+                        </tr>
+                        <tr class='buttons'>
+                            <td colspan='2'>
+                                <button type='reset'><%= I18n.t('common.button.reset') %></button>
+                                <button type='submit' onclick="return submit_form(this.form, 'identity_panel_<%= org.id %>', '/admin/identity/update_custom');"><%= I18n.t('common.button.submit') %></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            <% end %>
+        </div>
+    <% end %>
+<% end %>
+
+

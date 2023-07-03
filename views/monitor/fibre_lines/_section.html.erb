@@ -1,0 +1,135 @@
+<%
+# FILENAME:     _section.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2009-05-25
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<div id="section_view" class="bordered" style="width:100%;height:100%;"></div>
+
+<script type="text/javascript">
+    function initSectionViewState() {
+
+        var threatLevelsForIcons = [<%= raw @threatLevelsForIcons.collect{|x| "'#{x}'"}.join(',') %>];
+
+        setStatusMessage("");
+        var fibreLine = getFibreLineById(0);
+        if (fibreLine) {
+          setViewStatusForFibre(fibreLine);
+        }
+        <% if @is_section_overview %> // TODO:  I don't know what this does, or means
+            setViewStatus(I18n.t('monitor.section.view_status', {section_name: '<%= @section_name %>'}));
+        <% end %>
+
+
+        var displayedFibreRoutes = [];
+        var imageURL = "";
+        if (displayedFibreLineId) {
+            var line = getFibreLineById(displayedFibreLineId);
+            if (line.diagramCalibrations) {
+                displayedFibreLineIds = displayedFibreLineIds.concat(line.id);
+                if (line.diagramCalibrations.fibre_distances) {
+                    displayedFibreRoutes.push(
+                        fotech.map.FibreRoute.FromDiagramCalibrations(line.id, line.name, line.diagramCalibrations, line.heliosUnit));
+                }
+                imageURL = "/portal/section_image?fibreLineId=" + line.id;
+            }
+        }
+        else {
+            //Bug 15958 Use a simple loop for(let line of fibreLines) when not supporting old browsers
+            var numFibreLines = fibreLines.length;
+            for(var i = 0; i < numFibreLines; i++) {
+                var line = fibreLines[i];
+                if (line.diagramCalibrations) {
+                    displayedFibreLineIds = displayedFibreLineIds.concat(line.id);
+                    if (line.diagramCalibrations.fibre_distances) {
+                        displayedFibreRoutes.push(fotech.map.FibreRoute.FromDiagramCalibrations(line.id, line.name, line.diagramCalibrations, line.heliosUnit));
+                    }
+                    <% if (not isPortal) %>
+                        imageURL = "/admin/fibre_lines/" + line.id + "/section_image";
+                    <% else %>
+                        imageURL = "/portal/section_image?fibreLineId=" + line.id;
+                    <% end %>
+                }
+            }
+        }
+
+        var sectionDisplay = new fotech.Diagram('section_view', {editing: false,
+            imageURL: imageURL,
+            height:<%= @diagramHeight || 0%>,
+            width:<%= @diagramWidth || 0%>,
+        });
+
+        var fibre_route_layer =  new fotech.map.FibreRouteLayer(sectionDisplay, fotech.gui.rootOpener().globalAlertManager,
+            new fotech.map.TrackStyle(fotech.gui.rootOpener().user.preferences['fibre-line-colour'],
+                5, .5, false));
+
+        for (var i = 0; i < displayedFibreRoutes.length; i++) {
+            fibre_route_layer.addFibreRoute(displayedFibreRoutes[i]);
+        }
+
+        var helioses_layer = new fotech.map.HeliosLayer(sectionDisplay);
+        <% (@helios_locations || []).each do |h_loc|
+            h_unit = h_loc.helios_unit
+            next if h_unit.nil? %>
+            helioses_layer.addHelios(<%= h_unit.id %>, '<%= h_unit.name %>', new LatLon( <%=h_loc.y_offset%>, <%=h_loc.x_offset%>));
+
+        <% end %>
+        var ref_points_layer = new fotech.map.RefPointLayer(sectionDisplay);
+        <% (@reference_point_locations || []).each do |r_point| %>
+            ref_points_layer.addReferencePoint(<%= r_point.id %>, '<%= r_point.reference_point.label %>', new LatLon( <%=r_point.y_offset%>, <%=r_point.x_offset%>));
+        <% end %>
+
+        markers_layer = new fotech.map.MarkersLayer(sectionDisplay);
+
+        var w = fotech.gui.rootOpener();
+
+        events_layer = new fotech.map.EventsLayer(sectionDisplay, w.globalEventManager, fibre_route_layer.routes);
+        alerts_layer = new fotech.map.AlertsLayer(sectionDisplay, threatLevelsForIcons, w.globalAlertManager, fibre_route_layer.routes);
+        event_connector_layer = new fotech.map.ConnectorLayer(sectionDisplay);
+
+        if(globalEventManager !== undefined){
+    //      globalEventManager.asArray().each(sectionDisplay.addEvent.bind(sectionDisplay));
+        }
+
+        sectionDisplay.render();
+
+        audio_marker_layer = new fotech.map.AudioLayer(sectionDisplay);
+
+        var audio_marker_editor = new fotech.map.Audio(sectionDisplay, "name", '/images/stream-sound-on-16x16.png', fibre_route_layer.routes);
+        var new_callback = function (id, location ) {
+            fotech.audio.newAudio();
+        };
+        var moved_callback = function (id, location ) {
+
+            // TODO Perry, this will have to change, this is an engineering display!!!
+            fotech.audio.change_lat_lon_field(id, location);
+        };
+        var clicked_callback = function (id, location ) {
+        };
+        audio_marker_editor.subscribe(new_callback, moved_callback, clicked_callback);
+
+        enableMenus();
+
+        fibre_route_layer.showBreaks(<%= @showBrokenFibre  %>);
+
+        if(window.jsevent && jsevent.isVisible()){
+            popupEventWindow(jsevent.event);
+        }
+
+        return sectionDisplay;
+    }
+
+    <% if @initImmediate %>
+        jsmap = initSectionViewState();
+    <% end %>
+</script>
+

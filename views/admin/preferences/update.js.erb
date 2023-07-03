@@ -1,0 +1,29 @@
+<%#
+ FILENAME:     update.js.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-12-15
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ 
+ We need to override the admin update javascript to update the preference the was modified
+ in the monitor_application user object.
+ %>
+
+
+<% if @error %>
+    alert('The system was not able to update the database.\nError: <%= escape_javascript(@error.to_s) %>');
+    window.location.reload(true);
+<% else %>
+    if (fotech.gui.rootOpener().user) {
+        fotech.gui.rootOpener().user.preferences['<%= @key %>'] = "<%= @value %>";
+    }
+    enableRow('row_<%= @id %>');
+<% end %>
+

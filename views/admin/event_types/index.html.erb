@@ -1,0 +1,120 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-07-29
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :have_layout] %>
+    <%= javascript_include_tag \
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            'fotech/common_gui/form.js',
+            'fotech/common_gui/windows.js',
+            'admin/event_types.js',
+            :cache => "__admin_event_types_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', :cache => "__admin_event_types_index" %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        fotech.gui.initEditableFields(admin.event_clearing.editableFieldChanged);
+    });
+
+    click_deleteEventType = function(event_type_id, event_type_name) {
+      if (!confirm(I18n.t('common.confirm_delete', {name: event_type_name}))) return;
+
+      msg = ""
+      error = false
+      req = new Ajax.Request(
+        '/admin/event_types/' + event_type_id + '?authenticity_token=' + <%= raw form_authenticity_token.inspect %>,
+        {
+          method: 'delete',
+          evalScripts : true,
+          onSuccess: function(transport){
+            if (transport.status == 200) {
+              if (transport.responseJSON && transport.responseJSON.status == "success") {
+                Element.remove($('alert_' + event_type_id));
+                return;
+              }
+            }
+            error = true;
+            msg = (transport.responseJSON ? transport.responseJSON.error : false) || I18n.t('errors.not_found');
+          }.bind(this),
+          onComplete: function(transport) {
+            error && alert(msg || I18n.t('errors.five_hundred.header'));
+          }
+        }
+      );
+    };
+
+    function check_for_type_file_upload() {
+      var file_type = $('upload_file_type');
+      if (file_type && file_type.getValue().substr(-3).toLowerCase() == 'tar') {
+        return true;
+      }
+
+      alert(file_type.readAttribute('file_type_error'));
+      return false;
+    }
+</script>
+
+<% if flash[:error] %>
+    <div style="margin:10px 0;" class="warning_box"><%= I18n.t(flash[:error]) %></div>
+<% end %>
+<% if flash[:success] %>
+    <div style="margin:10px 0;" class="success_box"><%= I18n.t("admin.configuration.event_types.custom_upload_success", {:count => flash[:success]}) %></div>
+<% end %>
+
+<div>
+<fieldset style="display:inline;min-width:325px;">
+    <legend><%= I18n.t('admin.configuration.event_types.existing_header') %></legend>
+
+    <table id="existing_event_types_table">
+      <tr>
+          <th><%= I18n.t('common.headers.id') %></th>
+          <th><%= I18n.t('alert.detail_keys.event_type') %></th>
+          <th><%= I18n.t('alert.detail_keys.description') %></th>
+          <th><%= I18n.t('alert.detail_keys.icon') %></th>
+          <th>Action</th>
+      </tr>
+      <% @eventTypes.each do |eType| %>
+          <tr id='alert_<%= eType.id %>'>
+              <td><%= eType.id %></td>
+              <td><%= eType.name %></td>
+              <td><%= eType.description %></td>
+              <td><%= image_tag(eType.image_path 'small') %></td>
+              <td>
+                <% unless eType.in_use? %>
+                    <%= link_to image_tag('fotech/common_gui/delete-16x16.png'), "javascript:click_deleteEventType(#{eType.id}, \"#{eType.name}\")", { :name => eType.name, :typeid => eType.id } %>
+                <% end %>
+          </tr>
+      <% end %>
+    </table>
+</fieldset>
+</div>
+
+<div style="padding-top:10px;">
+<fieldset style="display:inline;min-width:325px;">
+    <legend><%= I18n.t('admin.configuration.event_types.custom_header') %></legend>
+    <%= form_with url: {:action => :upload_custom_event_types}, html: {:id => "uploadEventTypesForm", :multipart => true, :style => "float: left;"}, local: true do %>
+        <%= file_field_tag 'upload_file_type', :file_type_error => I18n.t('admin.fibre_lines.man_cal.file_type_error') %>
+        <%= submit_tag I18n.t('common.button.upload'), :id => "eventTypesUpload", :onclick => "return check_for_type_file_upload()", :accept => ".tar" %>
+    <% end %>
+</fieldset>
+</div>

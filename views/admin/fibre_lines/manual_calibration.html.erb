@@ -1,0 +1,140 @@
+<%#
+ FILENAME:     section_calibrate.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-05-25
+
+ LAST CHANGE:
+ $Author: ksimard $
+   $Date: 2010-10-01 14:46:40 -0600 (Fri, 01 Oct 2010) $
+    $Rev: 2776 $
+    $URL: https://hockleyd.homeunix.net/svn/trunk/app/panoptes/panoptes-rails/app/views/admin/fibre_lines/section_calibrate.html.erb $
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% content_for :head do %>
+    <%= javascript_include_tag 'admin/manual_fibre_line_configuration.js' %>
+    <%= javascript_include_tag 'fotech/common_util/math.js' %>
+    <%= javascript_include_tag 'fotech/common_util/pub/latlon.js' %>
+    <%= javascript_include_tag 'fotech/common_util/pub/geo.js' %>
+
+<% end %>
+
+<%= javascript_tag do %>
+      window.close();
+<% end if @window_close %>
+
+<%= javascript_tag do %>
+    alert('<%= @error %>');
+<% end if @error %>
+
+</br>
+<div style="float: left;">
+    <p>
+        <%= t('admin.fibre_lines.man_cal.fibre_line', :name => @fibre_line.name) %>
+    </p>
+
+    <%= form_for @fibre_line, :url => "/admin/fibre_lines/#{@fibre_line.id}/manual_calibration", :html => {:method => 'put', :id => 'calibrationsForm',  :validation_error => t('admin.fibre_lines.man_cal.validation_error') } do |fibre_line_form| %>
+        <table id="calibration_table" class="bordered">
+            <tr id="cal_header">
+                <th><%= t('admin.alerts.headers.latitude') %></th>
+                <th><%= t('admin.alerts.headers.longitude') %></th>
+                <th><%= t('common.headers.distance') %> (<%= @distance_units %>)</th>
+                <th><%= t('common.headers.commands') %></th>
+            </tr>
+            <% @calibrations.each_with_index do |calibration, i| %>
+                <%= fibre_line_form.fields_for calibration, :index => i do |calibration_form|
+                    %>
+                    <tr id='<%= "row_#{i}" %>' name="cal_row" row_id='<%= i %>'>
+                        <td>
+                            <%= calibration_form.text_field :latitude_raw, :value => '' %>
+                            <%= calibration_form.hidden_field :latitude %>
+                        </td>
+                        <td>
+                            <%= calibration_form.text_field :longitude_raw, :value => '' %>
+                            <%= calibration_form.hidden_field :longitude %>
+                        </td>
+                        <td>
+                            <%= calibration_form.text_field :distance_raw, :value => !calibration.distance ? '' : convert(calibration.distance, 'm', @distance_units, @distance_precision) %>
+                            <%= calibration_form.hidden_field :distance %>
+                        </td>
+                        <td style="text-align:center">
+                            <table>
+                                <tr>
+                                    <td style="border: 0px; width: 33%;">
+                            <%= image_tag('arrow_down_blue.gif', :class => 'image_link',
+                                :name => 'move_down', :row_id => i) %>
+                            </td>
+                            <td style="border: 0px; width: 33%;">
+                            <%= image_tag('fotech/common_gui/delete-16x16.png', :class => 'image_link',
+                                :alt => I18n.t('common.button.delete', :name => ''),
+                                :title => I18n.t('common.button.delete', :name => ''),
+                                :name => 'delete_button', :row_id => i ) %>
+                            </td>
+                            <td style="border: 0px; width: 33%;">
+                            <%= image_tag('arrow_up_blue.gif', :class => 'image_link',
+                                :name => 'move_up', :row_id => i)  %>
+                            </td>
+                        </table>
+                        </td>
+                    </tr>
+                <% end %>
+            <% end %>
+                <tr class="noprint">
+                    <td colspan="3"></td>
+                    <td style="text-align:center">
+                        <%= image_tag('add-16x16.png', :class => 'image_link',
+                            :alt => t('common.button.add'),
+                            :title => t('common.button.add'),
+                            :id => 'add_calibration') %>
+                    </td>
+                </tr>
+        </table>
+        <div style="float:right; margin-top: 10px;">
+            <%= submit_tag t('common.button.submit'), :id => 'submitCalibrations', :disabled => !@needs_save %>
+        </div>
+
+    <% end %>
+        <div style="margin-top: 10px">
+            <div style="float:left">
+                <%= link_to image_tag('/images/download_csv-16x16.png') + " " + I18n.t('admin.fibre_region.download'), "/admin/fibre_lines/#{@fibre_line.id}/download_manual_calibration.csv" %>
+                <br/>
+                <%= form_tag({:action => :upload_manual_calibrations_csv, :id => @fibre_line.id}, {:id => "uploadCSVForm", :multipart => true, :style => "float: left;"}) do %>
+                    <b><%= t('admin.fibre_lines.man_cal.upload_csv_file') %></b>
+                    <%= file_field_tag 'csv', :file_type_error => t('admin.fibre_lines.man_cal.file_type_error') %>
+                    <%= submit_tag t('common.button.upload'), :id => "csvFileUpload", :disabled => true %>
+                <% end %>
+                <br/>
+                <%= form_tag({:action => :upload_calibrations, :id => @fibre_line.id}, {:id => "uploadForm", :multipart => true, :style => "float: left;"}) do %>
+                    <b><%= t('admin.fibre_lines.man_cal.upload_klm_file') %></b>
+                    <%= file_field_tag 'kml', :file_type_error => t('admin.fibre_lines.man_cal.file_type_error') %>
+                    <%= submit_tag t('common.button.upload'), :id => "fileUpload", :disabled => true %>
+                <% end %>
+            </div>
+        </div>
+</div>
+
+<script>
+    $$('input[id$=latitude][type=hidden]').each(function(el){
+        var latEl = el;
+        var lngEl = $(el.id.gsub(/latitude/,'longitude'));
+        var lat = el.value;
+        var lng = lngEl.value;
+        var latlng = new LatLon(parseFloat(lat),parseFloat(lng));
+        var preferences = fotech.gui.rootOpener().user.preferences;
+        var latlngFormat = preferences['units-latlng'];
+        var latlngPrecision = preferences['precision-latlng'];
+        if(latlngFormat == 'deg_dec'){
+            $(latEl.id + '_raw').value = latlng._lat.toFixed(latlngPrecision);
+            $(lngEl.id + '_raw').value = latlng._lon.toFixed(latlngPrecision);
+        }
+        else if(latlngFormat == 'dms'){
+            var latlng = latlng.toString(latlngFormat, latlngPrecision).split(',');
+            $(latEl.id + '_raw').value = latlng[0];
+            $(lngEl.id + '_raw').value = latlng[1];
+        }
+
+    });
+
+</script>

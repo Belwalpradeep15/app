@@ -1,0 +1,39 @@
+<%#
+ COPYRIGHT:
+ This file is Copyright © 2019 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+
+<div id="panoptes_unit_dialog" style="visibility: hidden;" class="noprint">
+    <div class="hd">
+        <%= I18n.t('admin.panoptes_units.panoptes_unit_dialog.title') %>
+    </div>
+    <div class="bd">
+        <%= form_with :id => 'panoptes_unit_form' do -%>
+            <table class="padded">
+                <tr>
+                  <th><%= I18n.t('admin.helios_units.host') %></th>
+                  <td ><%= text_field_tag 'host_name', nil, :size => 55 %></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.panoptes_units.panoptes_unit_dialog.name') %></th>
+                    <td ><%= text_field_tag 'name', nil, :size => 55 %></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('common.headers.serial_number') %></th>
+                    <td><%= text_field_tag 'serial_number', nil, :size => 55  %></td>
+                </tr>
+
+                <tr>
+                    <th><%= I18n.t('alert.detail_keys.ws_port') %>:</th>
+                    <td ><%= text_field_tag 'ws_port', SYSTEM_CONFIG['communications']['websocket_port'], :size => 10 %></td>
+                </tr>
+
+                <tr>
+                    <th><%= I18n.t('admin.helios_units.helios_unit_dialog.active') %></th>
+                    <td><%= check_box_tag 'is_active', '1', true %></td>
+                </tr>
+            </table>
+        <% end -%>
+    </div>
+</div>

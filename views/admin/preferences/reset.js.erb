@@ -1,0 +1,26 @@
+<%#
+ FILENAME:     reset.js.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-12-15
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% if @error %>
+    alert('The system was not able to update the database.\nError: <%= escape_javascript(@error.to_s) %>');
+<% else %>
+    if (fotech.gui.rootOpener().user) {
+        <%= preferences_tag(@preference_defs, "fotech.gui.rootOpener().user.preferences") %>
+    }
+<% end %>
+window.location.reload(true);
+
+
+

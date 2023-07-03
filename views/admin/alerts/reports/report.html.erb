@@ -1,0 +1,21 @@
+<% content_for :head do %>
+    <%= stylesheet_link_tag "reports" %>
+<% end %>
+
+<%= render :partial => '/admin/alerts/reports/' + @section -%>
+
+<section class="report">
+    <form method="GET" action="<%= url_for( :only_path => true ) %>">
+        <h1><%= @report_title %></h1>
+        <div class="control">
+            <% formparams = flatten_parameters( params, @override ) %>
+            <% formparams.each do | param | %>
+                <%=raw param %>
+            <% end %>
+            <%= yield :custom %>
+            <button type="submit"><span class="fa fa-search"></span> Run report</button>
+            <button type="submit" name="format" value="csv"><span class="fa fa-file-alt"></span> Download CSV</button>
+        </div>
+        <%= yield :content %>
+    </form>
+</section>

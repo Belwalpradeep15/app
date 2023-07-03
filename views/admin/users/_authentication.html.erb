@@ -1,0 +1,35 @@
+<% if false %><!--
+#  _authentication.html.erb
+#  panoptes
+#
+#  Created by Steven W. Klassen on 2011-10-12.
+#  Copyright 2011 Fotech Solutions (Canada) Ltd. All rights reserved.
+--><% end %>
+
+<div class="bordered" style="max-width: 5in;">
+    <% auth = APP_CONFIG['monitor']['auth_provider'] %>
+    <p class="div_title"><%= I18n.t('admin.users.authentication_type', :auth => I18n.t("admin.users.authentication.#{auth}")) %></p>
+    <% if auth == 'anonymous' %>
+        <p><%= I18n.t('admin.users.anonymous_authentication') %></p>
+    <% elsif auth == 'mac_ldap' %>
+        <p><%= I18n.t('admin.users.mac_ldap_authentication') %></p>
+    <% elsif auth == 'apache' %>
+        <p><%= I18n.t('admin.users.apache_authentication') %></p>
+        <input type="checkbox" name="reset_password" id="reset_password" value="true"
+            onchange="_user_dialog.enablePasswordFields(this.form, this.checked);">
+            <%= I18n.t('admin.users.reset_password') %>
+        </input>
+        <table id="reset_password_table" class="indented disabled">
+            <tr>
+                <th><%= I18n.t('admin.users.new_password') %>:</th>
+                <td><input type="password" name="new_password" disabled="disabled"></td>
+            </tr>
+            <tr>
+                <th><%= I18n.t('admin.users.confirm_password') %>:</th>
+                <td><input type="password" name="confirm_password" disabled="disabled"></td>
+            </tr>
+        </table>
+    <% else %>
+        <p><%= I18n.t('admin.users.invalid_authentication', :auth => auth) %></p>
+    <% end %>
+</div>

@@ -1,0 +1,64 @@
+<%#
+ FILENAME:     _status_history.html.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   12-01-04
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2012 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+
+<div id="status_history">
+    <div class="hd">
+        Status history
+    </div>
+    <div class="bd">
+        <table id="statusList" style="list-style:none;padding:0px;margin:0px;margin-bottom:20px;">
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    var statusHistoryDialog = new YAHOO.widget.Panel("status_history", {
+        context:['statusbar','br','tr',['beforeShow','windowResize']],
+        visible:false,
+        width:"300px",
+        close:false,
+        draggable:false,
+        constraintoviewport:true
+    });
+    statusHistoryDialog.render();
+    if(typeof overlayManager != 'undefined')
+        overlayManager.register(statusHistoryDialog);
+
+    statusHistoryDialog.addMessage = function(message){
+        var row = new Element('tr');
+        row.appendChild(new Element('td', {style:'vertical-align:top'}).update(message.time.format("HH:MM:ss")));
+        row.appendChild(new Element('td').update(message.msg));
+
+        $('statusList').insert({top:row});
+        
+        while($('statusList').childElements().length > 10){
+            $('statusList').childElements().last().remove();
+        }
+        statusHistoryDialog.cfg.setProperty('context',['statusbar','br','tr']);
+    }
+    Event.observe(fotech.gui.rootOpener(), 'statusMessage:add', function(ev){
+        statusHistoryDialog.addMessage(ev.memo);
+    });
+
+    function toggleStatusHistoryDialog(){
+        if(statusHistoryDialog.cfg.getProperty('visible'))
+            statusHistoryDialog.hide();
+        else{
+            statusHistoryDialog.show();
+        }
+    }
+    $('statusbar').observe('click', toggleStatusHistoryDialog);
+</script>
+

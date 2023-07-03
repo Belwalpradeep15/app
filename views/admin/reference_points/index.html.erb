@@ -1,0 +1,109 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-09-12
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :window, :have_layout] %>
+    <%= javascript_include_tag \
+            'admin/reference_point_new_dialog.js',
+            'admin/reference_point_section_location_dialog.js',
+			'admin/reference_points.js',
+            'fotech/common_util/string.js',
+            'fotech/common_util/pub/latlon.js',
+            'fotech/common_util/pub/geo.js',
+            :cache => "__admin_reference_points_index" %>
+    <script type="text/javascript">
+        var childWindows = new fotech.gui.ChildWindowManager(window);
+        onUnload = function() {
+            childWindows.forEach(function (key, window) { window.close(); });
+        }
+    </script>
+
+<% end %>
+
+<% content_for :body_top do %>
+  <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+  </div>
+<% end %>
+
+<%= javascript_tag do %>
+  var jsmenubar = null;
+  Event.observe(window, 'load', function() {
+    <%= MenuRenderer.menu_javascript(@menu) %>
+    fotech.gui.initEditableFields(admin.reference_points.editableFieldChanged);
+  });
+<% end %>
+
+<div>
+<%= link_to I18n.t('admin.orgs.header'), {:controller => 'organizations'}, {:class => 'navigational_link'} -%> >
+<%=  @organization.name %> >
+<%= I18n.t('admin.reference_points.title') %>
+</div>
+<%= render :partial => '/admin/update_form' %>
+
+<table class="bordered user_list">
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('admin.reference_points.label') %></th>
+        <th><%= I18n.t('admin.reference_points.latlng') %></th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <% @reference_points.each do |reference_point| %>
+		<tr id='row_<%= reference_point.id %>'>
+		    <td><%= reference_point.id %></td>
+			<td><span id='label_<%=@organization.id%>_<%= reference_point.id %>' class='editable'><%= reference_point.label %></span></td>
+			<td><span id='latlng_<%=@organization.id%>_<%= reference_point.id %>' class='editable'><%= convertLatLngForDisplay reference_point.latitude, reference_point.longitude, 'deg_dec', @latlng_format, @latlng_precision %></span></td>
+			<td class="noprint">
+			    <center>
+					<%= link_to image_tag('engineering-16x16.png',
+                                  :alt => I18n.t('admin.reference_points.set_reference_point_locations', :name => reference_point.label),
+                                  :title => I18n.t('admin.reference_points.set_reference_point_locations', :name => reference_point.label),
+                                       :remote => true,
+									:class => 'image_link'),
+									:update => "reference_point_section_location_dialog_body",
+									:url => "/admin/organizations/#{@organization.id}/reference_points/#{reference_point.id}/edit_section_location",
+                                    :complete => "admin.reference_points.editReferencePointSectionLocation(#{@organization.id},#{reference_point.id});",
+									:method => :get
+					%>
+
+					<%= image_tag('fotech/common_gui/delete-16x16.png',
+					    :alt => I18n.t('common.button.delete', :name => reference_point.label),
+					    :title => I18n.t('common.button.delete', :name => reference_point.label),
+						:onclick => "admin.deleteRecord('/admin/organizations/#{@organization.id}/reference_points', #{reference_point.id})",
+						:class => 'image_link',
+						:style => 'padding-left: 8px;') %>
+				</center>
+			</td>
+		</tr>
+    <% end %>
+    <tr class="noprint">
+        <td colspan="3"></td>
+        <td style="text-align: center">
+            <%= image_tag('add-16x16.png', :class => 'image_link',
+                :alt => I18n.t('admin.reference_points.add'),
+                :title => I18n.t('admin.reference_points.add'),
+                :onclick => "admin.reference_points.newReferencePoint(#{@organization.id})" ) %>
+        </td>
+    </tr>
+</table>
+
+<hr class="noprint"/>
+
+<%= link_to I18n.t('admin.common.return_to_orgs'), {:controller => 'organizations'}, {:class => 'navigational_link noprint'} -%>
+
+<%= dialog_wrapper "reference_point_section_location", :title => 'admin.reference_points.reference_point_section_location_dialog.title' %>
+<%= dialog_wrapper "reference_point_new", :title => 'admin.reference_points.reference_point_new_dialog.title', :content => render(:partial => '/admin/reference_points/form') %>
+
+

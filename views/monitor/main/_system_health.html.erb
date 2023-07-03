@@ -1,0 +1,27 @@
+
+<%
+# FILENAME:     _system_health.html.erb
+# AUTHOR:       Aaron Rustad
+# CREATED ON:   2010-09-22
+#  
+# LAST CHANGE:
+# $Author:$
+#   $Date:$
+#    $Rev:$
+#    $URL:$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+<% isFixed ||= false
+   options ||= {}
+   height = options['height']
+
+%>
+
+<div class="hd">
+    <%= I18n.t('main.system_health.title') %>
+</div>
+<div id="system_health_table_div" class="bd legend is_busy" style="<%= "height:#{height};overflow-y:auto;" if height %>">
+</div>
+<%= javascript_include_tag 'monitor/system_health.js' %>

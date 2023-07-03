@@ -1,0 +1,274 @@
+<%
+# LAST CHANGE:
+# $Author: $
+#   $Date: $
+#    $Rev: $
+#    $URL: $
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+    <% content_for :head do %>
+        <%= fotech_gui_setup_tag [:dialog, :calendar, :menu, :window, :have_layout], :cache => "__admin_schedule_gui" %>
+        <%= fotech_core_mapping_components_tag  %>
+        <%= fotech_mapping_impl_tag %>
+
+        <%= render :partial => '/monitor/fibre_lines/fibre_lines' %>
+        <%= javascript_include_tag \
+                'admin/map_for_schedule.js',
+                'admin/fibre_lines.js',
+                'fotech/common_util/string.js',
+                'fotech/common_util/math.js',
+                :cache => "__admin_schedule" %>
+        <%= fotech_mapping_javascript_include_tag 'fotech/mapping/select_region.js' %>
+        <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_schedule_show" %>
+    <% end %>
+
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+    });
+</script>
+
+    <% content_for :body_bottom do %>
+        <script type="text/javascript">
+            if (fotech.map.Map.haveMapAPI) {
+                Event.observe(window, 'load', function() {
+                    var options = {layers: <%= raw APP_CONFIG['monitor']['map_layers'].to_json %>,
+                                   initialLayer: '<%= @initial_map_type %>'};
+                    initialize(options);
+                    //Bug 15958 Use a simple loop for(let line of fibreLines) when not supporting old browsers
+                    var numFibreLines = fibreLines.length;
+                    for(var i = 0; i < numFibreLines; i++) {
+                        var line = fibreLines[i];
+                        fibre_route_layer.addFibreRoute(new fotech.map.FibreRoute(line.id,
+                            line.name,
+                            line.route,
+                            line.geoSpatialCalibrations));
+                    }
+                    jsmap.zoomToBounds();
+                    //update boundsList and make the map highlight all the currently selected regions
+                    $$('.region_row input[name^=regions]').each(function(input){
+                        var boundsString = input.value;
+                        if(boundsString == ""){
+                            return;
+                        }
+                        var senw = boundsString.split(',');
+                        var se = senw[0].split(' ');
+                        var nw = senw[1].split(' ');
+                        var latlngBnds = new fotech.geom.gis.Bounds([new LatLon(parseFloat(se[0]),parseFloat(se[1])),new LatLon(parseFloat(nw[0]),parseFloat(nw[1]))]);
+                        boundsList[parseInt(input.name.match(/\d+/)[0])] = latlngBnds;
+                    });
+
+                    // $('tz_offset').value = (new Date().getTimezoneOffset() * -60);  //this will get us the timezone in -dddd format
+                    //this will get us the timezone in -dddd format
+                    //correct all exception dates
+                    $$('#schedule_exception_table input[name$=start],#schedule_exception_table input[name$=end]').each(function(el){
+                        el.value = Date.parseXMLDateTime(el.value).format('yyyy-mm-dd HH:MM')
+                    });
+
+                    //this seems to fail if it is run right away..
+                    // yeah, before the map is rendered, it won't work..
+                    highlightFibreRoutes(jsmap, boundsList.compact());
+                });
+            }
+            else {
+                $('map').insert('<%= I18n.t('admin.fibre_lines.map_cal.no_view') %>');
+                <% unless APP_CONFIG['monitor']['map_provider'] == 'none' %>
+                    setMapUnavailableMessage();
+                <% end %>
+            }
+                   var scheduleDialog = new fotech.gui.ValidatingDialog('', {}, 'schedule_form');
+                   scheduleDialog.validateFields = validateSchedule;
+        </script>
+    <% end %>
+
+    <table id="schedule_content" style="width:100%;height: 100%">
+        <tr>
+            <td style="width:350px">
+        <div id="editing" style="height:100%;overflow:auto;">
+            <a href="/admin/schedule/?tz_offset=<%=params[:tz_offset] %>" ><%= I18n.t('admin.schedule.return_to_list') %></a><br/>
+            <%= form_with url: "/admin/schedule/#{params[:id]}", method: :put, html: {id: 'schedule_form'}, local: true do %>
+                <%= hidden_field_tag 'tz_offset', params[:tz_offset] %>
+                <table>
+                    <tr>
+                        <th><%= I18n.t('common.headers.name')%></th>
+                        <td><%= text_field :schedule, :name%> </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <div style="padding-bottom:5px">
+                            <%= I18n.t('admin.schedule.start_date')%>
+                            </div>
+                            <div class="non_repeating_row" <%=raw 'style="display:none"' if @schedule.is_repeating %>>
+                            <%= I18n.t('admin.schedule.end_date')%>
+                            </div>
+                            <div class="repeating_row" <%=raw 'style="display:none"' unless @schedule.is_repeating%>>
+                            <%= I18n.t('admin.schedule.time')%>
+                            </div>
+                        </th>
+                        <td>
+                            <%= fotech_calendar 'scheduleStartDate','', @start_date, {:showsTime => false, :inputFieldName => 'schedule[start_date]', :ifFormat => "%Y-%m-%d"}%>
+                            <br class="repeating_row" <%=raw 'style="display:none"' unless @schedule.is_repeating %> />
+                            <%= text_field :schedule, :start_time, {:style=>"width:50px;",
+                              :value=>(@start_time ? @start_time : '')} %> <small>(HH:MM)</small>
+                                <span class="non_repeating_row" <%=raw 'style="display:none"' if @schedule.is_repeating %>>
+                                    <%= fotech_calendar 'scheduleEndDate','', @end_date, {:showsTime => false, :inputFieldName => 'schedule[end_date]', :ifFormat => "%Y-%m-%d"}%>
+                                </span>
+                            <span class="repeating_row" <%=raw 'style="display:none"' unless @schedule.is_repeating%>><%= I18n.t('admin.schedule.to')%></span>
+		            <%= text_field :schedule, :end_time, {:style=>"width:50px;",
+                                  :value=>(@end_time ? @end_time : '')}%> <small>(HH:MM)</small>
+		</td>
+	    </tr>
+	    <tr>
+		<th><%= I18n.t('admin.schedule.repeating')%></th>
+		<td><%= check_box :schedule, :is_repeating , :onclick => "$$('.repeating_row, .non_repeating_row').invoke('toggle')"%>
+	    </tr>
+	    <tr class="repeating_row" <%=raw 'style="display:none"' unless @schedule.is_repeating %>>
+		<th><%= I18n.t('admin.schedule.repeats_on')%></th>
+		<td>
+		    <% %w(sunday monday tuesday wednesday thursday friday saturday).each_with_index do |day, index| %>
+		    <%= check_box_tag 'repeating_days[]', index, (@repeating_days || '')[/#{index}/] %>
+		    <%= I18n.t("admin.schedule.#{day}") %>
+		    <% end -%>
+		</td>
+	    </tr>
+	    <tr class="repeating_row" <%=raw 'style="display:none"' unless @schedule.is_repeating %>>
+		<th><%= I18n.t("admin.schedule.repeat_end_date")%></th>
+		<td>
+		    <%= fotech_calendar 'scheduleRepeatEndDate','', @repeat_ends_on, {:showsTime => false, :inputFieldName => 'schedule[repeat_ends_on]', :ifFormat => "%Y-%m-%d"}%>
+		</td>
+	    </tr>
+	    <tr>
+		<th><%= I18n.t('admin.schedule.regions') %></th>
+		<td></td>
+	    </tr>
+	    <tr>
+		<td></td>
+		<td>
+		    <div style="max-height:200px;overflow:auto;width:100%">
+			<% @schedule.regions.each do |region| %>
+			<div id="<%=region.id%>_region_row" class="region_row" style="width:100%;height:20px;" onmouseover="regionRowMouseOver(this)" onmouseout="regionRowMouseOut(this)">
+			    Region <%= region.id %><a style="float:right" href="javascript:removeSelectedRegion(<%=region.id%>);"><img src="/images/fotech/common_gui/delete-16x16.png"></a>
+                                    <input type="hidden" name="regions[<%=region.id%>]" value="<%= region.get_bounds_string %>"/>
+                                </div>
+                                <% end %>
+                                <script id="region_row_template" type="text/html">
+                                <div id="#{id}_new_region_row" class="region_row" style="width:100%;height:20px;" onmouseover="regionRowMouseOver(this)" onmouseout="regionRowMouseOut(this)">
+                                    Region #{display_id}<a style="float:right" href="javascript:removeSelectedRegion('#{id}_new');"><img src="/images/fotech/common_gui/delete-16x16.png"></a>
+                                    <input type="hidden" name="new_regions[]" value="#{swLat} #{swLng},#{neLat} #{neLng}"/>
+                                </div>
+                                </script>
+                             </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td><%= I18n.t('admin.schedule.to_add_region') %></td>
+                    </tr>
+                    <tr>
+                        <th colspan="2"><%= I18n.t('admin.schedule.alerts_to_suppress') %></th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>
+                            <div style="max-height:200px;overflow:auto">
+                            <% @alert_types.sort_by{|x| I18n.t('alert.name.'+x)}.each do |a_type| %>
+                            <%# // Loading one of the translation file to display custom event type description %>
+                                <% translation = YAML.load_file("config/locales/en.yml") %>
+                                <%= check_box_tag "suppress_alerts[]", a_type, @schedule.is_suppressing?(a_type) %>
+                                <% if translation["en"]["alert"]["name"].keys.include?(a_type) %>
+                                     <%= I18n.t('alert.name.'+a_type) %><br/>
+                                <% else %>
+                                     <%= @alert_types_description[a_type] %><br/>
+                                <% end %>
+                            <% end %>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr class="schedule_exception_row">
+                        <th colspan="2"><%= I18n.t('admin.schedule.exception_windows') %></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div style="max-height:130px;overflow:auto;">
+                            <table id="schedule_exception_table">
+                                <% @schedule.exceptions.each do |exception| %>
+                            	<tr class="<%= exception.id %>_schedule_exception_row">
+
+                                    <td><%= I18n.t('common.headers.name') %></td>
+                                    <td>
+                                        <input type="text" name="<%=exception.id%>_schedule_exception_name" size="16" value="<%= exception.name%>">
+                                    </td>
+                                    <td>
+                                        <a href="javascript:removeExceptionLine('<%= exception.id %>')"><img src="/images/fotech/common_gui/delete-16x16.png"></a>
+                                    </td>
+                                </tr>
+                            	<tr class="<%= exception.id %>_schedule_exception_row">
+                                    <td><%= I18n.t('admin.schedule.exception.from') %></td>
+                                    <td><%= fotech_calendar "#{exception.id}_schedule_exception_start",'',
+                                            exception.start_time.xmlschema, {:inputFieldName => "#{exception.id}_schedule_exception_start"}%></td>
+                                </tr>
+                                <tr class="<%= exception.id %>_schedule_exception_row">
+                                    <td><%= I18n.t('admin.schedule.exception.to') %></td>
+                                    <td><%= fotech_calendar "#{exception.id}_schedule_exception_end",'', exception.end_time.xmlschema, {:inputFieldName => "#{exception.id}_schedule_exception_end"}%></td>
+                                </tr>
+                                <% end %>
+                                <script id="schedule_exception_row_template" type="text/html">
+                            	<tr class="#{id}_schedule_exception_row">
+                                    <td><%= I18n.t('common.headers.name') %></td>
+                                    <td>
+                                        <input type="text" name="#{id}_schedule_exception_name"  value="">
+                                    </td>
+                                    <td>
+                                        <a href="javascript:removeExceptionLine('#{id}')"><img src="/images/fotech/common_gui/delete-16x16.png"/></a>
+                                    </td>
+                                </tr>
+                            	<tr class="#{id}_schedule_exception_row">
+                                    <td><%= I18n.t('admin.schedule.exception.from') %></td>
+                                    <td>
+                                        <input type="text" name="#{id}_schedule_exception_start" id="#{id}scheduleExceptionStartId" size="12" value="">
+                                        <img alt="Img" id="#{id}scheduleExceptionStartImg" onmouseout="this.style.background='';" onmouseover="this.style.background='red';" src="/javascripts/fotech/common_gui/jscalendar/img.gif" style="cursor: pointer;" title="">
+                                    </td>
+                                </tr>
+                                <tr class="#{id}_schedule_exception_row">
+                                    <td><%= I18n.t('admin.schedule.exception.to') %></td>
+                                    <td>
+                                        <input type="text" name="#{id}_schedule_exception_end" id="#{id}scheduleExceptionEndId" size="12" value="">
+                                        <img alt="Img" id="#{id}scheduleExceptionEndImg" onmouseout="this.style.background='';" onmouseover="this.style.background='red';" src="/javascripts/fotech/common_gui/jscalendar/img.gif" style="cursor: pointer;" title="">
+                                    </td>
+                                </tr>
+                                </script>
+                            </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th></th>
+			<td><%= link_to I18n.t('admin.schedule.exception.new'), 'javascript:newScheduleExceptionLine()'%></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td style="text-align:right"><input type="submit" value="<%= I18n.t('common.button.submit') %>" onclick="return scheduleDialog.validate();"/></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td><%= (I18n.t('common.time.timezone', :timezone => ("GMT " + Time.zone.formatted_offset)))  %></td>
+                    </tr>
+                </table>
+            <% end %>
+        </div>
+        </td>
+        <td style="height:100%">
+        <div id="map" style="width:100%;height:100%;float:left;"></div>
+        </td>
+    </table>

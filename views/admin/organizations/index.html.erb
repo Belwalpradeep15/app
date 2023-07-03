@@ -1,0 +1,83 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2009-06-01
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :menu, :dialog, :have_layout] %>
+    <%= stylesheet_link_tag 'admin/organizations.css' %>
+    <%= javascript_include_tag 'admin/organizations.js' %>
+    <%= javascript_include_tag 'fotech/common_util/string.js' %>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<table class="bordered">
+    <caption><%= I18n.t('admin.orgs.header') %></caption>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.name') %></th>
+        <th><%= I18n.t('admin.orgs.emp_count') %></th>
+        <th><%= I18n.t('admin.orgs.fibre_lines') %></th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <% @organizations.each do |o| %>
+        <tr id='row_<%= o.id %>'>
+            <td><%= o.id %></td>
+            <td><span id='name_<%= o.id %>' class='editable'><%= o.name %></td>
+            <td style="text-align: right;"><span id='employee_count_<%= o.id %>'>
+				<%= link_to o.users.count, {:controller => :users, :organization_id => o.id}, {:class => 'navigational_link'} %>
+			</span></td>
+            <td style="text-align: right;"><span id='fibre_lines_<%= o.id %>'><%= o.fibre_lines.count %></td>
+			<td style="vertical-align: middle;" class="noprint">
+                <%= image_tag('fotech/common_gui/reference_point-16x16.png',
+                    :alt => I18n.t('admin.orgs.reference_points', :name => o.name),
+                    :title => I18n.t('admin.orgs.reference_points', :name => o.name),
+					:onclick => "showAdminWindow('/admin/organizations/#{o.id}/reference_points/')",
+					:class => 'image_link') %>
+
+                <%= link_to "javascript:controller.deleteOrganization(#{o.id.to_s})", data: { confirm: I18n.t('common.confirm_delete', :name => o.name) } do -%>
+                    <%= image_tag('fotech/common_gui/delete-16x16.png',
+                                  :alt => I18n.t('common.button.delete', :name => o.name),
+                                  :title => I18n.t('common.button.delete', :name => o.name),
+                                  :style => 'padding-left:9px;',
+                                  :class => 'image_link') %>
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+	<tr class="noprint">
+        <td colspan="4"></td>
+        <td style="text-align: center">
+            <%= image_tag('add-16x16.png',
+                :class => 'image_link',
+                :alt => I18n.t('admin.orgs.add'),
+                :title => I18n.t('admin.orgs.add'),
+                :onclick => "controller.newOrganization()" ) %>
+        </td>
+    </tr>
+</table>
+
+<%= render :partial => 'organization_dialog' %>
+
+<% content_for :body_bottom do %>
+    <script type="text/javascript">
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        setStatusMessage("<%= I18n.t('common.records_found', :record_count  => @organizations.size) %>", null);
+        var controller = new Organizations("<%= form_authenticity_token %>");
+    </script>
+<% end %>

@@ -1,0 +1,55 @@
+
+    <div class="hd">
+      <%= I18n.t('admin.users.update_dialog.title', :name => @user.fullname) %>
+    </div>
+    <div class="bd">
+        <%= form_with :id => 'user_edit_form' do -%>
+            <%= hidden_field_tag 'id', @user.id %>
+            <table class="padded">
+                <tr>
+                    <th><%= I18n.t('admin.users.full_name') %></th>
+                    <td><%= text_field_tag 'fullname', @user.fullname, :size => 55 %></td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('admin.users.update_dialog.login') %></th>
+                    <td><%= text_field_tag 'loginname', @user.loginname, :size => 55 %></td>
+                </tr>
+                <tr>
+                  <th><label for="roles[]">
+                    <%= I18n.t('admin.users.update_dialog.roles') %>
+                  </label></th>
+                    <td>
+                        <% @roles.each do |role| -%>
+                            <% if role.title != 'system_admin' %>
+                                <%= check_box_tag 'roles[]', role.id, @user.roles.include?(role)%>
+                            <% else %>
+                                <%= check_box_tag 'roles[]', role.id , @user.roles.include?(role), {:onclick => 'this.form.organization.disabled = this.checked'} %>
+                            <% end %>
+                            <%= I18n.t('admin.roles.'+role.title) %> <br />
+                        <% end -%>
+                    </td>
+                </tr>
+                <tr>
+                    <th><%= I18n.t('common.headers.organization') %></th>
+                    <td>
+                        <div id="organizationList">
+                            <% if @organizations.length > 1 %>
+                            <select id="organization" name="organization" <%= 'disabled' if @user.is_a? :system_admin%>>
+                                <% selected = "" %>
+                                <% @organizations.each do |org| %>
+                                    <% selected = "selected='selected'" if @user.organizations.include?(org)%>
+                                    <option value='<%= org.id %>' <%= selected %>><%= org.name %></option>
+                                    <% selected = "" %>
+                                <% end %>
+                            </select>
+                            <% else %>
+                                <%= hidden_field_tag 'organization', @organizations.first.id %> <%= @organizations.first.name %>
+                            <% end %>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <%= render :partial => 'authentication' %>
+        <% end -%>
+    </div>
+

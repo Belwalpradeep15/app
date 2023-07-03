@@ -1,0 +1,78 @@
+<% params.permit! %>
+
+<% limit = params[:limit].to_i || 50 %>
+<% pagelimit = 5.to_i %>
+<% pages = (count.to_i / limit).to_i %>
+<% thispage = (params[:offset].to_i / limit ).to_i %>
+<% startpage = [0, (thispage - pagelimit + 1)].max %>
+<% endpage = [pages, (startpage + (pagelimit * 2)) - 1].min %>
+
+<%# Compensate for the last page not having a full set of entries %>
+<% if (pages.to_i % limit.to_i) > 0 %><% pages = pages + 1 %><% end %>
+
+<% starticon = "fas fa-arrow-left" %>
+<% endicon   = "fas fa-arrow-right" %>
+
+<div class="pagination">
+    <% if startpage > 0 %>
+        <a href="<%=raw url_for :params => params.merge({ :offset => 0 }) %>">
+            <span class="<%= starticon %>"></span>
+        </a>
+    <% else %>
+        <span class="disabled <%= starticon %>"></span>
+    <% end %>
+
+    <% (0..(pages-1)).each do |i| %>
+        <% page = i * limit %>
+        <% if i >= startpage && i <= endpage %>
+            <a
+                href="<%=raw url_for :params => params.merge({ :offset => page }) %>"
+                <% if i == thispage %>
+                    class="current"
+                <% end %>
+            ><%= (i+1) %></a>
+        <% end %>
+    <% end %>
+
+    <% if endpage < (pages-1) %>
+        <a href="<%=raw url_for :params => params.merge({ :offset => (pages-1) * limit }) %>">
+            <span class="<%= endicon %>"></span>
+        </a>
+    <% else %>
+        <span class="disabled <%= endicon %>"></span>
+    <% end %>
+</div>
+
+<script>
+    FotechCore.DOMReady( function(){
+        FotechCore.getElementArray( document, '.pagination' ).forEach( function(element){
+            /* Create a select box and a container for it */
+            var labelId = 'paginationlabel';
+            var controls = new Element('div', { 'className': 'control' });
+            var limitControl = new Element( 'select', { 'name': 'limit', 'id': labelId });
+
+            [ 10, 20, 50, 100, 200, 500 ].forEach( function(limit){
+                let opt = new Option( limit, limit, false, limit == <%= limit %> );
+                limitControl.appendChild( opt );
+            });
+
+            var label = new Element('label', { 'for': labelId });
+            label.textContent = ' per page';
+
+            /* Add the elements to the page */
+            controls.appendChild( limitControl );
+            controls.appendChild( label );
+            element.appendChild( controls );
+
+            limitControl.addEventListener( 'change', function(){
+                /* The selection has changed, we need to deduce the URL */
+                var url = decodeURI( "<%=raw url_for :params => params.merge({ :offset => '%%PAGE%%', :limit => '%%LIMIT%%' }) %>" );
+                var limit = limitControl.options[ limitControl.selectedIndex ].value;
+                var page = Math.floor( <%= thispage %> * <%= limit %> );
+                url = url.replace( '\%\%LIMIT\%\%', limit );
+                url = url.replace( '\%\%PAGE\%\%', page );
+                window.location = url;
+            });
+        });
+    });
+</script>

@@ -1,0 +1,149 @@
+<%
+  # LAST CHANGE:
+  # $Author: $
+  #   $Date: $
+  #    $Rev: $
+  #    $URL: $
+  #
+  # COPYRIGHT:
+  # This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+-%>
+
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :window, :have_layout] %>
+    <%= fotech_core_mapping_components_tag  %>
+    <%= fotech_mapping_impl_tag  %>
+    <%= javascript_include_tag \
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            :cache => "__admin_paths_index" %>
+    <%= stylesheet_link_tag 'mainDisplay', 'mapDisplay', :cache => "__admin_paths_index" %>
+    <%= stylesheet_link_tag 'paths' %>
+    <script type="text/javascript">
+      var childWindows = new fotech.gui.ChildWindowManager(window);
+      onUnload = function() {
+        childWindows.forEach(function (key, window) { window.close(); });
+      }
+    </script>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<%= javascript_tag do %>
+    Event.observe(window, 'load', function() {
+      <%= MenuRenderer.menu_javascript(@menu) %>
+      setViewStatus('<%= I18n.t('admin.paths.title') %>');
+      setTimeout(function() {
+        var e = $$('div.warning_box,div.success_box');
+        for (var i = 0; i < e.length; ++i) {
+          new Effect.Fade(e[i], {duration:1});
+        }
+      }, 3500);
+    });
+<% end %>
+<h2><%= @title %></h2>
+<p><%= I18n.t('admin.paths.note') %></p>
+
+<% if @organizations.empty? %>
+    <p><%= link_to I18n.t('admin.fibre_lines.no_organizations'), {:controller => 'organizations'} %></p>
+<% else %>
+  <%= render :partial => '/admin/update_form' %>
+
+  <% if has_key_chain?(flash, [:error, :paths, :general]) %>
+      <div class="warning_box" style="margin:10px 0;"><%= flash[:error][:paths][:general] %></div>
+  <% end %>
+  <% @organizations.each do |org| %>
+    <section id="path_org_id_<%= org.id %>" class="organisation">
+      <legend><%= org.name %></legend>
+      <section class="controls">
+        <% if @paths.key?(org.id) %>
+            <%= link_to "javascript:admin.deleteAllPaths(\'#{url_for(:action => 'destroy_all', :organization => org.id)}\', #{org.id})", data: { confirm: I18n.t('common.confirm_delete', :name => I18n.t('common.all').downcase) } do -%>
+                <div class="button danger"><span class="fa fa-times-circle"></span> <span><%= I18n.t('common.button.delete_all') %></span></div>
+            <% end %>
+            <%= link_to({:action => 'download', :organization => org.id}) do %>
+                <div class="button ok"><span class="fa fa-download"></span> <span><%= I18n.t('admin.paths.download_yaml') %></span></div>
+            <% end %>
+        <% end %>
+        <%= link_to({:action => 'upload', :organization => org.id}) do %>
+            <div class="button ok"><span class="fa fa-upload"></span> <span><%= I18n.t('common.button.upload') %></span></div>
+        <% end %>
+      </section>
+
+      <% if !@paths.key?(org.id) %>
+        <section class="route">
+          <div class="nodata">
+            <%= I18n.t('common.no_records') %>
+          </div>
+        </section>
+      <% else %>
+        <% routes = @paths[org.id].sort_by { | id, path | path[:name] } %>
+        <% uniqueRoutes = routes.map { | id, path | path[:name] }.uniq.sort %>
+
+        <% uniqueRoutes.each do | route | %>
+          <section class="route">
+            <legend><%= route %></legend>
+            <table>
+              <thead>
+                <tr>
+                  <th class="path"></th>
+                  <th class="controls"></th>
+                  <th class="num"><%= I18n.t('common.headers.id') %></th>
+                  <th class="name"><%= I18n.t('common.headers.name') %></th>
+                  <th class="num"><%= I18n.t('admin.fibre_region.starting_position') %></th>
+                  <th class="num"><%= I18n.t('admin.fibre_region.ending_position') %></th>
+                  <th class="num"><%= I18n.t('admin.paths.marker_offset') %></th>
+                </tr>
+              </thead>
+              <% r = routes.select{ | id, path |
+                path[:name] == route
+              }.sort_by { | id, path |
+                if path.path_segments.length > 0
+                  path.path_segments.first().start_distance
+                else
+                  0
+                end
+              }.each do | id, path | %>
+                <tbody class="path" id="path_<%= id %>">
+                  <% if path.path_segments.length == 0 %>
+                    <tr>
+                      <%= render :partial => "admin/paths/routedetails", :locals => { :path => path, :org => org } %>
+                      <td colspan="5" align="center"><%= I18n.t('common.no_records') %></td>
+                    </tr>
+                  <% else %>
+                    <% segments = path.path_segments.sort_by { | segment | [ segment[:fibre_line_id], segment[:start_distance].to_f ] } %>
+                    <% segments.each_with_index do |segment, counter| %>
+                      <tr>
+                        <% if counter == 0 %>
+                          <%= render :partial => "admin/paths/routedetails", :locals => { :path => path, :org => org } %>
+                        <% else%>
+                          <td/>
+                          <td/>
+                        <% end %>
+                        <td class="num"><%= segment.id %></td>
+                        <td><%= segment.fibre_line.name %></td>
+                        <td class="num"><%= convert(segment.start_distance, 'm', @distance_units, @distance_precision) %></td>
+                        <td class="num"><%= convert(segment.end_distance, 'm', @distance_units, @distance_precision) %></td>
+                        <td class="num"><%= convert(segment.distance_from_marker, 'm', @distance_units, @distance_precision) %></td>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                </tbody>
+            <% end %>
+            </table>
+            <% if has_key_chain?(flash, [:error, :paths, org.id]) %>
+              <div style="margin:10px 0;" class="warning_box"><%= flash[:error][:paths][org.id] %></div>
+            <% end %>
+            <% if has_key_chain?(flash, [:info, :paths, org.id]) %>
+              <div style="margin:10px 0;"  class="success_box"><%= flash[:info][:paths][org.id] %></div>
+            <% end %>
+          </section>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+<% end %>

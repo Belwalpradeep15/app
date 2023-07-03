@@ -1,0 +1,35 @@
+<%#
+ FILENAME:     create.js.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-11-07
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+try {
+    <% if @error %>
+        alert('The system was not able to save the database objects.\nError: <%= escape_javascript(@error.to_s) %>');
+        // Sometimes we do want to reload, even if there's an error.
+        <% if @reloadOnError %>
+        window.location.reload(true);
+        <% end %>
+        <% if @formId %>
+            enableRow('<%= @formId %>');
+        <% end %>
+        <% if @dialogId %>
+            fotech.gui.FotechDialog.clearBusyState('<%= @dialogId %>');
+        <% end %>
+    <% else %>
+        window.location.reload(true);
+    <% end %>
+}
+catch (ex) {
+    console.log("create.js.erb: " + ex);
+}

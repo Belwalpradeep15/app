@@ -1,0 +1,78 @@
+<%
+# FILENAME:     show.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-08-06
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%# Don't cache the fotech_gui_setup_tag. It seems to cause errors. %>
+    <%= fotech_gui_setup_tag [:dialog, :have_layout] %>
+    <%= javascript_include_tag \
+            'fotech/common_util/date.js',
+            'admin/admin.js',
+            'admin/alerts.js',
+            'alerts.js',
+            :cache => "__admin_alerts_show" %>
+    <%= stylesheet_link_tag "mainDisplay", :cache => "__admin_alerts_show" %>
+<% end %>
+
+<div class="teardown"><span class="fa fa-arrow-circle-up" data-fa-transform="rotate-135"></span></div>
+
+<%= render :partial => 'alert_details' %>
+
+<script type="text/javascript">
+    document.title = "<%= @title %>";
+    var shouldCloseThisWindow = true;
+    var parentRequiresRefresh = false;
+    var existsInAlertList = false;
+    try {
+        existsInAlertList = fotech.gui.rootOpener().globalAlertManager.contains(<%= @alert.id %>);
+    } catch ( e ){
+        /* Not found or the globalAlert manager isn't present */
+    }
+    Event.observe(window, 'load', function() {
+        <% if @forceCentre %>
+            window.moveTo((screen.width - document.width)/2, (screen.height - document.height)/2 - 50);
+        <% end %>
+        admin.alerts.createResponseDialog();
+        if( fotech.gui.rootOpener() && fotech.gui.rootOpener().globalAlertManager && !existsInAlertList){
+            fotech.gui.rootOpener().globalAlertManager.add(<%= @alert.id %>, <%= raw @alert.to_json(include: :alert_responses) %>);
+        }
+    });
+    Event.observe(window, 'unload', function() {
+        if( fotech.gui.rootOpener() && fotech.gui.rootOpener().globalAlertManager && !existsInAlertList){
+            fotech.gui.rootOpener().globalAlertManager.remove(<%= @alert.id %>);
+        }
+        if (parentRequiresRefresh && window.opener && window.opener.shouldRefreshThisWindow){
+            window.opener.location.reload();
+        }
+    });
+
+    var alertId = <%= @alert.id %>
+
+    $$('.teardown').each( function(e){
+        e.addEventListener('click', function(){
+            try {
+                window.opener.active_alerts_dialog.tearDown( alertId );
+                window.close();
+            } catch( e ){
+                console.log( "Couldn't tear down window", e );
+            }
+        });
+    });
+
+    FotechCore.DOMReady( function(){
+        initAlertDetails( '<%= @alert.id %>' )
+    });
+</script>
+
+<%= render :partial => 'response_dialog' %>

@@ -1,0 +1,153 @@
+<%
+# LAST CHANGE:
+# $Author: $
+#   $Date: $
+#    $Rev: $
+#    $URL: $
+#
+# COPYRIGHT:
+# This file is Copyright ¬© 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:menu, :panel, :window, :dialog, :canvas, :control, :colour, :ruler, :have_layout], :cache => "__main_index_gui" %>
+    <%= fotech_core_mapping_components_tag  %>
+    <%= fotech_mapping_impl_tag %>
+    <script type="text/javascript">
+        var overlayManager = new YAHOO.widget.OverlayManager();
+    </script>
+    <%= javascript_include_tag \
+        'fotech/common_util/date.js',
+        'fotech/common_util/math.js',
+        'fotech/common_util/string.js',
+        'fotech/common_util/timer.js',
+        'fotech/fibre/types.js',
+        'fotech/fibre/event.js',
+        'fotech/fibre/event_type.js',
+        'alerts.js',
+        'preferences.js',
+        'monitor/monitor_application.js',
+        'monitor/menu.js',
+        'monitor/multiple_events_dialog.js',
+        'mainDisplay',
+        'monitor/map.js',
+        'admin/markers.js',
+        'monitor/event_dialog.js',
+        'monitor/compatibility_checks.js',
+        'monitor/helios.js',
+        'fotech/common_util/debounce.js',
+        'monitor/multiple_alerts_dialog.js',
+        'admin/helios_units.js',
+        'admin/fibre_lines.js',
+        'admin/alerts.js',
+        'help.js',
+        :cache => "__main_index" %>
+
+    <%= stylesheet_link_tag \
+        'mainDisplay',
+        'mapDisplay',
+        :media => "all",
+        :cache => "__main_index" %>
+
+<% end %>
+
+<%# Some defaults for alerts %>
+<% @tearoff = true %>
+<% @noAdd   = true %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+    <%= render :partial => 'errors/error_message' %>
+<% end %>
+
+
+<% content_for :body_bottom do %>
+    <script type="text/javascript">
+        var jsmenubar = null;
+        var ids = null;
+        var fibreLine = null;
+    </script>
+
+    <%= render :partial => 'pushdaemon', :locals => { :isPortal => false } %>
+    <%= render :partial => '/monitor/fibre_lines/fibre_lines' %>
+
+    <script type="text/javascript">
+        isMainPanoptes = true;
+        <%= MenuRenderer.menu_javascript(@menu) %>
+
+        authenticityToken = "<%= form_authenticity_token %>";
+        onLoad = mainDisplayOnLoad;
+        onUnload = mainDisplayOnUnload;
+        onResize = mainDisplayOnResize;
+
+        <% if params[:fibre] %>
+            setMainFibreView(<%= params[:fibre] %>);
+        <% end %>
+
+        user = new Object();
+        user.id = <%= @user.id %>;
+        user.name = "<%= @user.fullname %>";
+        user.login = "<%= @user.loginname %>";
+        user.organizationIds = [<%= @user.organization_ids.join(",") %>];
+        user.permissions = new Object();
+        <% permissions_for_javascript(Ability.new(@user).permissions).each do |permission| %>
+            user.permissions['<%= permission %>'] = true
+        <% end %>
+
+        user.roles = new Object();
+        <% @user.roles.each do |role| %>
+            user.roles['<%= role.title %>'] = true;
+        <% end %>
+
+        <%= preferences_tag(@preferences, "user.preferences") %>
+
+        Event.observe(window, 'load', function() {
+            new Ajax.Request('/monitor/main/startup', { method: 'get' });
+        });
+
+        setMainFibreView(null, '<%= @initial_display_type %>');
+    </script>
+
+    <% if @events and @events.attributes['count'].to_i > 0 %>
+        <script type="text/javascript">
+            var lastEventId = null;
+            <% @events.elements.each do |ev| %>
+                <% evstr = "" %>
+                <% ev.to_s.each_line { |l| evstr << l.chomp.strip } %>
+                addEvent(new fotech.fibre.Event(fotech.dom.parse("<%= evstr %>").documentElement));
+                lastEventId = <%= ev.attributes['event-id'] %>;
+            <% end %>
+            popupEventWindow(lastEventId);
+        </script>
+    <% end %>
+
+
+    <div id="dialogs_overlay">
+        <%= render :partial => 'legend', :locals => { :menu => "showLegend", :isFixed => false } %>
+    </div>
+    <%= render :partial => 'monitor/events/event_dialog', :locals => {:window => ""} %>
+    <%= render :partial => 'monitor/events/filter_dialog' %>
+    <%= render :partial => 'monitor/events/multiple_events_dialog', :locals => {:dialog_id => 'multiple_events_dialog', :header => I18n.t('monitor.events.multiple_events_dialog.multiple_events')}  %>
+    <%= render :partial => 'monitor/events/multiple_events_dialog', :locals => {:dialog_id => 'recent_events_dialog', :header => I18n.t('monitor.events.multiple_events_dialog.recent_events')}  %>
+    <%= render :partial => 'monitor/events/multiple_events_dialog', :locals => {:dialog_id => 'event_track_dialog', :header => I18n.t('monitor.events.multiple_events_dialog.event_track'), :isEventTrack => true} %>
+    <%= dialog_wrapper 'multiple_alerts', {:title => 'admin.alerts.title',
+                                            :class => 'alert_list dialog',
+                                            :content => "<ul id='alertList' class='recent'></ul>"} %>
+    <%= render :partial => 'monitor/helioscontrol/helios_status' %>
+<%= render :partial => 'admin/alerts/response_dialog' %>
+<%= render :partial => 'monitor/main/alert_configurations', :locals => { :isFixed => true} %>
+<%= render :partial => 'monitor/main/activeAlerts', :locals => { :isFixed => true, :noAdd => true } %>
+    <%= render :partial => 'about_box' %>
+    <%= render :partial => 'event_types' %>
+    <%= render :partial => 'alert_configurations' %>
+    <div id='zone_list_dialog_div' class='fotech_dialog' style='visibility: hidden;'>
+    </div>
+
+    <%= form_with url: '/', html: { :id => 'zone_update_form' } do %>
+    <% end %>
+
+    <%= render :partial => '/admin/update_form' %>
+    <%= render :partial => 'status_history' %>
+
+<% end %>

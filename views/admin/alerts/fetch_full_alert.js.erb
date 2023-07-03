@@ -1,0 +1,41 @@
+<%
+# FILENAME:     fetch_full_alert.js.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-12-08
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% if @failedAlertId %>
+    // If not found try again in five seconds.
+    setTimeout("fetchFullAlert(<%= @failedAlertId %>)", 5000);
+<% else %>
+
+    try {
+        var g = fotech.gui.rootOpener().globalAlertManager;
+    <% Array(@alert).each do |alert| %>
+        <% if alert.time_resolved %>
+            if (g.contains(<%= alert.id %>)) {
+                g.remove(<%= alert.id %>);
+            }
+        <% else %>
+            <% js = alert.to_json(include: [:alert_responses, :alert_details]) %>
+            if (g.contains(<%= alert.id %>)) {
+                g.updateObject(<%=alert.id%>, <%=raw js %>);
+            } else {
+                g.add(<%=alert.id%>, <%=raw js %>);
+            }
+        <% end %>
+    <% end %>
+    }
+    catch (ex) {
+        alert(ex);
+    }
+<% end %>

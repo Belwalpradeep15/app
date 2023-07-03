@@ -1,0 +1,27 @@
+<%#
+ FILENAME:     error.js.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-05-28
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+try {
+    alert('<%= escape_javascript(@error.to_s) %>');
+    <% if @formId %>
+        enableRow('<%= @formId %>');
+    <% end %>
+    <% if @dialogId %>
+        fotech.gui.FotechDialog.clearBusyState('<%= @dialogId %>');
+    <% end %>
+}
+catch (ex) {
+    console.log("error.js.erb: " + ex);
+}

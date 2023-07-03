@@ -1,0 +1,32 @@
+<%
+# This file is Copyright © 2016 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<%= form_for :marker do |f| %>
+    <table class="padded">
+        <tr>
+            <th><%= f.label :name, I18n.t('common.headers.name') %></th>
+            <td><%= f.text_field :name, :class => 'required' %></td>
+        </tr>
+        <tr>
+            <th><%= f.label :description, I18n.t('common.headers.description') %></th>
+            <td><%= f.text_field :description %></td>
+        </tr>
+        <tr>
+            <th><%= f.label :latitude, I18n.t('admin.alerts.headers.latitude') %></th>
+            <td><%= f.text_field :latitude, :class => 'required float_field'%></td>
+        </tr>
+        <tr>
+            <th><%= f.label :longitude, I18n.t('admin.alerts.headers.longitude') %></th>
+            <td><%= f.text_field :longitude, :class => 'required float_field' %></td>
+        </tr>
+        <tr>
+            <th><%= f.label :marker_types, I18n.t('common.headers.type') %></th>
+            <td>
+   			<%= select_tag "marker_types", options_from_collection_for_select(@marker_types, :id, :name)%>
+            </td>
+        </tr>
+    </table>
+<% end %>
+
+

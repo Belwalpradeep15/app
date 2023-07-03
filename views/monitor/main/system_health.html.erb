@@ -1,0 +1,82 @@
+<%
+# FILENAME:     system_health.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-11-17
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% component_icon_directory = SYSTEM_HEALTH_CONFIG[:component_icon_directory] %>
+<% status_icon_directory = SYSTEM_HEALTH_CONFIG[:status_icon_directory] %>
+
+<table class="nospace">
+    <!--
+    <% @health.each do |h| %>
+        <%
+            is_warning = false
+            is_initting = false
+            if h.statuses
+                h.statuses.split(',').each do |s|
+                    if s == 'warning'
+                        is_warning = true
+                        break
+                    elsif s == 'initting'
+                        is_initting = true
+                        break
+                    end
+                end
+            end
+         %>
+
+        <tr <%= is_initting ? "style='font-style: italic; opacity: 0.35;'" : "" %>>
+            <td nowrap="nowrap"><%= h.name %></td>
+            <td nowrap="nowrap">
+                <div style="width: 38px; height: 18px;">
+                    <img src=<%= "#{component_icon_directory}/#{h.component}_small.png" %> />
+                    <% if is_warning %>
+                        <img src=<%= "#{status_icon_directory}/warning.png" %> style="position: relative; left: -18px; top: -2px; height: 12px;" />
+                    <% elsif is_initting %>
+                    <% elsif h.is_healthy %>
+                        <img src=<%= "#{status_icon_directory}/health_ok.png" %> style="position: relative; left: -18px; top: -2px; height: 12px;" />
+                    <% else %>
+                        <img src=<%= "#{status_icon_directory}/alarm.png" %> style="position: relative; left: -18px; top: -2px; height: 12px;" />
+                    <% end %>
+                    <% if h.statuses %>
+                        <% offset = 22 %>
+                        <% h.statuses.split(',').each do |s| %>
+                            <% if (s != 'warning') and (s != 'initting') %>
+                                <img src=<%= "#{status_icon_directory}/#{s}.png" %> style="position: relative; left: -<%= offset %>px; top: -2px; height: 12px;" />
+                                <% offset = offset + 4 %>
+                            <% end %>
+                        <% end %>
+                    <% end %>
+                </div>
+            </td>
+            <td><%= h.message.split(',').map { |m| optional_i18n(m) }.join(', ') if not h.message.nil?%></td>
+        </tr>
+    <% end %>
+    -->
+</table>
+<!-- <script type="text/javascript">
+    try {
+        var health_table = $('system_health_table_div');
+        <% if @is_active_panoptes %>
+            health_table.removeClassName('not_active_panoptes');
+        <% else %>
+            health_table.addClassName('not_active_panoptes');
+        <% end %>
+    }
+    catch (e) {
+        alert("Error in system_health.html.erb: " + e);
+    }
+</script> -->
+
+
+

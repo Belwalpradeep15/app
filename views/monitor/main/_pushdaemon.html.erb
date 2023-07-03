@@ -1,0 +1,189 @@
+<%
+# FILENAME:     _pushdaemon.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-02-26
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<%= javascript_include_tag 'monitor/pushdaemon.js' %>
+<script type="text/javascript">
+    monitor.pushdaemon.orgList = [<%= CustomPreference.get_organizations_by_pref('only_show_event_icons_on_alert', 'TRUE').join(',')%>];
+    var pushDaemonUniqueId = -1;
+    var pushDaemonIsDisconnected = true;
+    var pushDaemonReloadOnConnect = false;
+    var pushDaemonWS;
+
+    function pushDaemonPreloadHeartbeatImages() {
+        var im1 = new Image();
+        im1.src = '/images/fotech/common_gui/heart.png';
+
+        var im2 = new Image();
+        im2.src = '/images/fotech/common_gui/heartbeat.gif';
+
+        var im3 = new Image();
+        im3.src = '/images/fotech/common_gui/broken_heart.png';
+    }
+
+    function pushDaemonOnConnect() {
+        pushDaemonUniqueId = -1;
+        if (pushDaemonReloadOnConnect){
+            //Attempt to load image, if it loads, server is up and we can refresh.
+            //otherwise timeout in 2 seconds and try this function again.
+            var delayTimer = setTimeout(function(){
+                var imageSrc = "/images/fotech/common_gui/fotech_branding.png";
+                var img = new Image();
+                img.onload = function(){window.location.reload()};
+                img.src = imageSrc + "?cachebreaker="+(new Date()).getTime();
+                var timer = setTimeout(pushDaemonOnConnect, 2000);
+            }, 2000);
+        }
+        else {
+            monitor.pushdaemon.onMessage("Connect", null);
+            console.log("pushdaemon: connected");
+        }
+    }
+
+    function pushDaemonOnDisconnect() {
+        pushDaemonIsDisconnected = true;
+        pushDaemonUniqueId = -1;
+        monitor.pushdaemon.onMessage("Disconnect", null);
+        console.log("pushdaemon: disconnected");
+    }
+
+    function pushDaemonOnRegister(reg){
+        console.log("pushDaemonOnRegister, id=" + reg.unique_id);
+        pushDaemonUniqueId = reg.unique_id;
+
+        // Tell the server which messages we are interested in. Note that if we are a portal
+        // display and events are not enabled, then we do not include the events.
+        console.log("on register id=" + reg.unique_id + ", recorded=" + pushDaemonUniqueId);
+        var msg = {
+            "object_type": "Filter",
+            "object_type_version": 1,
+            "connection_id": reg.unique_id,
+            "object_type_filter": [ "Health", "Alert", "Error" ]
+            };
+        <% if (not isPortal) or (APP_CONFIG['portal']['enabled'] == false) or (APP_CONFIG['portal']['ignore_events'] == false) %>
+        msg["object_type_filter"].push("Event");
+        <% end %>
+        pushDaemonWS.send(Object.toJSON(msg));
+    }
+
+    var pushDaemonBadMessageCount = 0;
+    var pushDaemonMessageCount = 0;
+    function pushDaemonOnMessage(msg) {
+        try {
+            var json;
+            pushDaemonMessageCount = pushDaemonMessageCount + 1;
+            try {
+                json = JSON.parse(msg);
+                resetCommsTimer();
+            }
+            catch (e) {
+                pushDaemonBadMessageCount = pushDaemonBadMessageCount + 1;
+                console.log("Error parsing JSON, bad messages count: " + pushDaemonBadMessageCount
+                    + "/" + pushDaemonMessageCount
+                    + "=" + (fotech.util.round10(((10000. * pushDaemonBadMessageCount) / pushDaemonMessageCount), 1) / 100.) + "%");
+                return;
+            }
+
+            var msgt = json.object_type;
+            //if (msgt != "Event") console.log("pushdaemon: " + msg);         // Events come in fast so don't log them unless you are debugging them
+            if (msgt == "Register")
+                pushDaemonOnRegister(json);
+            monitor.pushdaemon.onMessage(msgt, msg);
+        }
+        catch (e) {
+            setStatusMessage("Exception: " + e);
+        }
+    }
+
+    // Attempt to get a connection.
+    function pushDaemonTryConnect() {
+        var url = '<%= "ws://#{request.host}:#{(SYSTEM_CONFIG['communications']|| {})['websocket_port']}/" %>';
+
+        if ("WebSocket" in window) {
+            pushDaemonWS = new WebSocket(url);
+        }
+        else if ("MozWebSocket" in window) {
+            pushDaemonWS = new MozWebSocket(url);
+        }
+        else {
+            setStatusMessage("<%= I18n.t('main.push_daemon.messages.ws_not_supported') %>");
+            pushDaemonWS = null;
+        }
+    }
+
+    // Web Socket version of the push daemon.
+    var connectTimeout = null;
+    function pushDaemonConnect() {
+        setStatusMessage("<%= I18n.t('main.push_daemon.messages.connecting') %>");
+        clearTimeout(connectTimeout);
+
+        pushDaemonUniqueId = -1;
+        pushDaemonTryConnect();
+        if (!pushDaemonWS) {
+            console.log("WebSocket protocol is not supported.");
+            return;
+        }
+
+        pushDaemonWS.onopen = function(e) {
+            console.log("WebSocket opened");
+            pushDaemonOnConnect();
+            setStatusMessage("<%= I18n.t('main.push_daemon.messages.connected') %>");
+        };
+
+        pushDaemonWS.onerror = function(e) {
+            console.log("WebSocket error");
+        };
+
+        pushDaemonWS.onclose = function(e) {
+            console.log("WebSocket closed");
+            pushDaemonOnDisconnect();
+            setStatusMessage("<%= I18n.t('main.push_daemon.messages.lost_comm') %>");
+            clearTimeout(commsTimeoutTimer);
+            clearTimeout(connectTimeout);
+            connectTimeout = setTimeout(pushDaemonConnect, 5000);
+        };
+
+        pushDaemonWS.onmessage = function(e) {
+            pushDaemonOnMessage(e.data);
+        };
+    }
+
+    function pushDaemonDisconnect() {
+        if(pushDaemonWS) {
+            pushDaemonWS.close();
+        }
+    }
+
+    Event.observe(window, 'unload', pushDaemonDisconnect);
+    Event.observe(window, 'load', function(e) {
+        pushDaemonPreloadHeartbeatImages();
+        pushDaemonConnect();
+    });
+
+    // Timer that will attempt to reconnect the socket if no comms are coming in fast enough.
+    var commsTimeoutTimer =  null;
+    function resetCommsTimer() {
+        clearTimeout(commsTimeoutTimer);
+        commsTimeoutTimer = setTimeout(pushdaemonCommsReset, "<%= @heartbeatFrequency %>" * 1500);  //1.5 * the heartbeat interval
+    }
+    function pushdaemonCommsReset() {
+        console.log("Have received no comms, resetting socket...");
+        setStatusMessage("<%= I18n.t('main.push_daemon.messages.lost_comm') %>");
+        pushDaemonOnDisconnect();
+        pushDaemonDisconnect();
+    }
+
+</script>
+
+

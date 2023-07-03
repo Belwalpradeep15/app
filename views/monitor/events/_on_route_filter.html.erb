@@ -1,0 +1,122 @@
+<%= hidden_field_tag "route_min_distance" %>
+<%= hidden_field_tag "route_max_distance" %>
+<%= hidden_field_tag "route_min_velocity" %>
+<%= hidden_field_tag "route_max_velocity" %>
+
+<table class="nospace">
+    <tr>
+        <td>
+            <%= check_box_tag "restrictByRoute", "1", params["search"] && !params["search"]["route_id"].nil? , :onchange=>"onRouteFilterEnable(this.form)" %>
+            <%= label_tag "restrictByRoute", I18n.t('admin.alerts.search_dialog.restrict_route') %>
+        </td>
+    </tr>
+    <tr id="filterFormRouteIdRow">
+        <td> <%= label_tag 'route_id', I18n.t('admin.alerts.search_dialog.route_id') %>
+            <% selected_route = params["search"] && params["search"]["route_id"] ? params["search"]["route_id"] : '' %>
+        </td>
+        <td>
+            <%= select("search", "route_id", options_for_select(@required_path_hash.keys, selected_route), {:prompt => "--All--"}, :onchange => "change_route_directions(this.value)") %>
+        </td>
+    </tr>
+    <tr id="filterFormDirectionRow">
+        <td>
+            <%= label_tag 'route_direction', I18n.t('admin.alerts.search_dialog.route_direction') %>
+        </td>
+        <td>
+            <% route_directions = selected_route.blank? ? [] : @required_path_hash[selected_route] %>
+            <% selected_route_direction = params["search"] && params["search"]["route_direction"] ? params["search"]["route_direction"] : '' %>
+            <%= select("search", "route_direction", options_for_select(route_directions, selected_route_direction), {:prompt => "--All--"}) %>
+        </td>
+    </tr>
+    <tr id="filterFormRouteDistanceRow">
+        <td><%= label_tag 'route_distance', I18n.t('common.headers.distance')%>(<span>m</span>):</td>
+        <td>
+            <%= I18n.t('monitor.events.filters.min') %>
+            <% search_route_min_distance  = params["search"] && params["search"]["route_min_distance_"] ? params["search"]["route_min_distance_"] : nil %>
+            <%= text_field_tag "route_min_distance_", search_route_min_distance, :size => "8" %>
+            <%= I18n.t('monitor.events.filters.max') %>
+            <% search_route_max_distance  = params["search"] && params["search"]["route_max_distance_"] ? params["search"]["route_max_distance_"] : nil %>
+            <%= text_field_tag "route_max_distance_", search_route_max_distance, :size => "8" %>
+        </td>
+    </tr>
+    <tr id="filterFormRouteVelocity">
+        <td>
+            <%= label_tag 'route_velocity', I18n.t('monitor.events.filters.velocity', :units => 'm/s') %>
+        </td>
+        <td>
+            <%= I18n.t('monitor.events.filters.min') %>
+            <% search_route_min_velocity  = params["search"] && params["search"]["route_min_velocity_"] ? params["search"]["route_min_velocity_"] : nil %>
+            <%= text_field_tag "route_min_velocity_", search_route_min_velocity, :size => "8" %>
+            <%= I18n.t('monitor.events.filters.max') %>
+            <% search_route_max_velocity  = params["search"] && params["search"]["route_max_velocity_"] ? params["search"]["route_max_velocity_"] : nil %>
+            <%= text_field_tag "route_max_velocity_", search_route_max_velocity, :size => "8" %>
+        </td>
+    </tr>
+</table>
+
+
+
+<script type="text/javascript">
+    function change_route_directions(route_name) {
+        $('search_route_direction').innerHTML = '' ;
+        $('search_route_direction').options.add(new Element('option', {value: '' , selected: 'selected'}).update('--All--'));
+        if(route_name != "") {
+            var hash = <%= raw @required_path_hash.to_json %>
+            hash[route_name].forEach(function(val) {
+                    $('search_route_direction').options.add(new Element('option', {value: val}).update(val));
+            });
+        }
+    }
+
+
+    function onRouteFilterEnable(form) {
+        if (form.restrictByRoute.checked) {
+            $('filterFormRouteIdRow').removeClassName('disabled');
+            $('filterFormDirectionRow').removeClassName('disabled')
+            $('filterFormRouteDistanceRow').removeClassName('disabled');
+            $('filterFormRouteVelocity').removeClassName('disabled');
+        }
+        else {
+            $('filterFormRouteIdRow').addClassName('disabled');
+            $('filterFormDirectionRow').addClassName('disabled');
+            $('filterFormRouteDistanceRow').addClassName('disabled');
+            $('filterFormRouteVelocity').addClassName('disabled');
+        }
+        form.search_route_id.disabled = !form.restrictByRoute.checked;
+        form.search_route_direction.disabled = !form.restrictByRoute.checked;
+        form.route_min_distance_.disabled = !form.restrictByRoute.checked;
+        form.route_max_distance_.disabled = !form.restrictByRoute.checked;
+        form.route_min_velocity_.disabled = !form.restrictByRoute.checked;
+        form.route_max_velocity_.disabled = !form.restrictByRoute.checked;
+    }
+
+    function onROuteFilterValidate(dlg) {
+        if (dlg.form.restrictByRoute.checked) {
+            dlg.validateFloat("route_min_distance_", I18n.t("monitor.events.filters.min_distance"), 0);
+            dlg.validateFloat("route_max_distance_", I18n.t("monitor.events.filters.max_distance"), 0);
+            dlg.validateFloat("route_min_velocity_", I18n.t("monitor.events.filters.route_min_velocity"), 0);
+            dlg.validateFloat("route_max_velocity_", I18n.t("monitor.events.filters.route_max_velocity"), 0);
+        }
+    }
+
+    function onRouteFilterOnSubmit(form) {
+        if (form.restrictByRoute.checked) {
+            var units = fotech.gui.rootOpener().user.preferences['units-distance'];
+            var velocity_units = fotech.gui.rootOpener().user.preferences['units-velocity'];
+            form.route_min_distance.value = "";
+            form.route_max_distance.value = "";
+            form.route_min_velocity.value = "";
+            form.route_max_velocity.value = "";
+
+            if (form.route_min_distance_.value)
+                form.route_min_distance.value = fotech.util.convert(form.route_min_distance_.value, units, 'm');
+            if (form.route_max_distance_.value)
+                form.route_max_distance.value = fotech.util.convert(form.route_max_distance_.value, units, 'm');
+            if (form.route_min_velocity_.value)
+                form.route_min_velocity.value = fotech.util.convert(form.route_min_velocity_.value, velocity_units, 'm_s');
+            if (form.route_max_velocity_.value)
+                form.route_max_velocity.value = fotech.util.convert(form.route_max_velocity_.value, velocity_units, 'm_s');
+        }
+    }
+
+</script>

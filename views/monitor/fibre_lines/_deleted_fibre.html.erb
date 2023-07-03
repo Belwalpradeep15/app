@@ -1,0 +1,29 @@
+<%
+# FILENAME:     _deleted_fibre.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-09-24
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<p><%= I18n.t("monitor.fibre_line.deleted_fibre") %></p>
+<p><a href="/" onclick="window.location.reload(true)"><%= I18n.t('monitor.fibre_line.refresh_link') %></a>
+</p>
+<script type="text/javascript">
+    setViewStatus("");
+    setStatusMessage('<%= I18n.t("monitor.fibre_line.deleted_fibre") %>');
+    resetDisplayHandlers();
+
+
+</script>
+
+
+
+

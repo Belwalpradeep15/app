@@ -1,0 +1,33 @@
+    <% isEventTrack ||= false %>
+    <% isFixed ||= false %>
+    <% height ||= nil %>
+    
+    <div id="<%= dialog_id %>" class="<%= isFixed ? '' : 'fotech_dialog event_list' %>" >
+        <div class="hd">
+            <%= header %>
+        </div>
+        <div class="<%= isFixed ? '' : 'dialog' %> bd" style="<%= "height:#{height}" if height %>">
+            <ul id="eventList" class="recent">
+            </ul>
+
+        </div>
+        <% if isEventTrack %>
+        <div id="multipleEventControls" class="dialog ft" style="text-align:center">
+            <% if isEventTrack %>
+            <div>
+                <a id="showMoreLink" href="#" onclick="_createAndPopupTrackWindow(event_track_dialog._eventsArray.first(), null)"><%= I18n.t('monitor.events.multiple_events_dialog.showAll') %></a>
+            </div>
+            <% end %>
+            <%= image_tag('play-24x24.png', :class => 'image_link',
+                    :id => 'multipleEventsPlayButton',
+                    :alt => I18n.t('monitor.events.multiple_events_dialog.play'),
+                    :title => I18n.t('monitor.events.multiple_events_dialog.play'),
+                    :onclick => "event_track_dialog.playEvents()" ) %>
+            <%= image_tag('stop-24x24.png', :class => 'image_link hidden',
+                    :id => 'multipleEventsStopButton',
+                    :alt => I18n.t('monitor.events.multiple_events_dialog.stop'),
+                    :title => I18n.t('monitor.events.multiple_events_dialog.stop'),
+                    :onclick => "event_track_dialog.stopPlayEvents()" ) %>
+        </div>
+        <% end %>
+    </div>

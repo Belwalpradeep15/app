@@ -1,0 +1,31 @@
+<%#
+ FILENAME:     get_track_events.js.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   10-05-17
+
+  Adds all events for a track into an array which will be passed to the eventTrackDialog
+  on the client side
+
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+var events = new Array();
+var event = null;
+<% @events.each do |ev| -%>
+    event = new fotech.fibre.Event.createFromJSON(<%= raw ev.to_json %>);
+    events[events.length] = event;
+<% end -%>
+event_track_dialog.show(events, 100, 300, document, {showMoreLink:<%= @limit_reached %>});
+fotech.gui.moveBackIntoWindow(event_track_dialog.dialog);
+<% unless params[:suppressHighlight] %>
+Event.fire(fotech.gui.rootOpener(), 'eventTracks:highlight', {'events':events});
+<% end %>
+
+

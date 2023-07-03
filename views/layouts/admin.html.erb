@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!--
+ FILENAME:     admin.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-02-20
+
+ DESCRIPTION:  Basic layout for the admin application.
+
+ COPYRIGHT:
+ This file is Copyright (c) 2009 by Fotech Solutions Ltd. All rights reserved.
+ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <%= browser_compatibility_tag %>
+        <title><%= (@title ? @title : "Fotech Solutions Admin Web Application") %></title>
+        <link rel="stylesheet" href="/fontawesome-free-5.0.6/on-server/css/fontawesome-all.min.css" crossorigin="anonymous">
+        <%= include_i18n %>
+        <%= fotech_gui_setup_tag [:window, :layout], :cache => "__layout_admin_gui" %>
+        <%= javascript_include_tag 'prototype.js', 'rails-ujs.js', 'application.js',
+            'core.js',
+            'fotech/common_util/date.js',
+            'fotech/common_util/math.js',
+            'fotech/common_util/string.js',
+            'fotech/common_util/dom.js',
+            'fotech/common_util/document.js',
+            'fotech/common_util/ObjectManager.js',
+            'fotech/common_util/debounce.js',
+            'fotech/common_gui/event.js',
+            'fotech/fibre/event_type.js',
+            'rest.js',
+            'events.js',
+            'monitor/monitor_application.js',
+            'monitor/menu.js',
+            'layout.js',
+            'preferences.js',
+            'admin/admin.js',
+            :cache => "__layout_admin" %>
+        <%= stylesheet_link_tag "layout.css", "common.css", "core.css", "admin/admin.css", "coreui.css",
+            :media => "all", :cache => "__layout_admin" %>
+        <%= yield :head %>
+    </head>
+    <body class="panoptes yui-skin-sam yui-layout" onunload="onUnload()">
+        <div id="vuepart" data-token="<%= @api_auth_token %>" data-preserve-opener data-product="panoptes"></div>
+        <%= javascript_include_tag "coreui.js" %>
+        <%= yield :body_top %>
+        <div id="header">
+          <%= render :partial => 'errors/error_message', :locals => {:dismiss_button => true} %>
+            <%= fotech_banner_tag %>
+        </div>
+        <div id="content">
+            <%= yield %>
+        </div>
+        <div id="footer">
+            <%= fotech_statusbar_tag %>
+        </div>
+        <%= yield :body_bottom %>
+    </body>
+</html>
+

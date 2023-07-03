@@ -1,0 +1,20 @@
+<%#
+ FILENAME:     status.js.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-01-11
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% @statuses.each_pair do |key, value| %>
+    monitor.helios.setStatus(<%= key %>, "<%= escape_javascript value %>");
+    monitor.helios.laser.setStatus(<%= key %>, "<%= escape_javascript @laser_statuses[key] %>");
+<% end %>
+fotech.gui.FotechDialog.clearBusyState('helios_status_controls');

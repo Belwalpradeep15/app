@@ -1,0 +1,142 @@
+<%
+# FILENAME:     _magnitude_filter.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-09-13
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+
+<%= hidden_field_tag 'minWidth' %>
+<%= hidden_field_tag 'maxWidth' %>
+<%= hidden_field_tag 'minVelocity' %>
+<%= hidden_field_tag 'maxVelocity' %>
+<%= hidden_field_tag 'minAcceleration' %>
+<%= hidden_field_tag 'maxAcceleration' %>
+
+<table class='nospace'>
+    <tr>
+        <td colspan="2">
+            <%= check_box_tag 'restrictMagnitude', "1", false, :onchange=>"magnitudeFilterEnable(this.form)" %>
+            <%= label_tag "restrictMagnitude", I18n.t('monitor.events.filters.restrict_mag') %>
+        </td>
+    </tr>
+    <tr id='filterFormMagnitudeRow'>
+        <td>
+            <%= label_tag "minMagnitude", I18n.t('monitor.events.init_search.magnitude_title') %>:
+        </td>
+        <td>
+            <%= I18n.t('monitor.events.filters.min') %>
+            <%= text_field_tag 'minMagnitude', nil, :size => 8 %>
+            <%= label_tag "maxMagnitude", I18n.t('monitor.events.filters.max')%>
+            <%= text_field_tag 'maxMagnitude', nil, :size => 8 %>
+        </td>
+    </tr>
+    <tr id='filterFormWidthRow'>
+        <td>
+            <%= label_tag "minWidth_", I18n.t('monitor.events.filters.width', :units => @distance_units) %>
+        </td>
+        <td>
+            <%= I18n.t('monitor.events.filters.min') %>
+            <%= text_field_tag 'minWidth_', nil, :size => 8 %>
+            <%= label_tag "maxWidth_", I18n.t('monitor.events.filters.max') %>
+            <%= text_field_tag 'maxWidth_', nil, :size => 8 %>
+        </td>
+    </tr>
+    <tr id='filterFormVelocityRow'>
+        <td>
+            <%= label_tag 'minVelocity_', I18n.t('monitor.events.filters.velocity', :units => @velocity_units.gsub('_','/')) %>
+        </td>
+        <td>
+            <%= I18n.t('monitor.events.filters.min') %>
+            <%= text_field_tag 'minVelocity_', nil, :size => 8 %>
+            <%= label_tag 'maxVelocity_', I18n.t('monitor.events.filters.max') %>
+            <%= text_field_tag 'maxVelocity_', nil, :size => 8 %>
+        </td>
+    </tr>
+    <tr id='filterFormAccelerationRow'>
+        <td>
+            <%= label_tag 'minAcceleration_', I18n.t('monitor.events.filters.acceleration', :units => @acceleration_units.gsub('_','/')) %>
+        </td>
+        <td>
+            <%= I18n.t('monitor.events.filters.min') %>
+            <%= text_field_tag 'minAcceleration_', nil, :size => 8 %>
+            <%= label_tag 'maxAcceleration_', I18n.t('monitor.events.filters.max') %>
+            <%= text_field_tag 'maxAcceleration_', nil, :size => 8 %>
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+    function magnitudeFilterEnable(form) {
+        if (form.restrictMagnitude.checked) {
+            $('filterFormMagnitudeRow').removeClassName('disabled');
+            $('filterFormWidthRow').removeClassName('disabled');
+            $('filterFormVelocityRow').removeClassName('disabled');
+            $('filterFormAccelerationRow').removeClassName('disabled');
+        }
+        else {
+            $('filterFormMagnitudeRow').addClassName('disabled');
+            $('filterFormWidthRow').addClassName('disabled');
+            $('filterFormVelocityRow').addClassName('disabled');
+            $('filterFormAccelerationRow').addClassName('disabled');
+        }
+        form.minMagnitude.disabled = !form.restrictMagnitude.checked;
+        form.maxMagnitude.disabled = !form.restrictMagnitude.checked;
+        form.minWidth_.disabled = !form.restrictMagnitude.checked;
+        form.maxWidth_.disabled = !form.restrictMagnitude.checked;
+        form.minVelocity_.disabled = !form.restrictMagnitude.checked;
+        form.maxVelocity_.disabled = !form.restrictMagnitude.checked;
+        form.minAcceleration_.disabled = !form.restrictMagnitude.checked;
+        form.maxAcceleration_.disabled = !form.restrictMagnitude.checked;
+    }
+    
+    function magnitudeFilterValidate(dlg) {
+        if (dlg.form.restrictMagnitude.checked) {
+            dlg.validateFloat("minMagnitude", I18n.t("monitor.events.filters.min_magnitude"), 0);
+            dlg.validateFloat("maxMagnitude", I18n.t("monitor.events.filters.max_magnitude"), 0);
+            dlg.validateFloat("minWidth_", I18n.t("monitor.events.filters.min_width"), 0);
+            dlg.validateFloat("maxWidth_", I18n.t("monitor.events.filters.max_width"), 0);
+            dlg.validateFloat("minVelocity_", I18n.t("monitor.events.filters.min_velocity"), 0);
+            dlg.validateFloat("maxVelocity_", I18n.t("monitor.events.filters.max_velocity"), 0);
+            dlg.validateFloat("minAcceleration_", I18n.t("monitor.events.filters.min_acceleration"), 0);
+            dlg.validateFloat("maxAcceleration_", I18n.t("monitor.events.filters.max_acceleration"), 0);
+        }
+    }
+    
+    function magnitudeFilterOnSubmit(form) {
+        if (form.restrictMagnitude.checked) {
+            var units = fotech.gui.rootOpener().user.preferences['units-distance'];
+            var velocity_units = fotech.gui.rootOpener().user.preferences['units-velocity'];
+            var acceleration_units = fotech.gui.rootOpener().user.preferences['units-acceleration'];
+            form.minWidth.value = "";
+            form.maxWidth.value = "";
+            form.minVelocity.value = "";
+            form.maxVelocity.value = "";
+            form.minAcceleration.value = "";
+            form.maxAcceleration.value = "";
+
+            if (form.minWidth_.value)
+                form.minWidth.value = fotech.util.convert(form.minWidth_.value, units, 'm');
+            if (form.maxWidth_.value)
+                form.maxWidth.value = fotech.util.convert(form.maxWidth_.value, units, 'm');
+            if (form.minVelocity_.value)
+                form.minVelocity.value = fotech.util.convert(form.minVelocity_.value, velocity_units, 'm_s');
+            if (form.maxVelocity_.value)
+                form.maxVelocity.value = fotech.util.convert(form.maxVelocity_.value, velocity_units, 'm_s');
+            if (form.minAcceleration_.value)
+                form.minAcceleration.value = fotech.util.convert(form.minAcceleration_.value, acceleration_units, 'm_s2');
+            if (form.maxAcceleration_.value)
+                form.maxAcceleration.value = fotech.util.convert(form.maxAcceleration_.value, acceleration_units, 'm_s2');
+        }
+    }
+</script>
+
+

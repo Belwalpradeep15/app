@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+<!-- Licenses Description file
+     Details licenses found within the Fotech products
+     (c) 2018 Fotech Solutions limited.
+-->
+
+<head>
+	<title>Fotech Solutions - Panoptes <%= APP_CONFIG["monitor"]["version"] %> Open Source Licenses</title>
+	<script src="/javascripts/fotech/common_gui/yahoo/build/yahoo-dom-event/yahoo-dom-event.js" type="text/javascript"></script>
+	<script src="/javascripts/licenses.js" type="text/javascript"></script>
+	<link href="/stylesheets/licenses.css" rel="stylesheet" type="text/css" />
+</head>
+
+<%# Load the appropriate Javascript for this page %>
+<body>
+	<img src='/images/fotech/common_gui/fotech_branding.png' class="logo">
+	<h1>Open Source Licenses</h1>
+	<div class="product">
+		Panoptes <%= APP_CONFIG["monitor"]["version"] %>
+	</div>
+	<br/>
+	<div class="product">
+		<%= I18n.t('main.about.centos_license') %>
+	</div>
+
+	<ul class="licenses">
+	<% @licenses.each do | license | %>
+		<li>
+			<div class="license">
+				<!-- Header class contains all the information about the license -->
+				<div class="hd header" >
+					<table>
+						<tr>
+							<td class="name"><%= license['name'] %></td>
+							<td class="home"><a href="<%= license['home'] %>" target="_new">homepage</a></td>
+							<td class="show">show license</td>
+						</tr>
+					</table>
+				</div>
+				<div class="bd body">
+					<pre class="contents"><%= license['license'] %></pre>
+				</div>
+				<div class="footer">
+				</div>
+			</div>
+		</li>
+	<% end %>
+	</ul>
+</body>

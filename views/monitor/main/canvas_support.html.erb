@@ -1,0 +1,67 @@
+<%#
+ FILENAME:     canvas_support.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2009-12-30
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+ 
+<% content_for :body_top do %>
+    <% if @have_google %>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+    <% end %>
+    <style type="text/css">
+        div#message {
+            border-size: 2px;
+            border-style: inset;
+            margin-size: 5px;
+            padding: 10px;
+        }
+    </style>
+<% end %>
+
+ 
+<h1><%= I18n.t('main.canvas_support.title') %></h1>
+
+<div id="message">
+    <p>
+      <%= I18n.t('main.canvas_support.message1', :path => "<a href='/usermanual/html/monitor_CSH.htm#Minimum_Browser_Requirements'>Minimum Browser Requirements</a>") %> 
+    </p>
+     
+    <% if @have_google %>
+        <script type="text/javascript">
+            function installChromePlugin() {
+                CFInstall.check({ node: "chrome_installer", destination: "<%= @forward_url %>" });
+            }
+        </script>
+
+        <div id="chrome_installer">
+        </div>
+        
+        <p><%= I18n.t('main.canvas_support.message2', :path => "<a href='javascript: installChromePlugin()'>Install Chrome</a>") %>
+            <ul>
+              <li><%= I18n.t('main.canvas_support.item1') %></li>
+              <li><%= I18n.t('main.canvas_support.item2') %></li>
+            </ul>
+        </p>
+        
+        <p><%= I18n.t('main.canvas_support.alternate') %>
+            <a href="http://www.apple.com/safari/">Safari</a>,
+            <a href="http://firefoxbrowser.info/">Firefox</a>.
+        </p>
+    <% else %>
+      <p><%= I18n.t('main.canvas_support.not_connected') %></p>
+    <% end %>
+
+    <center>
+        <button type="button" onclick="window.location='/monitor/session/logout'">Logout</button>
+    </center>
+</div>
+

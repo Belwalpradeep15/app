@@ -1,0 +1,36 @@
+<%
+# FILENAME:     startup.js.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-01-12
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+try {
+    <% unless APP_CONFIG['monitor']['map_provider'] == 'none' %>
+        if (!fotech.map.Map.haveMapAPI)
+            setTimeout('setMapUnavailableMessage()', 4000);
+    <% end %>
+
+    <% if @can_see_fotech_solutions %>
+        fotech.gui.enableMenuItem(jsmenubar, 'aboutFotech', true);
+    <% end %>
+    <% if @can_see_mail_server %>
+        fotech.gui.enableMenuItem(jsmenubar, 'reportProblem', true);
+    <% end %>
+
+    enableMenus();
+    monitor.performCompatibilityChecks();
+
+    createEventFilterDialog();
+    
+} catch (ex) {
+    alert(ex);
+}

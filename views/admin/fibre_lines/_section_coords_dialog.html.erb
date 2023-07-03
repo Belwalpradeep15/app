@@ -1,0 +1,47 @@
+<%#
+ LAST CHANGE:
+ $Author: $
+   $Date: $
+    $Rev: $
+    $URL: $
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+    <div id="sectionCoordDialog" style="visibility: hidden; max-width: 500px">
+      <div class="hd">
+        <%= I18n.t('admin.fibre_lines.section_coords_dialog.title') %>
+      </div>
+      <div class="bd">
+        <%= form_for :fibre_line, :url => { :action => :section_calibrate}, :html => {:id => "sectionCoordsForm", :name => "sectionCoordsForm"} do |f| %>
+            <input type="hidden" name="distance_units" value="<%= @distance_units %>"/>
+            <table id="sectionCoordsFormTable">
+              <tr>
+                <td colspan='2'>
+
+                  <div id="coordsPanel" style="overflow: auto; max-height: 200px;">
+                      <table >
+                        <thead>
+                          <tr>
+                            <td></td>
+                            <td><%= I18n.t('admin.fibre_lines.fibre_coords_dialog.fibre', :units => @distance_units) %></td>
+                            <td style="width:35px;"></td>
+                          </tr>
+                        </thead>
+                        <tbody id="coord_values">
+                        </tbody>
+                      </table>
+                  </div>
+
+                </td>
+              </tr>
+              <tr>
+                <td><%= hidden_field_tag "authenticity_token", form_authenticity_token %></td>
+                <td><%= hidden_field_tag "fibre_line_id_override", @fibre_line ? @fibre_line.id : "" %></td>
+              </tr>
+            </table>
+        <% end %>
+      </div>
+    </div>
+

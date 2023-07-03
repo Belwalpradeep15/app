@@ -1,0 +1,62 @@
+<% @processed_data = { :titles => [], :data => [], :totals => [] } %>
+<% if !@data.blank? %>
+    <%# process the headers into translated forms %>
+    <% @processed_data[:titles] << I18n.t('common.headers.id') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.time') %>
+    <% @processed_data[:titles] << I18n.t('common.headers.type') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.threat_level') %>
+    <% @processed_data[:titles] << I18n.t('common.headers.status') %>
+    <% @processed_data[:titles] << I18n.t('alert.status.acknowledged') + " " + I18n.t('admin.alerts.headers.on1') %>
+    <% @processed_data[:titles] << I18n.t('alert.status.acknowledged') + " " + I18n.t('admin.alerts.headers.by') %>
+    <% @processed_data[:titles] << I18n.t('alert.status.resolved') + " " + I18n.t('admin.alerts.headers.on1') %>
+    <% @processed_data[:titles] << I18n.t('alert.status.resolved') + " " + I18n.t('admin.alerts.headers.by') %>
+    <% @processed_data[:titles] << I18n.t('alert.detail_keys.fibre_line_name') %>
+    <% @processed_data[:titles] << I18n.t('admin.marker.title')  %>
+    <% @processed_data[:titles] << I18n.t('common.headers.position') + " (#{@distance_units})" %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.region') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.latitude') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.longitude') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.oldest_event_time') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.newest_event_time') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.amber_time') %>
+    <% @processed_data[:titles] << I18n.t('admin.alerts.headers.red_time') %>
+    <% @processed_data[:titles] << I18n.t('alert.status.resolved') + " " + I18n.t('alert.response.comment') %>
+    <%# Now, go through each alert and convert the data accordingly %>
+    <% @data.each do | alert | %>
+        <% @row = [] %>
+        <% @row << alert.id %>
+        <% @row << ( alert.time.nil? ? '' : alert.time.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @row << alert.description %>
+        <% @row << I18n.t('alert.threat_level.' + (alert.threat_level || 'none')) %>
+        <% @row << I18n.t('alert.status.' + alert.status) %>
+        <% @row << (alert.time_acknowledged.nil? ? '' : alert.time_acknowledged.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @row << alert.acknowledged_by %>
+        <% @row << (alert.time_resolved.nil? ? '' : alert.time_resolved.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @row << alert.resolved_by %>
+        <% @row << alert.path_name %>
+        <% @row << (alert.detail('path_marker_name').nil? ? '' : alert.detail('path_marker_name') ) %>
+        <% @row << ( optional_translate(alert.detail('path_distance'), @preferences_hash).to_f ).to_s %>
+        <% regionText = '' %>
+        <% if alert.regions %>
+            <% alert.regions.each do | region | %>
+                <%= regionText = regionText + region + ' ' %>
+            <% end %>
+        <% end %>
+        <% @row << regionText %>
+        <% @row << (alert.respond_to?(:latitude=) ? alert.latitude : '' ) %>
+        <% @row << (alert.respond_to?(:longitude=) ? alert.longitude : '' ) %>
+        <% @row << (alert.oldest_event_time.nil? ? '' : alert.oldest_event_time.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @row << (alert.newest_event_time.nil? ? '' : alert.newest_event_time.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @row << (alert.amber_time.nil? ? '' : alert.amber_time.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @row << (alert.red_time.nil? ? '' : alert.red_time.to_time.to_default_s_in_tz_offset(@tz_offset)) %>
+        <% @response = "" %>
+        <% alert.alert_responses.each do |r| %>
+            <% if r.response == "resolve" %>
+                <% @response = optional_i18n( r.comments ) %>
+                <% break %>
+            <% end %>
+        <%end %>
+        <% @row << @response %>
+        <% @processed_data[:data] << @row %>
+    <% end %>
+<% end %>

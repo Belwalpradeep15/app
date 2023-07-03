@@ -1,0 +1,56 @@
+<%
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+
+# COPYRIGHT:
+# This file is Copyright © 2012 Fotech Solutions Ltd. All rights reserved.
+-%>
+
+<% isFixed ||= false %>
+<% height ||= '300px' %>
+<% options = {:isFixed => isFixed, :height => height} %>
+
+<% content_for :head do %>
+<%= javascript_include_tag 'monitor/multiple_events_dialog.js' %>
+<% end %>
+
+    <%= render :partial => 'monitor/events/multiple_events_dialog', :locals => options.merge({:dialog_id => 'recent_events_dialog', :header => I18n.t('monitor.events.multiple_events_dialog.recent_events')})  %>
+    <%= render :partial => 'monitor/events/event_dialog', :locals => {:window => ""} %>
+    <%= render :partial => 'monitor/events/filter_dialog' %>
+    <%= render :partial => 'monitor/events/multiple_events_dialog', :locals => {:dialog_id => 'multiple_events_dialog', :header => I18n.t('monitor.events.multiple_events_dialog.multiple_events')}  %>
+    <%= render :partial => 'monitor/events/multiple_events_dialog', :locals => {:dialog_id => 'event_track_dialog', :header => I18n.t('monitor.events.multiple_events_dialog.event_track'), :isEventTrack => true} %>
+
+<script>
+    Event.observe(window, 'load', function(){
+        recent_events_dialog = new MultipleEventsDialog('recent_events_dialog',null,<%= raw options.to_json %>);
+        recent_events_dialog.setEventClickedCallback(popupEventWindow);
+        recent_events_dialog.addDialogClosedCallback(function() { fotech.gui.getMenuItemById(jsmenubar, "showRecent").cfg.setProperty('checked', false); });
+        <% if !isFixed %>
+        recent_events_dialog.dialog.cfg.setProperty('context',['content','br','br']);
+        <% end %>
+        //add event listeners
+        var w = fotech.gui.rootOpener();
+        Event.observe(w, 'eventManager:added', function(ev) {recent_events_dialog.addFibreEvent(ev.memo.event);});
+        Event.observe(w, 'eventManager:filtering', function(){
+                      recent_events_dialog.clearFibreEvents();
+                      fotech.gui.rootOpener().globalEventManager.asArray().each(recent_events_dialog.addFibreEvent.bind(recent_events_dialog));
+                      });
+        Event.observe(w, 'eventManager:removed', function(ev) {recent_events_dialog.removeFibreEvent(ev.memo.event);});
+        Event.observe(w, 'eventManager:cleared', function(ev) {recent_events_dialog.clearFibreEvents();});
+
+        var dims = document.viewport.getDimensions();
+
+        multipleEventDialog = new MultipleEventsDialog('multiple_events_dialog');
+        multipleEventDialog.setEventClickedCallback(popupEventWindow);
+
+        event_track_dialog = new MultipleEventsDialog('event_track_dialog');
+        event_track_dialog.setEventClickedCallback(popupEventWindow);
+        event_track_dialog.addDialogClosedCallback(_popdownTrackWindow);
+
+        //this will check every second if there are events to clear
+        new PeriodicalExecuter( globalEventManager.timedClearEventsBasedOnType.bind(globalEventManager), 5);
+    }.bind(window));
+</script>

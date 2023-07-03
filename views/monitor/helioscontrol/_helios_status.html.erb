@@ -1,0 +1,121 @@
+<%
+# FILENAME:     _helios_status.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-01-12
+
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+<%  #make sure locals we expect to be there are defined
+    isFixed ||= false %>
+<%= form_with :id => 'helios_status_form' do -%>
+  <% if !isFixed %>
+    <input name="authenticity_token" type="hidden" value="<%= form_authenticity_token %>" />
+  <% end %>
+  <input name='helios_unit_ids' type='hidden' value='<%= @heliosUnitIds.join(",") %>' />
+<% end -%>
+
+<div id="helios_status" class="<%= isFixed ? '' : 'fotech_dialog'%> <%= (can? :restart, :laser) ? 'with_laser' : ''%>">
+    <div class="hd">
+      <%= I18n.t 'monitor.helios.status_dialog.title' %>
+    </div>
+    <div id="helios_status_controls" class="<%= isFixed ? '' : 'dialog'%> bd">
+        <table>
+            <tr>
+              <th><%= I18n.t 'alert.type_names.helios' %></th>
+                <th style="width:100px"><%= I18n.t 'common.headers.status' %></th>
+                <% if can? :restart, :helios_units %>
+                    <th><%= I18n.t 'common.headers.commands' %></th>
+                <% end %>
+            </tr>
+            <% @heliosUnits.each do |helios| -%>
+                <% next unless helios.id -%>
+                <tr id="helios_row_<%= helios.id %>">
+                    <td><span title='<%= helios.name %>'><%= truncate_middle helios.name, 15 %></span></td>
+                    <td>
+                        <span id="helios_status_1_<%= helios.id %>" class="info"></span>
+                    </td>
+                    <td style="padding-left:10px;">
+                        <% if can? :restart, :helios_units %>
+                        <%= image_tag('helios_start-16x16.png',
+                                :id => "helios_start_#{helios.id}",
+                                :class => 'image_link disabled',
+                                :alt => I18n.t('monitor.helios.status_dialog.start', :name => helios.name),
+                                :title => I18n.t('monitor.helios.status_dialog.start', :name => helios.name),
+                                :onclick => "monitor.helios.submitIfEnabled(this, #{helios.id}, 'start')") %>
+                        <%= image_tag('helios_stop-16x16.png',
+                                :id => "helios_stop_#{helios.id}",
+                                :class => 'image_link disabled',
+                                :alt => I18n.t('monitor.helios.status_dialog.stop', :name => helios.name),
+                                :title => I18n.t('monitor.helios.status_dialog.stop', :name => helios.name),
+                                :onclick => "monitor.helios.submitIfEnabled(this, #{helios.id}, 'stop')") %>
+                        <% end -%>
+                        <% helios_standalone_url = "http://#{helios.host_name}"
+                            if has_role? :system_admin
+                                helios_standalone_url += '/protected'
+                            elsif can?(:restart, :helios_units) or can?(:manage, :helios_units)
+                                #don't alter the url
+                            elsif can? :read, :helios_units
+                                helios_standalone_url += '/'
+                            else
+                                helios_standalone_url = nil
+                            end
+                        -%>
+                        <% if helios_standalone_url -%>
+                        <%= image_tag('standalone-16x16.png',
+                            :id => "helios_standalone_#{helios.id}",
+                            :class => 'image_link disabled',
+                            :alt => I18n.t('admin.helios_units.launch_standalone', :name => helios.name),
+                            :title => I18n.t('admin.helios_units.launch_standalone', :name => helios.name),
+                            :onclick => "admin.helios_units.launchStandalone(#{helios.id}, '#{helios_standalone_url}')" ) %>
+                        <% end -%>
+                    </td>
+                </tr>
+                <tr id="laser_row_<%= helios.id %>">
+                    <td></td>
+                    <td><span id="laser_status_<%= helios.id %>" class="info"></span></td>
+                    <% if can? :restart, :laser %>
+                    <td style="padding-left:10px;">
+                        <%= image_tag('laser_start-16x16.png',
+                                :id => "laser_start_#{helios.id}",
+                                :class => 'image_link disabled',
+                                :alt => I18n.t('monitor.helios.status_dialog.start_laser', :name => helios.name),
+                                :title => I18n.t('monitor.helios.status_dialog.start_laser', :name => helios.name),
+                                :onclick => "monitor.helios.laser.submitIfEnabled(this, #{helios.id}, 'start')") %>
+                        <%= image_tag('laser_stop-16x16.png',
+                                :id => "laser_stop_#{helios.id}",
+                                :class => 'image_link disabled',
+                                :alt => I18n.t('monitor.helios.status_dialog.stop_laser', :name => helios.name),
+                                :title => I18n.t('monitor.helios.status_dialog.stop_laser', :name => helios.name),
+                                :onclick => "monitor.helios.laser.submitIfEnabled(this, #{helios.id}, 'stop')") %>
+                    </td>
+                    <% end %>
+                </tr>
+            <% end %>
+        </table>
+        <hr/>
+        <center>
+        <button type="button" onclick="monitor.helios.recheckStatus()"><%= t 'monitor.helios.status_dialog.recheck' %></button>
+        </center>
+    </div>
+</div>
+
+<% content_for :head do %>
+    <%= javascript_include_tag 'monitor/helios.js' %>
+<% end %>
+<script type="text/javascript">
+    Event.observe(window, 'load', function(){
+        <% if !isFixed %>
+        monitor.helios.setupStatusDialog();
+        <% end %>
+        monitor.helios.recheckStatus();
+    });
+</script>
+
+

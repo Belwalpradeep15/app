@@ -1,0 +1,13 @@
+---
+paths:<% @yaml.each do |y| %>
+  - id: <%= y['id'] %>
+    name: <%= y['name'] %>
+    marker_name: <%= y['marker_name'] %>
+    direction_towards_marker: <%= y['direction_towards_marker'] %>
+    direction_away_from_marker: <%= y['direction_away_from_marker'] %>
+    segments:<% y['segments'].each do |s| %>
+      - id: <%= s['id'] %>
+        fibre_line_id: <%= s['fibre_line_id'] %>
+        start_distance: <%= s['start_distance'] %>
+        end_distance: <%= s['end_distance'] %>
+        distance_from_marker: <%= s['distance_from_marker'] %><% end %><% end %>

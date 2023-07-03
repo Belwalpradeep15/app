@@ -1,0 +1,42 @@
+<% content_for :content do %>
+<% if !@data.blank? %>
+    <table>
+        <% totals = {} %>
+        <thead>
+            <tr>
+                <th>Region</th>
+                <% @data.sort.each do | region, data | %>
+                    <% data.sort.each do | date, count | %>
+                        <th><%= date %></th>
+                        <% totals[ date ] = 0 %>
+                    <% end %>
+                    <% break %>
+                <% end %>
+            </tr>
+        </thead>
+        <tbody>
+            <% @data.sort.each do | region, data | %>
+            <tr>
+                <td><%= region %></td>
+                <% data.sort.each do | date, count | %>
+                    <td><%= count %></td>
+                    <% totals[ date ] += count %>
+                <% end %>
+            </tr>
+            <% end %>
+        </tbody>
+        <tfoot>
+            <% @data.sort.each do | region, data | %>
+            <tr>
+                <td>Total</td>
+                <% data.sort.each do | date, count | %>
+                    <td><%= totals[ date ] %></td>
+                <% end %>
+            </tr>
+            <% break %>
+            <% end %>
+        </tfoot>
+
+    </table>
+<% end %>
+<% end %>

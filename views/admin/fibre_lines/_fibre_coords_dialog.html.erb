@@ -1,0 +1,51 @@
+<%#
+ LAST CHANGE:
+ $Author: $
+   $Date: $
+    $Rev: $
+    $URL: $
+
+ COPYRIGHT:
+ This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+    <div id="fibreCoordDialog" style="visibility: hidden; max-width: 500px">
+      <div class="hd">
+        <%= I18n.t('admin.fibre_lines.fibre_coords_dialog.title') %>
+      </div>
+      <div class="bd">
+        <%= form_for :fibre_line, :url => { :action => :map_calibrate}, :html => {:id => "fibreCoordsForm", :name => "fibreCoordsForm"} do |f| %>
+            <input type="hidden" name="distance_units" value="<%= @distance_units %>"/>
+            <table id="fibreCoordsFormTable" width="100%">
+              <tr>
+                <td colspan='2'>
+
+                  <div id="coordsPanel" style="overflow: auto; max-height: 200px;width:370px;">
+                      <table >
+                        <tbody id="lat_lng_values">
+                          <tr>
+                            <td></td>
+                            <td><%= I18n.t('admin.alerts.headers.latitude') %></td>
+                            <td><%= I18n.t('admin.alerts.headers.longitude') %></td>
+                            <td><%= I18n.t('admin.fibre_lines.fibre_coords_dialog.fibre', :units => @distance_units) %></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                  </div>
+
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan='2' align='right' style='padding-right: 13px;'><%= image_tag('add-16x16.png', :border => 0, :id => 'add_coord_id') %></td>
+              </tr>
+
+              <tr>
+                <td><%= hidden_field_tag "authenticity_token", form_authenticity_token %></td>
+                <td><%= hidden_field_tag "fibre_line_id_override", @fibre_line ? @fibre_line.id : "" %></td>
+              </tr>
+            </table>
+        <% end %>
+      </div>
+    </div>
+

@@ -1,0 +1,99 @@
+  <% buttons_to_hide ||= {}
+    eventTrackPrefix ||= ""
+  -%>
+  <div id="event_popup" style="display:none; width:4.5in;">
+    <div id="eventTitle" class="hd">
+        <%= I18n.t('monitor.events.event_dialog.title') %>
+    </div>
+    <div id="eventBody" class="bd event">
+      <table class="padded" width="100%">
+        <tr>
+          <td id="eventDetails">
+            <img id="eventImage" class="padded" align="left" src='/images/fotech/common_gui/logo-small.png'/>
+            <span id="eventType"><%= I18n.t('monitor.events.event_dialog.type') %></span><br />
+            <span id="eventTime"><%= I18n.t('monitor.events.event_dialog.time') %></span><br />
+            <span id="mag_and_width"><%= I18n.t('monitor.events.event_dialog.mag_and_width') %></span><br />
+            <span id="eventDistance"><%= I18n.t('monitor.events.event_dialog.dist') %></span><br />
+            <span id="eventPosition"><%= I18n.t('monitor.events.event_dialog.position') %></span><br />
+            <span id="velocity_and_accel"><%= I18n.t('monitor.events.event_dialog.velocity_and_accel') %></span><br />
+            <hr/>
+            <span id="onRouteInfo">#{0}</span>
+            <span id="eventTags">#{0}</span>
+          </td>
+        </tr>
+        <% if not buttons_to_hide[:all] %>
+        <tr>
+          <td id="eventControls" nowrap="nowrap" style="display:none;" >
+            <span >
+              <hr/>
+              <center>
+                <%= button_tag I18n.t('monitor.events.event_dialog.display'), type: 'button', onclick: 'javascript: ' + window + 'setMainFibreView(\'#{0}\')', :id => 'displayButton', :name => 'displayButton', :class => 'eventPopup' unless buttons_to_hide[:display] %>
+                <%= button_tag I18n.t('monitor.events.event_dialog.zoom_to'), type: 'button', onclick: 'javascript: ' + window + 'zoomToEvent(\'#{0}\')', :id => 'zoomButton', :name => 'zoomButton', :class => 'eventPopup' unless buttons_to_hide[:zoom] %>
+                <%= button_tag I18n.t('monitor.events.event_dialog.show_track'), type: 'button', onclick: 'javascript: ' + eventTrackPrefix + 'showEventTrackForEvent(\'#{0}\')', :id => 'trackButton', :name => 'trackButton', :class => 'eventPopup' unless buttons_to_hide[:track] %>
+                <%= button_tag I18n.t('monitor.audio.listen'), type: 'button', onclick: 'javascript: ' + window + 'addEventAudioButton(\'#{0}\')', :id => 'audioButton', :name => 'audioButton', :class => 'eventPopup' %>
+              </center>
+            </span>
+          </td>
+        </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    function addEventAudioButton(event_id ) {
+            var id = event_id;
+            var event = globalEventManager.getEvent(event_id);
+            var fibreLine = fotech.gui.rootOpener().getFibreLineById(event.routeId);
+            var helios_host_name = fibreLine.heliosUnit.host_name;
+            var title = 'event_audio' + id;
+            var childWindows = new fotech.gui.ChildWindowManager(window);
+            onUnload = function() {
+                childWindows.forEach(function (key, window) { window.close(); });
+            }
+
+            try {
+              var fibre_line_id = event.routeId;
+              var fibreline = fotech.gui.rootOpener().getFibreLineById(fibre_line_id);
+              var location = parseInt(event.distance);
+              var start_time = event.time.toString() + "Z";
+
+              var panelData = {
+                hostname: helios_host_name,
+                child_identifier: id,
+                channel_id: fibreline.helios_channel,
+                start_m: location - 25,  // Offset the start
+                end_m: location + 25, // Offset the end
+                date: start_time,
+              };
+
+              vueApp.$store.dispatch( 'panels/add', {
+                name: "RemoteAudio_" + id,
+                type: "RemoteAudioPanel",
+                options: panelData,
+                show: true,
+              });
+            } catch( e ){
+              console.log( "Unable to launch event data", e );
+            }
+
+        }
+
+        window.addEventListener('message', function (e) {
+          try {
+              var message = JSON.parse(e.data);
+              var id = parseInt(message.data);
+              switch(message.command)
+              {
+                  case 'audio_loaded':
+                      Event.fire(window, 'message:audio_loaded',id);
+                      break;
+                  case 'audio_unloaded':
+                      Event.fire(window, 'message:audio_unloaded',id);
+                      break;
+              }
+          } catch ( e ){
+          }
+        });
+
+  </script>

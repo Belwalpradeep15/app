@@ -1,0 +1,47 @@
+<%
+# FILENAME:     legend.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-10-30
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<div class="hd">
+    <%= I18n.t('monitor.legend_dialog.title') %>
+</div>
+<div class="bd legend">
+    <ul class="legend">
+        <li class="legend_sub_header" style="list-style: none;');"><%= I18n.t('monitor.legend_dialog.item_entries') %></li>
+    <% @item_entries.each do |e| %>
+        <li class="legend" style="list-style-image: url('<%= e[:icon] %>');"><%= e[:label] %></li>
+    <% end %> 
+    </ul>
+    <ul class="legend status_legend">
+        <li class="legend_sub_header" style="list-style: none;');"><%= I18n.t('monitor.legend_dialog.status_entries') %></li>
+    <% @status_entries.each do |e| %>
+        <li class="legend" style="list-style-image: url('<%= e[:icon] %>');"><%= e[:label] %></li>
+    <% end %>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    if (!monitor.legend.__isFixedBox) {
+        monitor.legend.__panel = new YAHOO.widget.Panel("legend", { visible: false, constraintoviewport: true });
+        monitor.legend.__panel.render();
+        if(typeof overlayManager != 'undefined')
+            overlayManager.register(monitor.legend.__panel);
+        
+        if (monitor.legend.__menuItem) {
+            monitor.legend.__menuItem.cfg.setProperty('url', 'javascript: monitor.legend.__toggle();');
+            monitor.legend.__menuItem.cfg.setProperty('disabled', false);
+            monitor.legend.__panel.hideEvent.subscribe(function() { monitor.legend.__menuItem.cfg.setProperty('checked', false); });
+        }
+    }
+</script>

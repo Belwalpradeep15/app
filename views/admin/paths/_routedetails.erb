@@ -1,0 +1,28 @@
+<td class="firstcell" <%= path.path_segments.length == 0 ? '' : "rowspan=\"#{path.path_segments.length}\"" %> >
+    <div class="marker">
+        <%= path.marker_name %>
+    </div>
+</td>
+<td class="firstcell" <%= path.path_segments.length == 0 ? '' : "rowspan=\"#{path.path_segments.length}\"" %> >
+    <div class="details">
+        <div>
+            <strong>ID:</strong>
+            <span> <%= path.id %></span>
+        </div>
+        <div>
+            <strong><%= I18n.t('admin.paths.label_direction') %>:</strong>
+            <span> <%= path.label_away %> / <%= path.label_towards %></span>
+        </div>
+    </div>
+    <div class="control">
+        <%= link_to({:action => 'download', :id => path.id, :organization => org.id}) do %>
+          <div class="button ok"><span class="fa fa-download"></span> <span><%= I18n.t('admin.paths.download_yaml') %></span></div>
+        <% end %>
+
+        <% if can? :delete, :paths %>
+            <%= link_to "javascript:admin.deletePath('/admin/paths', #{path.id}, {organization: #{org.id}})", data: { confirm: I18n.t('common.confirm_delete', :name => path.name) } do -%>
+              <div class="button danger"><span class="fa fa-times-circle"></span> <span><%= I18n.t('common.button.delete', :name => '') %></span></div>
+          <% end %>
+        <% end %>
+    </div>
+</td>

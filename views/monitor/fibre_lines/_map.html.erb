@@ -1,0 +1,201 @@
+<%
+# FILENAME:     _map.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2009-11-04
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<div style="height: 99.5%; overflow: hidden;">
+  <div id='map' class="map_display"></div>
+  <div id="mapOverlay" class="map_display" style="z-index: -100"></div>
+</div>
+
+<script type="text/javascript">
+
+    function mapHighlightTrack(ev){
+        var events = ev.memo.events;
+        if(fibre_route_layer && events.length) {
+            //calculate the pLine for this track
+            var fibreRouteId = events[0].routeId;
+            var distances = events.pluck('distance');
+            var start = distances.min();
+            var end = distances.max();
+
+            var options = fotech.map.TrackStyle("#00ff00", 20, .7, false, 0, 0);
+
+            fibre_route_layer.highlightFibreSection(fibreRouteId, start, end, options);
+        }
+    }
+
+    function initMapState() {
+
+        var threatLevelsForIcons = [<%= raw @threatLevelsForIcons.collect{|x| "'#{x}'"}.join(',') %>];
+        var map_layers = <%= raw APP_CONFIG['monitor']['map_layers'].to_json %>;
+        var initial_map_type = '<%= @initial_map_type %>';
+
+        resetMap();
+        if (fotech.map.Map.haveMapAPI) {
+            setStatusMessage("");
+
+            if (jsmap != null) { jsmap.unload(); }
+            jsmap = new fotech.map.Map('map', fotech.map.Map.mapProvider, user.preferences, map_layers, initial_map_type);
+
+            fibre_route_layer = new fotech.map.FibreRouteLayer(jsmap, fotech.gui.rootOpener().globalAlertManager,
+            new fotech.map.TrackStyle(fotech.gui.rootOpener().user.preferences['fibre-line-colour'], 5, .5, false));
+
+            var tick_spacing = Number(fotech.gui.rootOpener().user.preferences['on-route-tick-spacing']);
+            var tick_units =  fotech.gui.rootOpener().user.preferences['on-route-tick-spacing-unit'];
+            var tick_spacing = fotech.util.convert(tick_spacing, tick_units, "m");
+            var on_route_colour = fotech.gui.rootOpener().user.preferences['on-route-colour'];
+
+            on_route_layer = new fotech.map.OnRouteLayer(jsmap);
+            on_route_layer.track_style = new fotech.map.TrackStyle( on_route_colour, 3, .9, true, tick_spacing, 5.0);
+
+            event_connector_layer = new fotech.map.ConnectorLayer(jsmap);
+
+            var w = fotech.gui.rootOpener();
+
+            Event.observe(w, 'eventTracks:highlight', mapHighlightTrack);
+
+            helioses_layer = new fotech.map.HeliosLayer(jsmap);
+            ref_points_layer = new fotech.map.RefPointLayer(jsmap);
+            markers_layer = new fotech.map.MarkersLayer(jsmap);
+            audio_marker_layer = new fotech.map.AudioLayer(jsmap);
+
+            fibre_region_layers = {};
+
+            // add Fibre lines
+            if (displayedFibreLineId) {
+                var line = getFibreLineById(displayedFibreLineId),
+                    route = new fotech.map.FibreRoute(line.id,
+                        line.name,
+                        line.route,
+                        line.geoSpatialCalibrations,
+                        line.heliosUnit),
+                    regionLayer = new fotech.map.FibreRegionLayer(jsmap);
+                fibre_route_layer.addFibreRoute(route);
+                regionLayer.setRoute(route);
+                for (var region in fibreLineRegions) {
+                    if (!fibreLineRegions.hasOwnProperty(region)) continue;
+
+                    region = fibreLineRegions[region];
+                    if (region instanceof Object && region.lineId == displayedFibreLineId) {
+                        if (!fibre_region_layers.hasOwnProperty(region.lineId)) {
+                            fibre_region_layers[region.lineId] = new fotech.map.FibreRegionLayer(jsmap);
+                            fibre_region_layers[region.lineId].setRoute(route);
+                        }
+                        fibre_region_layers[region.lineId].addRegion(region);
+                    }
+                }
+            }
+            else {
+                var routes = {};
+                for(var line in fibreLines) {
+                    if (!fibreLines.hasOwnProperty(line)) continue;
+
+                    line = fibreLines[line];
+                    var route = new fotech.map.FibreRoute(line.id,
+                        line.name,
+                        line.route,
+                        line.geoSpatialCalibrations,
+                        line.heliosUnit);
+                    routes[line.id] = route;
+                    fibre_route_layer.addFibreRoute(route);
+                }
+
+                for (var region in fibreLineRegions) {
+                    if (!fibreLineRegions.hasOwnProperty(region)) continue;
+
+                    region = fibreLineRegions[region];
+                    if (region instanceof Object) {
+                        if (!fibre_region_layers.hasOwnProperty(region.lineId)) {
+                            fibre_region_layers[region.lineId] = new fotech.map.FibreRegionLayer(jsmap);
+                            fibre_region_layers[region.lineId].setRoute(routes[region.lineId]);
+                        }
+                        fibre_region_layers[region.lineId].addRegion(region);
+                    }
+                }
+            }
+
+            events_layer = new fotech.map.EventsLayer(jsmap, w.globalEventManager, fibre_route_layer.routes);
+            alerts_layer = new fotech.map.AlertsLayer(jsmap, threatLevelsForIcons, w.globalAlertManager, fibre_route_layer.routes);
+
+            // Add On Route tracks
+            <% if (@paths.length > 0) %>
+                <% @paths.each do |path| %>
+                    <%= add_path(path) %>
+                <% end %>
+            <% end %>
+
+            // Add Helios Units
+            <% @helios_units.each do |h_unit|
+                next if h_unit.latitude.nil?%>
+                helioses_layer.addHelios(<%=h_unit.id%>,'<%=h_unit.name%>',new LatLon(<%=h_unit.latitude%>,<%=h_unit.longitude%>));
+            <% end %>
+
+            // Add Markers
+            <% if @markers %>
+                <% @markers.each do |marker|
+                    next if marker.latitude.nil? or marker.marker_types[0].nil? %>
+                    markers_layer.addMarker(<%=marker.id%>,'<%=marker.name%>',new LatLon(<%=marker.latitude%>,<%=marker.longitude%>), '<%= marker.marker_types[0].icon_path %>');
+                <% end %>
+            <% end %>
+            // Add reference Points
+            <% if @reference_points %>
+                <% @reference_points.each do |r_point| %>
+                    ref_points_layer.addReferencePoint(<%=r_point.id%>,'<%=r_point.label%>',new LatLon(<%=r_point.latitude%>,<%=r_point.longitude%>));
+                <% end %>
+            <% end %>
+
+            initMap(<%= "#{@use_select_region}" %>);
+
+                var audio_marker_editor = new fotech.map.Audio(jsmap, "name", '/images/stream-sound-on-16x16.png', fibre_route_layer.routes);
+                new_callback = function (id, location ) {
+                    fotech.audio.newAudio();
+                };
+                moved_callback = function (id, location ) {
+                    fotech.audio.change_lat_lon_field(id, location);
+                };
+                clicked_callback = function (id, location ) {
+                };
+                audio_marker_editor.subscribe(new_callback, moved_callback, clicked_callback);
+
+            // TODO:  I don't know why this is being done again - we pass in the initial map type to the map constructor
+            <% if APP_CONFIG['monitor']['map_provider'] == 'google' and APP_CONFIG['monitor']['initial_map_type'] %>
+            jsmap.setMapType(initial_map_type);
+            <% end %>
+            // To save selected map layer in preferences, adding onclick function to radio buttons of map layers
+        }
+        else {
+            $('map').insert('<p><%= I18n.t('monitor.map.map_unavailable') %></p>');
+            <% unless APP_CONFIG['monitor']['map_provider'] == 'none' %>
+                setMapUnavailableMessage();
+            <% end %>
+        }
+
+        <% if @global_fibre_lines.length == 1 %>
+            setViewStatusForFibre(getFibreLineById(<%= @global_fibre_lines[0].id %>));
+        <% else %>
+            setViewStatus(I18n.t("monitor.map.view_status", {fibre_name: I18n.t("monitor.map.view_all_lines")}));
+        <% end %>
+
+        if (jsmap && typeof(jsmenubar) != 'undefined' && fotech.gui.getMenuItemById(jsmenubar, "showLatLng")){
+            jsmap.enableLatLngToolTip(fotech.gui.getMenuItemById(jsmenubar, "showLatLng").cfg.getProperty('checked'));
+        }
+        enableMenus();
+
+        fibre_route_layer.showBreaks(<%= @showBrokenFibre  %>);
+    }
+
+    <% if @initImmediate %>
+        initMapState();
+    <% end %>
+</script>

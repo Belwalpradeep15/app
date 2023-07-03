@@ -1,0 +1,61 @@
+<%
+# FILENAME:     _list.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-08-09
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+
+<table>
+    <tr>
+        <th><%= I18n.t 'main.index.helios_title' %></th>
+        <th><%= I18n.t 'main.index.status_title' %></th>
+    </tr>
+    <% @helios_units.each do |helios| %>
+        <tr class="shadowed">
+            <th><%= helios.name %></th>
+            <td id="helios_status_<%= helios.id %>" class="info"></td>
+        </tr>
+        <% @global_fibre_lines.select{|f| f.helios_unit_id == helios.id}.sort{|a,b| a.name.downcase <=> b.name.downcase}.each do |fl| %>
+        <tr>
+            <td class="indented">
+                <% if can? :read, :fibre_lines %>
+                    <a href="javascript: setMainFibreView(<%= fl.id %>)"><%= fl.name %></a>
+                <% else %>
+                    <%= fl.name %>
+                <% end %>
+            </td>
+            <td><%= @displayTypes[fl.display_type_id] %></td>
+        </tr>
+        <% end %>
+    <% end %>
+    <% unassigned = @global_fibre_lines.select{|f| f.helios_unit_id.nil?} %>
+    <% unless unassigned.empty? %>
+        <tr class="shadowed">
+            <th><%= "--#{I18n.t 'main.index.unassigned_helios_name'}--" %></th>
+            <td id="helios_status_null" class="info"></td>
+        </tr>
+        <% unassigned.each do |fl| %>
+        <tr>
+            <td class="indented"><a href="javascript: setMainFibreView(<%= fl.id %>)"><%= fl.name %></a></td>
+            <td><%= @displayTypes[fl.display_type_id] %></td>
+        </tr>
+        <% end %>
+    <% end %>
+
+</table>
+
+
+<script type="text/javascript">
+    resetDisplayHandlers();
+    enableMenus();
+    fotech.gui.enableMenuItem(jsmenubar, "viewFibreLine", false);
+</script>

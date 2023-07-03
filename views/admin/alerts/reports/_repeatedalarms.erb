@@ -1,0 +1,61 @@
+<% render :partial => '/admin/alerts/reports/repeatedalarms_preprocess' %>
+
+<% content_for :custom do %>
+    <fieldset>
+        <% params['search'] = ( params['search'].nil? ? {} : params['search'] ) -%>
+        <% params['search']['threat_level'] = ( params['search']['threat_level'].nil? ? [] : params['search']['threat_level'] ) -%>
+        <legend><%= I18n.t('admin.alerts.search_dialog.restrict_threat') %></legend>
+        <% [ 'red', 'amber', 'green', 'clear' ].each do |t| %>
+            <fieldset>
+                <%= check_box_tag 'search[threat_level][]', t, params['search']['threat_level'].include?(t) %>
+                <%= I18n.t "alert.threat_level.#{t}" %>
+            </fieldset>
+        <% end %>
+    </fieldset>
+    <fieldset>
+        <legend>Alam threshold</legend>
+        <label>Minimum frequency</label>
+        <% selected_threshold = params[:search] && params[:search][:threshold] ? params[:search][:threshold] : '--All--' %>
+        <%= select(:search, :threshold, options_for_select([[ "All", "0" ], [ "2 +", "2" ], [ "5 +", "5" ],[ "10 +", "10"] ],selected_threshold) ) %>
+    </fieldset>
+<% end %>
+
+<% content_for :content do %>
+<section class="repeatedalarms">
+    <table>
+        <thead>
+            <tr>
+            <% @processed_data[:titles].each do | title | %>
+                <th><%= title %></th>
+            <% end %>
+            </tr>
+        </thead>
+        <tbody>
+            <% @processed_data[:data].each do | alarm | %>
+            <tr>
+                <% alarm.each_with_index do | column, i | %>
+                    <td>
+                       <% if ( column.nil? ) %>
+                            <div></div>
+                        <% elsif ( column.is_a? String ) %>
+                            <% previous = "" %>
+                            <% column.split( ';', -1 ).each do |x| %>
+                                <% cName = "" %>
+                                <% if ( previous == x ) %>
+                                    <% cName = "repeat" %>
+                                <% end %>
+                                <% t, additional = x.split('::') %>
+                                <div class="<%= cName %> <%= additional %>"><%= t %></div>
+                                <% previous = x %>
+                            <% end %>
+                        <% else %>
+                            <%= column %>
+                        <% end %>
+                        </td>
+                <% end %>
+            </tr>
+            <% end %>
+        </tbody>
+    </table>
+</section>
+<% end %>

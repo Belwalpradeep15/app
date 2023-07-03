@@ -1,0 +1,271 @@
+<%
+# FILENAME:     portal.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   2010-02-25
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:menu, :panel, :window, :dialog, :canvas, :control, :colour, :ruler, :have_layout] %>
+    <%= fotech_core_mapping_components_tag  %>
+    <%= fotech_mapping_impl_tag %>
+    <script type="text/javascript">
+        var overlayManager = new YAHOO.widget.OverlayManager();
+    </script>
+    <%= javascript_include_tag \
+        'fotech/common_util/date.js',
+        'fotech/common_util/math.js',
+        'fotech/common_util/string.js',
+        'fotech/common_util/timer.js',
+        'fotech/common_util/ObjectManager.js',
+        'fotech/fibre/types.js',
+        'fotech/fibre/event.js',
+        'fotech/fibre/event_type.js',
+        'alerts.js',
+        'events.js',
+        'preferences.js',
+        'monitor/monitor_application.js',
+        'monitor/menu.js',
+        'mainDisplay',
+        'monitor/map.js',
+        'monitor/event_dialog.js',
+        'monitor/compatibility_checks.js',
+        'admin/helios_units.js',
+        'admin/panoptes_units.js',
+        'admin/alerts.js',
+        'admin/fibre_lines.js',
+        'help.js' %>
+    <%= stylesheet_link_tag \
+        'mainDisplay',
+        'mapDisplay',
+        :media => "all" %>
+
+    <style>
+        #portal_menu_bar{
+            z-index: 10
+        }
+        .status_legend{
+            display:block;
+        }
+    </style>
+    <script type=text/javascript>
+        isMainPanoptes = true;
+        parentRequiresRefresh = false;
+    </script>
+<% end %>
+
+<%# Some defaults for alerts %>
+<% @tearoff = false %>
+<% @noAdd   = false %>
+
+<% content_for :body_top do %>
+    <%= render :partial => 'errors/error_message' %>
+    <%= render :partial => 'monitor/main/event_types' %>
+    <%= render :partial => 'monitor/main/alert_configurations' %>
+    <%= render :partial => 'admin/alerts/response_dialog' %>
+<% end %>
+
+
+<div>
+    <% if !@main_view_only and APP_CONFIG['portal']['layout']['menu']['location'] == 'top' %>
+    <div id="header" style="margin:0px">
+        <div id="portal_menu_bar" class="yuimenubar" style="position:absolute;top:0px;left:0px;width:100%;border:none;"></div>
+    </div>
+    <% end %>
+    <div id="center" style="height:100%;position:relative;">
+        <div class="portalTitle">
+            <h1>
+                <%= @panoptes_name %>
+            </h1>
+            <% if @panoptes_custom.length > 0 %>
+            <p>
+                <%= @panoptes_custom.join(', ') %>
+            </p>
+            <% end %>
+        </div>
+        <div id="content" style="height:100%;margin:0px;">
+        </div>
+    </div>
+    <% if !@main_view_only and APP_CONFIG['portal']['layout']['sidebar'] %>
+    <div id="sidebar" style="height:100%">
+        <% if APP_CONFIG['portal']['layout']['menu']['location'] == 'sidebar' %>
+          <div id="portal_menu_bar" class="yuimenubar" style="width:100%;"></div>
+        <% end %>
+        <%  APP_CONFIG['portal']['layout']['sidebar']['partials'].each_with_index do |partial,index| %>
+          <div id="sidebar<%= index %>" class="yui-panel" style="width: 100%;z-index:0;">
+            <%= render :partial => partial['partial'], :locals => {:options => partial, :isFixed => true} %>
+          </div>
+        <% end %>
+    </div>
+    <% end %>
+    <% if !@main_view_only and APP_CONFIG['portal']['layout']['footer'] %>
+    <div id="footer">
+        <% APP_CONFIG['portal']['layout']['footer']['partials'].each_with_index do |partial, index| %>
+        <div id="footer<%= index %>" class="yui-panel" style="float:left;width:<%= partial['width'] || "#{100 / APP_CONFIG['portal']['layout']['footer']['partials'].length}%" %>">
+            <%= render :partial => partial['partial'], :locals => {:options => partial} %>
+        </div>
+        <% end %>
+        <div style="clear:both"></div>
+    </div>
+    <% end %>
+    <div id="statusbar">
+        <%= fotech_statusbar_tag %>
+    </div>
+</div>
+<% content_for :body_bottom do %>
+    <script type="text/javascript">
+        var jsmenubar = null;
+        var ids = null;
+        var fibreLine = null;
+    </script>
+
+    <%= render :partial => 'monitor/main/pushdaemon', :locals => { :isPortal => true } %>
+    <%= render :partial => 'monitor/fibre_lines/fibre_lines' %>
+
+    <script type="text/javascript">
+
+        isMainPanoptes = true;
+
+        authenticityToken = "<%= form_authenticity_token %>";
+        onLoad = mainDisplayOnLoad;
+        onUnload = mainDisplayOnUnload;
+        onResize = mainDisplayOnResize;
+
+        <% if params[:fibre] %>
+            setMainFibreView(<%= params[:fibre] %>, undefined, undefined, true);
+        <% end %>
+
+        user = new Object();
+        user.id = <%= @user.id %>;
+        user.name = "<%= @user.fullname %>";
+        user.login = "<%= @user.loginname %>";
+        user.organizationIds = [<%= @user.organization_ids.join(",") %>];
+        user.permissions = new Object();
+        <% permissions_for_javascript(Ability.new(@user).permissions).each do |permission| %>
+            user.permissions['<%= permission %>'] = true
+        <% end %>
+
+        user.roles = new Object();
+        <% @user.roles.each do |role| %>
+            user.roles['<%= role.title %>'] = true;
+        <% end %>
+
+        <%= preferences_tag(@preferences, "user.preferences") %>
+
+        Event.observe(window, 'load', function() {
+            new Ajax.Request('/monitor/main/startup', { method: 'get' });
+            setMainFibreView([<%= @global_fibre_lines.collect{|x| x.id}.join(',') %>], '<%= @initial_display_type %>', undefined, true);
+        });
+
+
+    </script>
+
+    <% if @events and @events.attributes['count'].to_i > 0 %>
+        <script type="text/javascript">
+            var lastEventId = null;
+            <% @events.elements.each do |ev| %>
+                <% evstr = "" %>
+                <% ev.to_s.each_line { |l| evstr << l.chomp.strip } %>
+                addEvent(new fotech.fibre.Event(fotech.dom.parse("<%= evstr %>").documentElement));
+                lastEventId = <%= ev.attributes['event-id'] %>;
+            <% end %>
+            popupEventWindow(lastEventId);
+        </script>
+    <% end %>
+
+    <% portal_dialog_partials.each do |partial| %>
+        <%= render :partial => partial[:partial], :locals => (partial[:locals] || {}).merge({:isFixed => false}) %>
+    <% end %>
+
+    <div id='zone_list_dialog_div' class='fotech_dialog' style='visibility: hidden;'>
+    </div>
+
+
+    <%= form_with url: '/', html: {:id => 'zone_update_form'} do %>
+    <% end %>
+
+    <%= render :partial => '/admin/update_form' %>
+    <%= render :partial => '/monitor/main/status_history' %>
+<script type="text/javascript">
+    var eventClearingInterval = <%= @eventClearingInterval %>;
+    if (eventClearingInterval > 0) {
+        new PeriodicalExecuter(function(pe) { portal._periodicRemoval(eventClearingInterval); }, 5);
+    }
+
+    var browserRefreshInterval = <%= @browserRefreshInterval %>;
+    if (browserRefreshInterval > 0) {
+        new PeriodicalExecuter(function(pe) { portal._periodicRefresh(); }, browserRefreshInterval);
+    }
+
+    layout = new YAHOO.widget.Layout({
+                    units: [
+                            <% if !@main_view_only and APP_CONFIG['portal']['layout']['sidebar'] %>
+                            { position: '<%= APP_CONFIG['portal']['layout']['sidebar']['position'] rescue right %>',
+                              body: 'sidebar', scroll:null,zIndex:2,
+                              width: <%= APP_CONFIG['portal']['layout']['sidebar']['width'].to_f rescue 250 %>,
+                              resize: false },
+                            <% end %>
+                            <% if !@main_view_only and APP_CONFIG['portal']['layout']['menu']['location'] == 'top' %>
+                            { position: 'top',
+                              body: 'header', height: 23, scroll:null, zIndex:2,
+                              resize: false },
+                            <% end %>
+                            { position: 'bottom', body: 'statusbar', height: 25, resize: false },
+                            { position: 'center', body: 'center' }
+                            ]});
+    innerLayout = null;
+
+    <% if !@main_view_only and APP_CONFIG['portal']['layout']['footer'] %>
+    layout.on('render', function(){
+        var el = layout.getUnitByPosition('center').get('wrap');
+        innerLayout = new YAHOO.widget.Layout(el,{
+                parent: layout,
+                units: [
+                        { position: 'bottom', body: 'footer',
+                          height: <%= APP_CONFIG['portal']['layout']['footer']['height'] rescue 300 %>,
+                          header:'<%= APP_CONFIG['portal']['layout']['footer']['title'] rescue ''%>',
+                          collapse:true, scroll: true},
+                        { position: 'center', body: 'center' }
+                       ]
+        });
+        innerLayout.render();
+    });
+    <% end %>
+
+    <% if APP_CONFIG['portal']['layout']['menu']['location'] != 'none' %>
+    layout.on('render', function(){
+        <%= portal_menu_helper %>
+    });
+    <% end %>
+
+
+    layout.render();
+
+    <% if APP_CONFIG['portal']['layout']['footer'] %>
+    innerLayout.on('resize', function(){Event.fire(window, 'fotech:layoutResize')});
+    var unt = innerLayout.getUnitByPosition('bottom');
+    //if (preferences.get('bottom-panel-visible') == 'false')
+    //    unt.collapse();
+    unt._createClip();
+    unt._clip.appendChild(document.createTextNode(unt.getAttributeConfig('header').value));
+    unt.subscribe('collapse', function() { doOnBottomVisible('false') });
+    unt.subscribe('expand', function() { doOnBottomVisible('true') });
+    <% end %>
+
+    <% if APP_CONFIG['portal']['ignore_events'] %>
+    //if we are ignore events just kill the functions
+    popupWindowEvent = function(){};
+    addEvent = function() {};
+
+    <% end %>
+</script>
+<% end %>
+

@@ -1,0 +1,42 @@
+<%
+# FILENAME:     _event_type_filter.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-09-13
+#  
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+# 
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<table class="nospace">
+    <tr>
+        <td>
+            <%= check_box_tag "restrictEventTypes", "1", false, :onchange=>"eventTypeFilterEnable(this.form)" %>
+            <%= label_tag "restrictEventTypes", I18n.t('monitor.events.filters.restrict_events') %>
+        </td>
+    </tr>
+    <tr id='filterFormEventTypesRow'>
+        <td>
+            <select id='eventTypesList' name="eventTypes" multiple="multiple">
+            </select>
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+    function eventTypeFilterEnable(form) {
+        form.eventTypes.disabled = !form.restrictEventTypes.checked;
+    }
+    
+    function eventTypeFilterValidate(dlg) {
+    }
+</script>
+
+
+
+

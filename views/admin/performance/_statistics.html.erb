@@ -1,0 +1,61 @@
+<%#
+ FILENAME:     _statistics.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-01-06
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<table class="bordered">
+    <caption><%= I18n.t('admin.perf.stats.summary') %></caption>
+    <tr>
+        <th><%= I18n.t('admin.perf.stats.access_dates') %></th>
+        <td><%= @stats[:firstdate] %> to <%= @stats[:lastdate] %></td>
+    </tr>
+    <tr>
+        <th><%= I18n.t('admin.perf.stats.total_reqs') %></th>
+        <td><%= @stats[:count] %></td>
+    </tr>
+    <tr>
+        <th><%= I18n.t('admin.perf.stats.total_time') %></th>
+        <td><%= @stats[:time] / 1000 %></td>
+    </tr>
+</table>
+
+<table class="bordered" style="margin-top: 20px;">
+    <caption><%= I18n.t('admin.perf.stats.most_exp') %></caption>
+    <tr>
+        <th rowspan="2"><%= I18n.t('admin.common.url') %></th>
+        <th rowspan="2"><%= I18n.t('admin.perf.stats.count') %></th>
+        <th colspan="5" align="center"><%= I18n.t('admin.perf.stats.resp_times') %></th>
+    </tr>
+    <tr>
+        <th><%= I18n.t('admin.perf.stats.best') %></th>
+        <th><%= I18n.t('admin.perf.stats.worst') %></th>
+        <th><%= I18n.t('admin.perf.stats.average') %></th>
+        <th><%= I18n.t('admin.perf.stats.total') %></th>
+        <th><%= I18n.t('admin.perf.stats.percent') %></th>
+    </tr>
+    <% @stats[:urls].each do |url| %>
+        <tr>
+            <td><%= url[:url] %></td>
+            <td><%= url[:count] %></td>
+            <td><%= url[:best] %></td>
+            <td><%= url[:worst] %></td>
+            <td><%= url[:time] / url[:count] %></td>
+            <td><%= url[:time] / 1000 %></td>
+            <td><%= (url[:time].to_f / @stats[:time] * 10000.0).round / 100.0 %></td>
+        </tr>
+    <% end %>
+</table>
+
+<script type="text/javascript">
+    fotech.gui.FotechDialog.clearBusyState('content');
+</script>

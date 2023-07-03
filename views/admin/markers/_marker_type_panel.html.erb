@@ -1,0 +1,36 @@
+<table>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.name') %></th>
+        <th><%= I18n.t('alert.detail_keys.icon') %></th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <% @marker_types.each do |type| %>
+		<tr id='type_row_<%= type.id %>'>
+		    <td><%= type.id %></td>
+		    <td><%= type.name %></td>
+		    <td><%= image_tag(type.icon_path, :size => "16x16") %></td>
+			<td class="noprint">
+			    <center>	
+					<%= image_tag('fotech/common_gui/delete-16x16.png', 
+					    :alt => I18n.t('common.button.delete', :name => type.name),
+					    :title => I18n.t('common.button.delete', :name => type.name),
+						:onclick => "admin.deleteRecord('/admin/marker_types', #{type.id})",
+						:class => 'image_link', 
+						:style => 'padding-left: 8px;') %>
+				</center>
+			</td>
+		</tr>
+    <% end %>
+    <tr id ='type_delete' class="noprint">
+        <td colspan="3"></td>
+        <td style="text-align: center">
+            <%= image_tag('add-16x16.png', :class => 'image_link',
+                :alt => I18n.t('common.button.add'),
+                :title => I18n.t('common.button.add'),
+                :onclick => "admin.marker_types.newMarkerType()",
+                :class => 'image_link', 
+				:style => 'padding-left: 8px;') %>
+        </td>
+    </tr>
+</table>

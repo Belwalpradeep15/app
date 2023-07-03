@@ -1,0 +1,52 @@
+<%#
+ FILENAME:     _about_box.html.erb
+ AUTHOR:       Steven Klassen
+ CREATED ON:   2010-03-01
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<div id="about_box" class="fotech_dialog nooverlay noprint">
+    <div class="hd">
+      <%= I18n.t('main.about.title') %>
+    </div>
+    <div class="dialog bd">
+        <img src="/images/fotech/common_gui/fotech_branding.png" align="right" style="margin-top: 7px; width: 150px;"/>
+        <p>
+        <b><%= I18n.t('main.about.panoptes_software') %></b><br/>
+        <%= escape_html(@user.fullname) %><br/>
+        <% if @panoptes_name %>
+            <br/>
+            <%= I18n.t('common.headers.name') %>: <%= escape_html(@panoptes_name) %>
+        <% end %>
+          <% if @panoptes_serial_number %>
+              <br/>
+              <%= I18n.t('common.headers.serial_number') %>: <%= escape_html(@panoptes_serial_number) %>
+          <% end %>
+        <% if @panoptes_uuid %>
+            <br/>
+            <%= I18n.t('common.headers.uuid') %>: <%= @panoptes_uuid %>
+        <% end %>
+        <br/>
+        <%= I18n.t('main.about.version', :version => APP_CONFIG["monitor"]["version"]) %><br/>
+
+        </p>
+
+        <div class="bordered" style="font-size: smaller; text-align: left; margin-top: 35px; overflow: auto; max-height: 40vh; text-align: justify;">
+          <p><%= render :partial => 'monitor/main/eula' %></p>
+        </div>
+
+        <div class="bordered" style="font-size: smaller; text-align: left; margin-top: 35px;">
+          <p><%= I18n.t('main.about.attribute_message') %></p>
+          <p><a href="/licenses" target="_new"><%= I18n.t('main.about.license_link') %></a></p>
+        </div>
+    </div>
+</div>
+<%= javascript_include_tag 'monitor/about_box.js' %>

@@ -1,0 +1,70 @@
+<%
+# This file is Copyright © 2016 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<!--suppress HtmlFormInputWithoutLabel -->
+<div id='markers_panel_<%= org.id %>'>
+    <%= form_with({:id => "markers_form_#{org.id}"}) do %>
+    <input type="hidden" name="organization_id" value="<%= org.id %>"/>
+
+<table>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.name') %></th>
+        <th><%= I18n.t('common.headers.description') %></th>
+        <th><%= I18n.t('admin.reference_points.latlng') %></th>
+        <th><%= I18n.t('common.headers.type') %></th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <% org.markers.with_lat_lng.each do |marker| %>
+		<tr id='row_<%= marker.id %>'>
+		    <td><%= marker.id %></td>
+			<td><span id='name_<%=org.id%>_<%= marker.id %>' class='editable'><%= marker.name %></span></td>
+			<td><span id='description_<%=org.id%>_<%= marker.id %>' class='editable'><%= marker.description %></span></td>
+			<td><span id='latlng_<%=org.id%>_<%= marker.id %>' class='editable'><%=raw convertLatLngForDisplay marker.latitude, marker.longitude, 'deg_dec', @latlng_format, @latlng_precision %></span></td>
+			<!-- TODO: Need marker_marker_type model here? And change to be able to update.. -->
+			<td><select onchange="admin.changeField('/admin/markers', <%= marker.id %>, 'marker_type', this.value)">
+                    <% @marker_types.each do |type| %>
+                        <option value='<%= type.id %>' <%= "selected='selected'" if (!marker.marker_types[0].nil?) and type.id == marker.marker_types[0].id %>><%= type.name %></option>
+                    <% end %>
+                        <option value='' <%= "selected='selected'" if marker.marker_types[0].nil? %>>None</option>
+                </select></td>
+			<td class="noprint">
+			    <center>
+
+					<%= image_tag('fotech/common_gui/delete-16x16.png',
+					    :alt => I18n.t('common.button.delete', :name => marker.name),
+					    :title => I18n.t('common.button.delete', :name => marker.name),
+						:onclick => "admin.deleteRecord('/admin/organizations/#{org.id}/markers', #{marker.id})",
+						:class => 'image_link',
+						:style => 'padding-left: 8px;') %>
+				</center>
+			</td>
+		</tr>
+    <% end %>
+    <tr id='type_add' class="noprint">
+        <td colspan="5"></td>
+        <td style="text-align: center">
+            <%= image_tag('add-16x16.png', :class => 'image_link',
+                :alt => I18n.t('common.button.add'),
+                :title => I18n.t('common.button.add'),
+                :onclick => "admin.markers.newMarker(#{org.id})" ) %>
+                <% if can? :manage, :markers %>
+                    <% if map_is_available? %>
+                        <%= image_tag('map-16x16.png', :class => 'image_link',
+                            :alt => I18n.t('admin.fibre_lines.calibrate_to_map'),
+                            :title => I18n.t('admin.fibre_lines.calibrate_to_map'),
+                            :onclick => "admin.markers.openMapCalibration(#{org.id})" ) %>
+                    <% else %>
+                    <% end %>
+
+                    <!-- <%= image_tag('engineering-16x16.png', :class => 'image_link',
+                        :alt => I18n.t('admin.fibre_lines.calibrate_to_eng'),
+                        :title => I18n.t('admin.fibre_lines.calibrate_to_eng'),
+                        :onclick => "admin.markers.openSectionCalibration(#{org.id})" ) %> -->
+                <% end %>
+        </td>
+    </tr>
+</table>
+    <% end %>
+</div>

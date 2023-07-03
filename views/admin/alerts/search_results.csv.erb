@@ -1,0 +1,113 @@
+<%
+# LAST CHANGE:
+# $Author: ksimard $
+#   $Date: 2012-03-01 13:12:59 -0700 (Thu, 01 Mar 2012) $
+#    $Rev: 4823 $
+#    $URL: https://repos.fotechsolutions.com/svn/system/panoptes/trunk/modules/panoptes-rails/app/views/monitor/events/search.csv.erb $
+
+# COPYRIGHT:
+# This file is Copyright © 2012 Fotech Solutions Ltd. All rights reserved.
+-%>
+<% headers = [I18n.t('common.headers.id')]
+    headers << I18n.t('admin.alerts.headers.time')
+    headers << I18n.t('common.headers.type')
+    headers << I18n.t('common.headers.status')
+  	headers << I18n.t('admin.alerts.headers.threat_level')
+  	headers << I18n.t('admin.alerts.headers.highest_threat_level')
+    headers << I18n.t('alert.status.acknowledged') + " " + I18n.t('admin.alerts.headers.on1')
+    headers << I18n.t('alert.status.acknowledged') + " " + I18n.t('admin.alerts.headers.by')
+    headers << I18n.t('alert.status.acknowledged') + " " + I18n.t('alert.response.comment')
+    headers << I18n.t('alert.status.resolved') + " " + I18n.t('admin.alerts.headers.on1')
+    headers << I18n.t('alert.status.resolved') + " " + I18n.t('admin.alerts.headers.by')
+    headers << I18n.t('alert.status.resolved') + " " + I18n.t('alert.response.comment')
+    headers << I18n.t('alert.detail_keys.fibre_line_name')
+    headers << I18n.t('common.headers.position') + " (#{@distance_units})"
+    headers << I18n.t('admin.alerts.headers.region')
+    headers << I18n.t('admin.alerts.headers.latitude')
+    headers << I18n.t('admin.alerts.headers.longitude')
+    headers << I18n.t('admin.alerts.headers.unit_name')
+    unless @paths_all.blank?
+        headers << I18n.t("alert.detail_keys.path_path_name")
+        headers << I18n.t("alert.detail_keys.path_distance") + " (#{@distance_units})"
+        headers << I18n.t("alert.detail_keys.path_direction_of_travel")
+        headers << I18n.t("alert.detail_keys.path_marker_name")
+        headers << I18n.t("alert.detail_keys.path_velocity") + "(#{I18n.t("prefs.section.units.units-short.#{@velocityUnit}")})"
+    end
+    headers << I18n.t('admin.alerts.headers.oldest_event_time')
+    headers << I18n.t('admin.alerts.headers.newest_event_time')
+    headers << I18n.t('admin.alerts.headers.green_time')
+    headers << I18n.t('admin.alerts.headers.amber_time')
+    headers << I18n.t('admin.alerts.headers.red_time')
+ -%>
+<%=raw headers.collect{|x| "\"#{x}\""}.join(',') %>
+<% @alerts.each do |alert|
+    row = [alert.id]
+    row << alert.time.to_default_s_in_tz_offset(@tz_offset)
+    row << alert.description
+    row << I18n.t('alert.status.' + alert.status)
+    row << I18n.t('alert.threat_level.' + (alert.threat_level || 'none'))
+    row << I18n.t('alert.threat_level.' + ((alert.red_time && 'red') || (alert.amber_time && 'amber') || (alert.green_time && 'green') || 'none'))
+    row << (!alert.time_acknowledged ? "" : alert.time_acknowledged.to_default_s_in_tz_offset(@tz_offset))
+    row << alert.acknowledged_by
+    isAcknowledged = 0
+    alert.alert_responses.each do |r|
+       if r.response == "acknowledge"
+           isAcknowledged = 1
+           row << r.comments
+           break
+       end
+    end
+    if isAcknowledged == 0
+        row << ""
+    end
+    row << (!alert.time_resolved ? "" : alert.time_resolved.to_default_s_in_tz_offset(@tz_offset))
+    row << alert.resolved_by
+    isResolved = 0
+    alert.alert_responses.each do |r|
+       if r.response == "resolve"
+           isResolved = 1
+           row << r.comments
+           break
+       end
+    end
+    if isResolved == 0
+        row << ""
+    end
+
+    row << alert.detail('fibre_line_name') || ""
+
+    if alert.detail('position')
+		  row << optional_translate(alert.detail('position'), @preferences_hash).to_f
+    else
+      row << ""
+    end
+
+    row << alert.detail_list('in_region_user').join(',')
+
+    #so the order is different in the location
+    if alert.detail('location')
+      latLng = optional_translate(alert.detail('location'), @preferences_hash).split(',')
+      row << latLng[0]
+      row << latLng[1]
+    else
+      row << ""
+      row << ""
+    end
+
+    row << alert.detail('name') || ""
+
+    unless @paths_all.blank?
+       row << alert.detail("path_path_name")
+       row << (alert.detail("path_distance").nil? ?  "" : convert(alert.detail("path_distance").to_f, 'm', @distance_units, @distance_precision))
+       row << alert.detail("path_direction_of_travel")
+       row << alert.detail("path_marker_name")
+       row << (alert.detail("path_velocity").nil? ?  "" : convert(alert.detail("path_velocity").to_f, 'm_s', @velocityUnit, @velocityPrecision))
+    end
+    row << (!alert.oldest_event_time ? "" : alert.oldest_event_time.to_time.to_default_s_in_tz_offset(@tz_offset))
+    row << (!alert.newest_event_time ? "" : alert.newest_event_time.to_time.to_default_s_in_tz_offset(@tz_offset))
+    row << (!alert.green_time ? "" : alert.green_time.to_time.to_default_s_in_tz_offset(@tz_offset))
+    row << (!alert.amber_time ? "" : alert.amber_time.to_time.to_default_s_in_tz_offset(@tz_offset))
+    row << (!alert.red_time ? "" : alert.red_time.to_time.to_default_s_in_tz_offset(@tz_offset))
+    -%>
+<%=raw row.collect{|x| '"'+ x.to_s.gsub(/"/,'""') +'"'}.join(',') %>
+<% end -%>

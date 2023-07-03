@@ -1,0 +1,34 @@
+<%
+# FILENAME:     _form.html.erb
+# AUTHOR:       Karina Simard
+# CREATED ON:   10-09-12
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<%= form_for :reference_point do |f| %>
+    <table class="padded">
+        <tr>
+            <th><%= f.label :label, I18n.t('admin.reference_points.label') %></th>
+            <td><%= f.text_field :label, :class => 'required' %></td>
+        </tr>
+        <tr>
+            <th><%= f.label :latitude, I18n.t('admin.alerts.headers.latitude') %></th>
+            <td><%= f.text_field :latitude, :class => 'required float_field'%></td>
+        </tr>
+        <tr>
+            <th><%= f.label :longitude, I18n.t('admin.alerts.headers.longitude') %></th>
+            <td><%= f.text_field :longitude, :class => 'required float_field' %></td>
+        </tr>
+    </table>
+<% end %>
+
+
+

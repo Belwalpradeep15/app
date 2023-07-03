@@ -1,0 +1,114 @@
+<% prefs = org.notification_preferences_cache %>
+<!--suppress HtmlFormInputWithoutLabel -->
+<div id='notifications_panel_<%= org.id %>'>
+    <%= form_with({:id => "notifications_form_#{org.id}"}) do %>
+    <input type="hidden" name="organization_id" value="<%= org.id %>"/>
+    <table class="bordered">
+        <tbody>
+        <tr><th colspan="2"><%= I18n.t('admin.notifications.general_header') %></th></tr>
+        <tr>
+            <td><%= I18n.t('admin.notifications.notification_timezone') %></td>
+            <td>
+                <select name="notifications_timezone">
+                    <option value="Etc/UTC">(+00:00) UTC</option>
+                <% @tz_options.each do |tz| %>
+                    <option value="<%=tz[:value]%>" <%= 'selected' if tz[:value] == (prefs['notifications_timezone']) %>><%= tz[:text] %></option>
+                <% end %>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><%= I18n.t('admin.notifications.latlng_format_label') %></td>
+            <td>
+                <select name="notifications_latlng_format">
+                    <option value="deg_dec" <%='selected' if prefs['notifications_latlng_format'] == 'deg_dec'%>><%= I18n.t('admin.notifications.latlng_format.deg_dec') %></option>
+                    <option value="dms" <%= 'selected' if prefs['notifications_latlng_format'] == 'dms' %>><%= I18n.t('admin.notifications.latlng_format.dms') %></option>
+                </select>
+            </td>
+        </tr>
+        <% if Language.enabled? %>
+            <tr>
+                <td><%= I18n.t('prefs.section.display.language.label') %></td>
+                <td>
+                    <select name="notifications_language">
+                        <% Language.available_languages.each do |lang| %>
+                            <option value="<%= lang.abbreviation %>" <%="selected" if prefs['notifications_language'] == lang.abbreviation %>><%= lang.name %></option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+        <% end %>
+        <tr><th colspan="2" style="padding-top: 0.2in"><%= I18n.t('admin.notifications.xml_notifications') %></th></tr>
+        <tr><td><%= I18n.t('admin.common.url') %></td><td> <input type="text" name="xml_notifications_url" size="60" value="<%= escape_html(prefs['xml_notifications_url']) %>"/></td></tr>
+        <tr><td></td><td class="info"><%= I18n.t('admin.notifications.multiple_recipients_hint') %></td></tr>
+        <tr><td></td><td><input type="checkbox" name="xml_submit_alarms" <%= checked_if(prefs['xml_submit_alarms'] == 'true') %> /><%= I18n.t('admin.notifications.submit_alarms') %></td></tr>
+        <tr><td></td><td><input type="checkbox" name="xml_submit_heartbeats" <%= checked_if(prefs['xml_submit_heartbeats'] == 'true') %> /><%= I18n.t('admin.notifications.submit_heartbeats') %></td></tr>
+        <tr><td></td><td><input type="checkbox" name="xml_submit_health" <%= checked_if(prefs['xml_submit_health'] == 'true') %> /><%= I18n.t('admin.notifications.submit_health') %></td></tr>
+        <tr><td></td><td><input type="checkbox" name="xml_submit_events" <%= checked_if(prefs['xml_submit_events'] == 'true') %> /><%= I18n.t('admin.notifications.submit_events') %>
+            <input type="button" value="..." onclick='openSelectEventsDialog(this)'>
+            <input name="xml_included_events" type="hidden" value="<%=prefs['xml_included_events']%>">
+            <span class="selected_event_count"><%= prefs['xml_included_events'].split(',').size %></span> <%= I18n.t('admin.notifications.selected') %></td></tr>
+        <tr><td colspan="2" align="right">
+            <button type="reset"><%= I18n.t('common.button.reset') %></button>
+            <button type="submit" onclick="return notification_submit_form(this.form);"><%= I18n.t('common.button.apply') %></button>
+        </td></tr>
+        <tr class="buttons"><td colspan="2"></td></tr>
+        <tr>
+            <th colspan="2"><%= I18n.t('admin.notifications.email_notifications') %></th>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <table>
+                    <tr>
+                        <th><%= I18n.t('common.headers.active') %></th>
+                        <th><%= I18n.t('common.headers.id') %></th>
+                        <th><%= I18n.t('common.headers.name') %></th>
+                        <th></th>
+                    </tr>
+                    <% org.notification_email_lists_cache.each do |l| %>
+                        <tr id="org_<%= org.id %>_row_<%= l.id %>">
+                            <td>
+                                <input name="is_active" type="checkbox" value="1"
+                                       <%= l.is_active ? "checked='checked'" : "" %>
+                                       onchange="admin.changeField('/admin/notifications', <%= l.id %>, 'is_active', (this.checked ? '1' : '0'))" />
+                            </td>
+                            <td><%= l.id %></td>
+                            <td style="padding-right: 0.2in"><%= escape_html(l.name) %></td>
+                            <td class="noprint">
+                                <%= image_tag('edit-16x16.png',
+                                              :alt => I18n.t('common.button.edit', :name => l.name),
+                                              :title => I18n.t('common.button.edit', :name => l.name),
+                                              :class => 'image_link',
+                                              :onclick => "controller.editNotif(#{org.id}, #{l.id})")
+                                %>
+                                &nbsp;
+                                <%= link_to "javascript: admin.deleteRecord('/admin/notifications', #{ l.id })", data: { :confirm => I18n.t('common.confirm_delete', :name => l.name) } do -%>
+                                    <%= image_tag('delete-16x16.png',
+                                                  :alt => I18n.t('common.button.delete', :name => l.name),
+                                                  :title => I18n.t('common.button.delete', :name => l.name),
+                                                  :class => 'image_link',
+                                                  :style => 'padding-left: 8px;') %>
+                                <% end %>
+                            </td>
+                        </tr>
+                    <% end %>
+                    <tr class="noprint">
+                        <td colspan="3"></td>
+                        <td style="text-align: center">
+                            <%= image_tag('add-16x16.png',
+                                          :alt => I18n.t('common.button.add'),
+                                          :title => I18n.t('common.button.add'),
+                                          :class => 'image_link',
+                                          :onclick => "controller.newNotif(#{org.id})")
+                            %>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <% end %>
+</div>
+<p></p>
+

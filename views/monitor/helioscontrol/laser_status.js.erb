@@ -1,0 +1,23 @@
+<%#
+ FILENAME:     laser_status.js.erb
+ AUTHOR:       Karina Simard
+ CREATED ON:   10-02-08
+  
+ LAST CHANGE:
+ $Author$
+   $Date$
+    $Rev$
+    $URL$
+ 
+ COPYRIGHT:
+ This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ %>
+
+<% @statuses.each_pair do |key, value| %>
+    monitor.helios.laser.setStatus(<%= key %>, '<%= value %>');
+    enableRow('laser_helios_status_controls');
+<% end %>
+
+
+
+

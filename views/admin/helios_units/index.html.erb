@@ -1,0 +1,139 @@
+<%
+# FILENAME:     index.html.erb
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2009-11-30
+#
+# LAST CHANGE:
+# $Author$
+#   $Date$
+#    $Rev$
+#    $URL$
+#
+# COPYRIGHT:
+# This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ -%>
+
+<% content_for :head do %>
+    <%= fotech_gui_setup_tag [:editable, :dialog, :menu, :have_layout, :tab] %>
+        <%# For reasons I don't understand the fotech_gui_setup_tag cannot be cached
+            for this page. (Steve)
+         %>
+
+    <%= javascript_include_tag \
+            'admin/helios_unit_dialog.js',
+            'admin/helios_unit_section_location_dialog.js',
+            'admin/helios_units.js',
+            'fotech/common_util/string.js',
+            'fotech/common_util/pub/latlon.js',
+            'fotech/common_util/pub/geo.js',
+            'fotech/common_gui/windows.js',
+            :cache => "__admin_monitor_helios_units_index" %>
+    <script type="text/javascript">
+        var childWindows = new fotech.gui.ChildWindowManager(window);
+        onUnload = function() {
+            childWindows.forEach(function (key, window) { window.close(); });
+        }
+    </script>
+    <style>
+        .readonly {
+            background-color: rgb(216, 216, 203);
+            font-style: italic;
+            color: grey;
+        }
+    </style>
+<% end %>
+
+<% content_for :body_top do %>
+    <div id="menubar" class="yuimenubar yuimenubarnav noprint">
+    </div>
+<% end %>
+
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        <%= MenuRenderer.menu_javascript(@menu) %>
+        fotech.gui.initEditableFields(admin.helios_units.editableFieldChanged);
+        });
+</script>
+
+<%= render :partial => '/admin/update_form' %>
+
+<table class="bordered">
+  <caption><%= I18n.t('admin.helios_units.header') %></caption>
+    <tr>
+        <th><%= I18n.t('common.headers.id') %></th>
+        <th><%= I18n.t('common.headers.name') %></th>
+        <th><%= I18n.t('common.headers.serial_number') %></th>
+        <th><%= I18n.t('admin.helios_units.host') %></th>
+        <th><%= I18n.t('alert.detail_keys.port') %></th>
+        <th><%= I18n.t('alert.detail_keys.ws_port') %></th>
+        <th style="max-width: 0.8in;"><%= I18n.t('admin.configuration.properties.optics_module_properties.multiplex_channel_count') %></th>
+        <th><%= I18n.t('admin.alerts.headers.latitude') %>, <%= I18n.t('admin.alerts.headers.longitude') %></th>
+        <th><%= I18n.t('common.headers.active') %></th>
+        <th class="noprint"><%= I18n.t('common.headers.commands') %></th>
+    </tr>
+    <% @helios_units.each do |helios| %>
+        <tr id='row_<%= helios.id %>'>
+            <td><%= helios.id %></td>
+            <td><span id='name_<%= helios.id %>' class='editable'><%= helios.name %></span></td>
+            <td><span id='serial_<%= helios.id %>' class='editable'><%= helios.serial_number %></span></td>
+            <td><span id='host_<%= helios.id %>' class='editable'><%= helios.host_name %></span></td>
+            <td><span id='port_<%= helios.id %>' class='editable'><%= helios.port %></span></td>
+            <td><span id='ws_port_<%= helios.id %>' class='editable'><%= helios.ws_port %></span></td>
+            <td><span id='chcount_<%= helios.id %>' class='editable'><%= helios.channel_count %></span></td>
+            <td id='latlng_<%= helios.id %>' class='editable'><%=raw convertLatLngForDisplay(helios.latitude ,helios.longitude, 'deg_dec', @latlng_format, @latlng_precision) if helios.latitude %></td>
+            <td>
+                <input name='is_active' type='checkbox' value='1'
+                    <%= helios.is_active ? "checked='checked'" : "" %>
+                    onchange="admin.changeField('/admin/helios_units', <%= helios.id %>, 'is_active', (this.checked ? '1' : '0'), {ajaxOptions: {onComplete:function(){fotech.gui.rootOpener().monitor.helios.getHeliosStatus(<%= helios.id %>);}}})" />
+            </td>
+
+            <td style="text-align:right" class="noprint">
+                <% if can? :manage, :helios_units -%>
+					<%= image_tag('engineering-16x16.png',
+                                :alt => I18n.t('admin.helios_units.set_helios_locations', :name => helios.name),
+                                :title => I18n.t('admin.helios_units.set_helios_locations', :name => helios.name),
+								:class => 'image_link',
+								:onclick => "admin.helios_units.editHeliosUnitSectionLocation(#{helios.id})") %>
+                <% end %>
+                <% helios_standalone_url = "http://#{helios.host_name}"
+                    if has_role? :system_admin
+                        helios_standalone_url += '/protected'
+                    elsif can? [:restart,:manage], :helios_units
+                        #don't alter the url
+                    elsif can? :read, :helios_units
+                        helios_standalone_url += '/'
+                    else
+                        helios_standalone_url = nil
+                    end
+                    -%>
+                <% if helios_standalone_url -%>
+                <%= image_tag('standalone-16x16.png', :class => 'image_link',
+                    :alt => I18n.t('admin.helios_units.launch_standalone', :name => helios.name),
+                    :title => I18n.t('admin.helios_units.launch_standalone', :name => helios.name),
+                    :onclick => "admin.helios_units.launchStandalone(#{helios.id}, '#{helios_standalone_url}')" ) %>
+                <% end -%>
+                <%= link_to "javascript:admin.deleteRecord('/admin/helios_units', #{helios.id})", data: { confirm: I18n.t('common.confirm_delete', :name => helios.name) } do -%>
+                    <%= image_tag('fotech/common_gui/delete-16x16.png', :class => 'image_link',
+                                  :style => "padding-left:8px;",
+                                  :alt => I18n.t('common.button.delete', :name => helios.name),
+                                  :title => I18n.t('common.button.delete', :name => helios.name)) %>
+                <% end %>
+            </td>
+        </tr>
+    <% end %>
+    <tr class="noprint">
+        <td colspan="8"></td>
+        <td style="text-align:right">
+            <%= image_tag('add-16x16.png', :class => 'image_link',
+                :alt => I18n.t('admin.helios_units.add'),
+                :title => I18n.t('admin.helios_units.add'),
+                :onclick => "admin.helios_units.newHeliosUnit()" ) %>
+        </td>
+    </tr>
+</table>
+
+<%= render :partial => 'helios_unit_dialog' %>
+<% if can? :manage, :helios_units -%>
+    <%= dialog_wrapper "helios_unit_section_location", :title => 'admin.helios_units.helios_unit_section_location_dialog.title' %>
+<% end -%>
+

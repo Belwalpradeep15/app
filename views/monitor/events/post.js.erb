@@ -1,0 +1,12 @@
+try {
+    var anEvent = null;
+    <% @events.each do |ev| %>
+        anEvent = new fotech.fibre.Event.createFromJSON(<%= raw ev.to_json %>)
+        <% if params[:manual_post] == 'true' %>
+        anEvent.manual_post = true;
+        <% end %>
+        addEvent(anEvent);
+    <% end %>
+} catch (error) {
+    alert(error);
+}
