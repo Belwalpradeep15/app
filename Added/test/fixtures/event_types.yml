@@ -1,0 +1,24 @@
+leak:
+  id: 5
+  name: leak
+  event_category: leak
+
+unknown:
+  id: 1
+  name: unknown
+  event_category: general
+  
+audio:
+  id: 2
+  name: audio
+  event_category: security
+
+animal:
+  id: 3
+  name: animal
+  event_category: security
+
+vehicle:
+  id: 4
+  name: vehicle
+  event_category: security

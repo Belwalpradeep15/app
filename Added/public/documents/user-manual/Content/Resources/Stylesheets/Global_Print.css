@@ -1,0 +1,910 @@
+/*<meta />*/
+
+@namespace MadCap url(http://www.madcapsoftware.com/Schemas/MadCap.xsd);
+
+*
+{
+	font-family: "PT Serif", Georgia, "Times New Roman", Times, Serif;
+	font-size: 1em;
+	colour: #000000;
+}
+
+body
+{
+	line-height: 1.7em;
+	margin: 17px;
+	margin-top: 0px;
+	max-width: 100%;
+}
+
+.NoBreak
+{
+	page-break-after: never;
+	page-break-before: avoid;
+}
+
+h1,h2,h3,h4,h5,h6
+{
+	font-family: "PT Sans", Verdana, Arial, Helvetica, sans-serif;
+	/*page-break-after: avoid;*/
+}
+
+a
+{
+	font-weight: bold;
+}
+
+a:link
+{
+	colour: #0000ff;
+}
+
+a:visited
+{
+	colour: #954f72;
+}
+
+a.MCBreadcrumbsLink
+{
+	colour: #ffffff;
+	font-style: italic;
+	text-decoration: underline;
+}
+
+a.MCBreadcrumbsLink:visited
+{
+	colour: #ffffff;
+}
+
+blockquote
+{
+	background-colour: #e1e1e1;
+	background-repeat: no-repeat;
+	background-position: top left;
+	border-bottom: none;
+	border-colour: #b3b3b3;
+	border-style: solid;
+	border-width: 1px;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	font-size: 0.9em;
+	font-style: italic;
+	font-weight: normal;
+	line-height: 18px;
+	padding: 35px;
+	padding-bottom: 0px;
+	padding-top: 12px;
+}
+
+blockquote.name
+{
+	background-image: none;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+	border-top: none;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	margin-bottom: 0;
+	padding-bottom: 12px;
+	padding-right: 35px;
+	padding-top: 8px;
+	text-align: right;
+	font-size: 12px;
+}
+
+Div.Note
+{
+	background-repeat: no-repeat;
+	line-height: 16px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	border-radius: 5px 5px;
+	padding-top: 30px;
+	padding-bottom: 10px;
+	border-style: solid;
+	border-width: 1px;
+	border-top-width: 4px;
+	border-bottom-width: 4px;
+	padding-left: 95px;
+	padding-right: 10px;
+	mc-auto-number-format: '{b}{colour}{size 20px}NOTE: {/size}{/colour}{/b}';
+	background-image: url('../images/Fotech_note.png');
+	background-position: 2% 27%;
+}
+
+Div.Caution,
+Div.warning_xs
+{
+	background-repeat: no-repeat;
+	line-height: 10px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	border-radius: 5px 5px;
+	padding-top: 30px;
+	padding-bottom: 10px;
+	border-style: solid;
+	border-width: 1px;
+	border-top-width: 4px;
+	border-bottom-width: 4px;
+	background-image: url('../images/Warning.png');
+	mc-auto-number-format: '{b}{colour #ff3800}{size 20px}CAUTION! {/size}{/colour}{/b}';
+	padding-left: 105px;
+	background-position: 1% 15%;
+}
+
+Div.warning_xs
+{
+	mc-auto-number-format: '{b}{colour #ff3800}{size 20px}warning_xs! {/size}{/colour}{/b}';
+}
+
+h1,h2,h3
+{
+	width: 100%;
+	text-align: left;
+	margin-bottom: 10px;
+	font-weight: bold;
+	vertical-align: baseline;
+	margin-top: 10px;
+	mc-auto-number-position: none;
+}
+
+h1
+{
+	font-size: 14pt;
+}
+
+h1.AppendixTitle
+{
+	border-bottom: solid 2px #ff1200;
+	mc-auto-number-position: inside-head;
+	/*mc-auto-number-format: 'GH: Appendix {A}: ';*/
+	font-size: 1.6em;
+}
+
+h1.BackmatterHeadings
+{
+	font-size: 25px;
+}
+
+h1.UserGuideBHeading
+{
+	font-size: 1.25em;
+}
+
+h2
+{
+	margin-left: 8px;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	padding-bottom: 10px;
+	padding-top: 10px;
+	font-size: 1.4em;
+}
+
+h3
+{
+	font-variant: small-caps;
+	font-size: 1.25em;
+}
+
+img.FiftyPercentThumbnail
+{
+	mc-thumbnail: popup;
+	padding: 10px;
+	padding-bottom: 0px;
+	max-width: 575px;
+}
+
+img.OneHundredPercent
+{
+	padding: 10px;
+	max-width: 575px;
+}
+
+img.OneHundredPercentThumbnail
+{
+	mc-thumbnail: popup;
+	padding: 10px;
+	padding-bottom: 0px;
+	max-width: 575px;
+}
+
+img.ReduceButtonSize
+{
+	max-height: 18px;
+	mc-thumbnail-max-height: 300px;
+}
+
+img.SeventyFivePercent
+{
+	padding: 10px;
+	max-width: 575px;
+}
+
+img.SeventyFivePercentThumbnail
+{
+	mc-thumbnail: popup;
+	padding: 10px;
+	padding-bottom: 0px;
+	max-width: 575px;
+}
+
+li
+{
+	margin: 4px;
+	margin-bottom: 6px;
+	margin-top: 6px;
+}
+
+MadCap|breadcrumbsProxy
+{
+	background-colour: #3e3e3e;
+	border-bottom: none;
+	border-top: none;
+	colour: #ffffff;
+	font-size: .7em;
+	font-style: italic;
+	margin-bottom: 0px;
+	margin-left: -17px;
+	margin-right: -17px;
+	mc-breadcrumbs-prefix: 'You are here: ';
+	padding-bottom: 0px;
+	padding-left: 17px;
+	padding-right: 17px;
+	padding-top: 10px;
+}
+
+MadCap|conceptLink
+{
+	colour: #404040;
+	font-size: 0.8em;
+	font-weight: bold;
+	mc-image: url('../images/List_Icon.png');
+	mc-label: 'SEE ALSO';
+	padding-top: 8px;
+	text-decoration: none;
+}
+
+label
+{
+	colour: 000;
+}
+
+MadCap|conceptLink
+{
+	colour: #353535;
+	font-weight: bold;
+}
+
+MadCap|dropDown
+{
+	margin-bottom: 6px;
+	margin-top: 6px;
+	mc-closed-image: url('../images/DropDownClosed.png');
+	mc-disabled: false;
+	mc-open-image: url('../images/DropDownOpen.png');
+}
+
+MadCap|dropDown.Footer
+{
+	mc-closed-image: url('../images/DropDownSmallClosed.png');
+	mc-open-image: url('../images/DropDownSmallOpen.png');
+}
+
+MadCap|dropDownBody
+{
+	mc-disabled: false;
+}
+
+MadCap|dropDownBody.FooterTopicMaster
+{
+	border-bottom-colour: #353535;
+}
+
+MadCap|dropDownBody.Final
+{
+	border-bottom: 0px;
+}
+
+MadCap|dropDownHead
+{
+	mc-disabled: false;
+}
+
+MadCap|dropDownHotspot
+{
+	font-weight: bold;
+	mc-disabled: false;
+}
+
+MadCap|dropDownHotspot.Footer
+{
+	font-size: 0.8em;
+	colour: #ff1200;
+}
+
+MadCap|glossaryProxy
+{
+	border-top-width: 0px;
+}
+
+MadCap|tocProxy
+{
+	border-top-width: 0px;
+}
+
+MadCap|xref
+{
+	font-weight: bold;
+	mc-format: '{para}';
+	text-decoration: underline;
+	colour: #0000ff;
+}
+
+ol,
+ul
+{
+	line-height: 1.5;
+	margin-left: 1%;
+	margin-bottom: 2%;
+	margin-right: 1%;
+	margin-top: 2%;
+}
+
+ul
+{
+	list-style: outside;
+}
+
+p,
+p.indent
+{
+	text-align: left;
+	vertical-align: baseline;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	word-spacing: 1px;
+	page-break-inside: avoid;
+}
+
+p.indent
+{
+	margin-top: 2px;
+}
+
+p.CopyrightHeading
+{
+	text-align: center;
+}
+
+p.Example
+{
+	margin-top: 0px;
+	background-colour: #ffe4e1;
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 6px;
+	padding-bottom: 14px;
+	border-style: solid;
+	border-width: 1px;
+	border-colour: #000000;
+	font-size: 1.0em;
+}
+
+p.ExampleMiddleSection
+{
+	background-colour: #ffe4e1;
+	padding-left: 20px;
+	padding-right: 20px;
+	font-size: 1.0em;
+	line-height: 20px;
+	padding-bottom: 20px;
+	padding-top: 20px;
+	margin: 20px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+}
+
+p.Figure
+{
+	font-weight: bold;
+	mc-auto-number-format: 'Figure {chapnum}-{n=1}: ';
+}
+
+/* p.FooterTopicMaster
+{
+	font-size: 0.8em;
+	font-weight: bold;
+	line-height: 16px;
+	padding-left: 2px;
+	colour: #353535;
+}
+
+p.FooterTopicMasterLastLine
+{
+	font-size: 0.8em;
+	font-weight: bold;
+	line-height: 16px;
+	padding-bottom: 10px;
+	padding-left: 2px;
+	colour: #353535;
+}
+
+p.FooterTopicMasterLastLineLeftPadding
+{
+	font-size: 0.8em;
+	font-weight: bold;
+	line-height: 16px;
+	padding: 10px;
+	padding-right: 3px;
+	padding-top: 0px;
+	text-align: left;
+	colour: #353535;
+}
+
+p.FrameFooterText,
+p.FrameFooterText2
+{
+	font-size: 1.0em;
+} */
+
+p.ManualTitle1
+{
+	font-weight: bold;
+}
+
+p.noteMiddle
+{
+	line-height: 20px;
+	padding: 10px;
+	padding-left: 0px;
+}
+
+p.cautionMiddle,
+p.warningMiddle
+{
+	line-height: 20px;
+	font-weight: normal;
+	font-style: italic;
+	padding: 10px;
+	padding-left: 0px;
+}
+
+p.warningMiddle
+{
+	colour: #ff1200;
+	padding-top: 0px;
+	padding-left: 0px;
+	background-colour: #ffffff;
+}
+
+p.SeeAlsoLink
+{
+	border-top-colour: #b3b3b3;
+	border-top-style: solid;
+	border-top-width: 1px;
+	font-size: 1.10em;
+	letter-spacing: 1px;
+	word-spacing: 2px;
+}
+
+p.TableCaption
+{
+	font-size: 0.8em;
+	text-align: center;
+	font-style: italic;
+	mc-auto-number-format: 'GH:Table{chapnum}-{n=1}: ';
+}
+
+p.TableTextCenterDark
+{
+	margin-bottom: 2px;
+	margin-top: 8px;
+	text-align: center;
+}
+
+p.TableTextDark
+{
+	margin-bottom: 2px;
+	margin-top: 8px;
+}
+
+p.TableTextDarkEmphasis
+{
+	font-weight: bold;
+	margin-bottom: 2px;
+	margin-top: 8px;
+}
+
+p.TableTextHeadDark
+{
+	font-weight: bold;
+	margin-bottom: 2px;
+	margin-top: 8px;
+}
+
+span.Emphasis
+{
+	font-weight: bold;
+}
+
+span.SeeAlsoIndexTerms
+{
+	font-style: italic;
+}
+
+span.SeeIndexTerms
+{
+	font-style: italic;
+}
+
+span.SetOffFirstLevel
+{
+	colour: #5e6914;
+	font-weight: bold;
+}
+
+span.SetOffSecondLevel
+{
+	colour: #445879;
+	font-weight: bold;
+}
+
+table
+{
+	border-collapse: collapse;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	width: 95%;
+}
+
+td,
+th
+{
+	text-align: left;
+	vertical-align: bottom;
+	/*padding: 15px;
+	border-bottom: 1px solid silver;*/
+}
+
+h1.ChapterTitle
+{
+	/*mc-auto-number-format: 'GH: Chapter {chapnum}{n}: ';
+	mc-heading-level: 1;*/
+	font-weight: bold;
+	border-bottom: solid 2px #ff1200;
+	margin-bottom: 20px;
+	font-size: 1.6em;
+	page-break-after: never;
+}
+
+p.TOC1
+{
+	/*	mc-auto-number-format: '{chapnum}-{n=1}';
+		mc-heading-level: 0;*/
+}
+
+p.TOC2
+{
+	/*	mc-auto-number-format: '{chapnum}-{n+}';
+		mc-heading-level: 1;*/
+}
+
+h4
+{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 0px;
+	padding-right: 0px;
+	margin: 0px;
+	margin-bottom: 5px;
+	margin-top: 5px;
+	font-weight: bold;
+	font-size: 1.1em;
+}
+
+h5
+{
+	text-align: justify;
+	vertical-align: baseline;
+	margin: 0px;
+	margin-top: 10px;
+	font-weight: bold;
+	font-variant: normal;
+	font-style: italic;
+}
+
+address
+{
+	font-style: normal;
+	text-align: justify;
+	list-style-position: outside;
+	display: list-item;
+	margin: 6px;
+	padding: 6px;
+	list-style: outside;
+	font-size: 15px;
+}
+
+p.Code
+{
+	font: Courier New;
+	font-family: "Courier New", Courier, Monospace;
+	margin: 0px;
+}
+
+figcaption
+{
+	margin: 10px;
+	text-indent: 10px;
+	vertical-align: baseline;
+	word-spacing: 1px;
+}
+
+p.DeveloperQuery
+{
+	colour: #4b0082;
+	font-weight: bold;
+}
+
+a.Popup:link
+{
+	colour: #0000ff;
+}
+
+a.Popup:visited
+{
+	colour: #954f72;
+	font-weight: bold;
+	font-style: italic;
+}
+
+div.GlossaryPageTerm
+{
+	colour: #000;
+	font-weight: bold;
+}
+
+th.SimpleTableHeader	/*Used for Simple Table Headers (dark text on light grey background)*/
+{
+	margin-bottom: 8px;
+	margin-top: 8px;
+	font-size: 1.1em;
+	border-bottom-colour: #ff1200;
+	colour: #353535;
+}
+
+caption
+{
+	colour: #353535;
+	font-style: italic;
+	mc-auto-number-format: 'SH:{secnum}-{n=1} - ';
+	font-size: 0.7em;
+}
+
+p.Footer
+{
+	font-style: normal;
+	font-variant: normal;
+	text-align: justify;
+	vertical-align: baseline;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	word-spacing: 1px;
+	font-size: 0.70em;
+}
+
+p.BookTitle
+{
+	font-style: normal;
+	font-variant: normal;
+	text-align: justify;
+	vertical-align: baseline;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	word-spacing: 1px;
+	font-weight: bold;
+	font-size: 1.800em;
+}
+
+h1.TOCTitle
+{
+	width: 100%;
+	text-align: justify;
+	margin: 0px;
+	margin-bottom: 10px;
+	font-weight: bold;
+	vertical-align: baseline;
+	margin-top: 10px;
+	mc-auto-number-position: none;
+	/*mc-heading-level: 0;*/
+	border-bottom: solid 2px #ff1200;
+	font-size: 1.60em;
+}
+
+p.ListIndent
+{
+	margin-left: 40px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+}
+
+p.caption
+{
+	vertical-align: baseline;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	word-spacing: 1px;
+	font-size: 0.9em;
+	font-style: italic;
+	text-align: center;
+	mc-auto-number-format: 'GH:Figure {chapnum}-{n=1}: ';
+}
+
+p.captionCont
+{
+	vertical-align: baseline;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	word-spacing: 1px;
+	font-style: italic;
+	text-align: center;
+	mc-auto-number-format: 'GH:Figure {chapnum}-{n+}: ';
+	font-size: 0.9em;
+}
+
+p.image
+{
+	text-align: justify;
+	vertical-align: baseline;
+	margin-bottom: 8px;
+	margin-top: 8px;
+	word-spacing: 1px;
+	font-size: 0.9em;
+	mc-auto-number-format: '{bg red}Change to p.img{/bg}';
+}
+
+p.image_in_example
+{
+	text-align: center;
+	background-colour: #ffe4e1;
+	padding-bottom: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 20px;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+MadCap|dropDownHead.h2
+{
+	font-size: 1.4em;
+}
+
+a.Ext_link
+{
+	text-decoration: underline;
+	font-weight: bold;
+	colour: #0000ff;
+}
+
+a.Ext_link:link
+{
+	colour: #ca3800;
+}
+
+a.Ext_link:visited
+{
+	colour: #954f72;
+}
+
+html.popup,
+.reference
+{
+	mc-master-page: url('../masterpages/popupmasterpage.flmsp');
+}
+
+MadCap|dropDownHead.h1
+{
+	font-size: 1.6em;
+}
+
+MadCap|dropDownHead.h2
+{
+	font-size: 1.25em;
+	font-variant: small-caps;
+}
+
+p.img
+{
+	text-align: center;
+	font-size: 0.9em;
+}
+
+p.TableCaptionCont
+{
+	mc-auto-number-format: 'GH:Table {chapnum}-{n+}';
+	font-style: italic;
+	text-align: center;
+}
+
+MadCap|dropDownHead.h3
+{
+	mc-disabled: false;
+	font-size: 1.1em;
+	font-weight: bold;
+}
+
+Div.FotechExample,
+.FotechCode
+{
+	margin-top: 2px;
+	margin-bottom: 2px;
+	border-radius: 5px 5px;
+	border-style: solid;
+	border-width: 1px;
+	border-top-width: 4px;
+	border-bottom-width: 4px;
+	background-colour: #ffe4e1;
+	background-image: none;
+	padding: 10px;
+	text-align: justify;
+	line-height: 20px;
+	mc-auto-number-format: '{b}{size 20px}Example: {/size}{/b}';
+}
+
+span.UIText
+{
+	font-weight: bold;
+	mc-language: none;
+}
+
+span.UITextItalic
+{
+	mc-language: none;
+	font-weight: bold;
+	font-style: italic;
+}
+
+img.ReducedFullSize	/*For full size images to be sized down*/
+{
+	height: 60%;
+	width: 60%;
+}
+
+MadCap|xref.Popup
+{
+	font-style: italic;
+}
+
+.dropDownHotspot:link
+{
+	font-weight: bold;
+	colour: #000;
+	font-size: 1.12em;
+}
+
+.MCBreadcrumbsPrefix,
+.MCBreadcrumbsSelf,
+.MCBreadcrumbs,
+.MCBreadcrumbsDivider
+{
+	colour: #fff;
+}
+
+.MCBreadcrumbs
+{
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+.dropDownHead.dropDownHeadH2
+{
+	font-size: 1.12em;
+	font-variant: normal;
+}
+

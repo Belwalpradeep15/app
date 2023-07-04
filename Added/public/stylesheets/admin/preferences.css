@@ -1,0 +1,19 @@
+/* FILENAME:     preferences.css
+ * AUTHOR:       Steven Klassen
+ * CREATED ON:   2009-12-13
+ * 
+ * LAST CHANGE:
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ */
+
+div.preference_section {
+    border-style: inset;
+    border-width: 2px;
+    margin-bottom: 5px;
+}

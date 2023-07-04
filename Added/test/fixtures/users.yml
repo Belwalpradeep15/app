@@ -1,0 +1,35 @@
+system_admin:
+  loginname: system_admin
+  fullname: The Admin
+  roles: system_admin
+
+basic_user:
+  loginname: basic_user
+  fullname: Basic User
+  roles: basic_user
+
+fotech_basic_user:
+  loginname: fotech_basic_user
+  fullname: Fotech Basic User
+  roles: basic_user
+
+organization_admin:
+  loginname: organization_admin
+  fullname: Organization Admin
+  roles: organization_admin 
+
+organization_tech:
+  loginname: organization_tech
+  fullname: Organization Tech
+  roles: organization_tech
+
+anonymous:
+  loginname: anonymous
+  fullname: Anonymous User
+  roles: anonymous
+
+alert_user:
+    loginname: alert
+    fullname: Alert User
+    roles: organization_tech
+    

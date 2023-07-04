@@ -1,0 +1,106 @@
+/* Reports */
+
+div#content {
+    height: auto;
+}
+
+section.report {
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0px 0px 10px 5px #c0c0c0;
+    border: 1px solid #c0c0c0;
+    background-color: white;
+    width: 90%;
+    overflow: auto;
+    margin-top: 10px;
+    height: 90vh;
+}
+
+section.report div.control {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #c0c0c0;
+    padding: 5px 10px;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+section.report section {
+    display: block;
+    max-height: 80vh;
+    margin-left: auto;
+    margin-right: auto;
+    width: 95%;
+    overflow: auto;
+}
+
+section.report table {
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+section.report table thead,
+section.report table tbody {
+}
+
+section.report table {
+    border: 1px solid #c0c0c0;
+}
+
+section.report table th,
+section.report table td {
+    vertical-align: top;
+    white-space: nowrap;
+    padding: 5px 6px;
+}
+
+section.report table td  div:empty {
+    width: 100%;
+}
+
+section.report table td  div:empty:before {
+    content: "-";
+    color: #c0c0c0;
+}
+
+section.report table th {
+    background-color: #c0c0c0;
+}
+
+section.report table tr:nth-child(odd) {
+    background-color: #f0f0f0;
+}
+
+section.report .control fieldset {
+    border: 1px solid #c0c0c0;
+    border-radius: 5px;
+    padding: 2px;
+    display: inline;
+}
+
+section.report .control fieldset fieldset {
+    border: none;
+}
+
+section.report table td div.repeat {
+    color: #c0c0c0 !important;
+}
+
+section.report table td div {
+    border: none;
+    background: none;
+}
+
+section.report table td div.threat_level_red {
+    color: red;
+}
+
+section.report table td div.threat_level_amber {
+    color: #ff9900;
+}
+
+section.report table td div.threat_level_green {
+    color: #50b050;
+}

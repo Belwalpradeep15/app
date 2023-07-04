@@ -1,0 +1,18 @@
+map:
+  id: 1
+  name: map
+  description: Geo-spatial
+  created_at: <%= Time.now %>
+
+borehole:
+  id: 2
+  name: borehole
+  description: Borehole
+  created_at: <%= Time.now %>
+
+section:
+    id: 4
+    name: section
+    description: Section (engineering diagram) display.
+    created_at: <%= Time.now %>
+    

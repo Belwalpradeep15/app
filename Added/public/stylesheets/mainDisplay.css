@@ -1,0 +1,235 @@
+/* FILENAME:     mainDisplay.css
+ * AUTHOR:       Steven Klassen
+ * CREATED ON:   2009-02-25
+ * 
+ * LAST CHANGE:  Styles used by the main display window.
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright (c) 2009 by Fotech Solutions Ltd. All rights reserved.
+ */
+
+div#dialogs_overlay {
+    width: 100%; 
+    height: 100%; 
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    pointer-events: none;
+}
+
+div#legend {
+    font-size: smaller;
+    opacity: 0.70;
+}
+
+div#legend_c {
+    width: 150px;
+    top: 85px;
+    float: right;
+    position: relative;
+    padding-right: 10px;
+    pointer-events: auto;
+}
+
+.status_legend{
+    display:none;
+}
+
+/****************************************
+ *
+ * Dialog related style
+ *
+ ***************************************/
+div.fotech_dialog {
+  font-size: smaller;
+  opacity: 0.70;
+}
+
+div.fotech_dialog:hover,
+#legend:hover {
+    opacity: 1;
+}
+
+div.nooverlay {
+    font-size: small;
+    opacity: 1.0;
+}
+
+div.fotech_dialog div.hd {
+    height: 23px; 
+    vertical-align: middle;
+}
+
+
+
+div#helios_status table tr td {
+    white-space:nowrap;
+}
+
+.dialog.bd {
+  overflow: auto;
+}
+
+.dialog .bd{
+  overflow: auto;
+}
+
+div.alert_list {
+    width:240px;
+}
+
+div.alert_list ul{
+    height:290px;
+}
+
+div.event_list {
+    width: 130px;
+}
+
+div#event {
+    font-size: smaller;
+    opacity: 0.70;
+    width: 365px;
+}
+
+.yui-skin-sam .yui-panel .bd, div.legend div.recent div.event {
+    padding: 2px;
+    padding-left: 5px;
+}
+
+ul.legend, ul.recent { 
+    padding: 0px;
+    padding-left: 25px;
+    margin: 0px;
+    list-style-position:outside;
+}
+
+li.legend, li.recent {
+    line-height: 1.7em;
+}
+
+li.legend_sub_header {
+    padding-top:2px;
+    margin-left: -25px;
+    height:14px;
+    border-bottom:1px solid black;
+}
+
+li.recent_date_separator{
+    list-style: none;
+    margin: 2px;
+    border-bottom: 1px solid darkgrey;
+}
+
+ul.recent {
+    height: 200px;
+}
+
+a.recent { text-decoration: none }
+a.recent:link { color: black }
+a.recent:visited { color: black }
+a.recent:hover { color: grey }
+
+div#content {
+    height: 100%;
+}
+
+div#filter_dialog_c {
+    top: 30px;
+}
+
+div.floating_warning {
+    position: absolute;
+    top: 2px;
+    left: 60%;
+    font-style: italic;
+    color: red;
+	padding:2px 2px 2px 25px;
+    width: 40%;
+	background-image:url('/images/error-16x16.png'); 
+	background-repeat:no-repeat; 
+	background-position:5px 1px;
+}
+
+/* Revamped styles with FA buttons */
+.leaflet-top.leaflet-left {
+    background-color: white;
+    opacity: 0.95;
+    margin: 5px;
+    width: 51px;
+    border: 1px solid #505050;
+    border-radius: 4px;
+}
+
+.leaflet-control-zoom {
+    border: 1px solid #c0c0c0 !important;
+}
+
+.leaflet-control:not(:first-of-type){
+    margin-top: 0px;
+}
+
+.leaflet-control:first-of-type{
+    margin-bottom: 10px;
+}
+
+
+
+
+/* Some specifics for allowing people to change modes
+ * audio mode, for example stops anything other than
+ * fibre paths from having mouse actions */
+
+.audiomode path.leaflet-interactive {
+    pointer-events: none !important;
+}
+
+.audiomode path.fotech {
+    opacity: 0.6;
+    stroke: #808080;
+    z-index: -1;
+}
+
+.audiomode path.fotech.fibre {
+    stroke: #0099ff;
+}
+
+.audiomode path.fotech.fibre.vidi {
+    stroke-opacity: 1.0;
+    opacity: 1;
+    z-index: 1;
+}
+
+.audiomode .fibre.leaflet-interactive {
+    pointer-events: auto !important;
+    cursor: url("/images/cursors/audio_no.svg"), auto;
+}
+
+.fotech-button {
+    color: #c0c0c0;
+    padding: 2px;
+    padding: 5px;
+    padding-top: 6px;
+    margin: 2px;
+    margin-left: -8px;
+    font-size: 22pt;
+    text-align: center;
+    border-radius: 6px;
+    height: 38px;
+}
+
+.fotech-button:hover {
+    color: #0099ff;
+}
+
+.fotech-button.enabled,
+.enabled .fotech-button {
+    color: white;
+    border-color: green;
+    background-color: #0099ff;
+}
+

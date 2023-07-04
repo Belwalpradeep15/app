@@ -1,0 +1,475 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>XML Notifications &#8212; Panoptes System Integration  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Email (and SMS) Notifications" href="email_notifications.html" />
+    <link rel="prev" title="REST API" href="rest_api.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="email_notifications.html" title="Email (and SMS) Notifications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rest_api.html" title="REST API"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Panoptes System Integration  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">XML Notifications</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="xml-notifications">
+<h1>XML Notifications<a class="headerlink" href="#xml-notifications" title="Permalink to this headline">¶</a></h1>
+<p>The XML protocol sends XML documents using an HTTP POST protocol to the URLs of your choice. It contains almost
+as much information as the Web Socket.</p>
+<p><strong>Advantages</strong></p>
+<p>The main advantage is that XML+HTTP is well defined and well understood. Most likely you will not need to
+write much “from scratch” but rather will use any of a number of third party packages to provide the necessary HTTP
+server then write your application code on top of that.</p>
+<p><strong>Disadvantages</strong></p>
+<p>The main disadvantage is that HTTP POSTs are not as efficient as the Web Socket pushing. In addition
+XML can be a little harder to deal with than JSON, although there are many libraries available to assist the software
+developer.</p>
+<section id="overall-protocol">
+<h2>Overall Protocol<a class="headerlink" href="#overall-protocol" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/pasted-image-38.png"><img alt="_images/pasted-image-38.png" class="align-right" src="_images/pasted-image-38.png" style="width: 498.0px; height: 292.0px;" /></a>
+<p>The XML protocol uses an HTTP connection to submit Alerts
+to a third-party server. This is the easiest of the protocols to
+implement as no binary manipulation is required and any
+number of off the shelf HTTP server packages can be used
+to implement the receiver.</p>
+<p>In order to use this protocol you need to write an HTTP
+server that will accept an XML document in an HTTP POST.
+Then you use the HWI dialogs to configure the Helios unit to
+post the necessary data to your server.</p>
+<p>As of V13.5 we have modified the XML POST to use the chunked-encoding of HTTP 1.1. Depending on how your HTTP
+server has been written and configured, you may need to modify it to accept this encoding. See <a class="reference external" href="https://www.w3.org/">https://www.w3.org/</a>
+Protocols/rfc2616/rfc2616-sec3.html or <a class="reference external" href="https://en.wikipedia.org/wiki/Chunked_transfer_encoding">https://en.wikipedia.org/wiki/Chunked_transfer_encoding</a> or <a class="reference external" href="https://">https://</a>
+www.httpwatch.com/httpgallery/chunked/ for technical descriptions of this encoding. In addition, our test script -
+http_post_viewer - which is available on all Panoptes or Helios units, has been modified to handle this encoding and can
+be used as an example of Python code for handling HTTP posts.</p>
+</section>
+<section id="configuring">
+<h2>Configuring<a class="headerlink" href="#configuring" title="Permalink to this headline">¶</a></h2>
+<p><strong>Changed in V13.6</strong></p>
+<p>There are two screens to be filled in when configuring the XML notifications - one to setup some system identification
+which will be included in the notifications, and one to configure the notifications themselves. Note that you need to be
+logged in as a user with “Organization Admin” privileges in order to perform these tasks.</p>
+<a class="reference internal image-reference" href="_images/pasted-image-36.png"><img alt="_images/pasted-image-36.png" class="align-right" src="_images/pasted-image-36.png" style="width: 415.0px; height: 207.0px;" /></a>
+<p>The first of these is accessed via the “Admin/System identity…” menu
+item. The top section is filled in by the Fotech staff and is viewable
+but not editable by you. It consists of a human readable system name
+and a UUID which will be unique to that Panoptes machine.</p>
+<p>The bottom (custom) section will initially be blank and is where you
+can enter in a name and/or ID that you want to use to identify the
+Panoptes system. These are optional - if you don’t need them the
+associated tags will simply be left out of the XML messages.</p>
+<p><strong>Changed in V14.2</strong></p>
+<p>The second screen is accessed via the “Admin/Notifications…” screen.</p>
+<p>The top section contains settings that apply to both XML and Email/SMS notifications. You can specify a time zone, the
+desired latitude/longitude format, and (if multi-language support has been enabled) the language to be used. Note that
+these only apply to notifications. In the web browser the times, the lat/long format, and the language selection continue
+to use the proper browser settings. This setting is needed because we cannot automatically determine the timezone of
+the XML and Email recipients.</p>
+<p>In the next section entitled “XML notifications you will need to enter the URL that you want to post the XML messages to.
+This URL will need to be able to accept an XML message over HTTP. A sample Python script that can accept these
+messages is included with your Panoptes system and is described later in this paper in the section “Testing the XML
+Messages”. Note that you need to include the complete URL including the “http:” and the port number if it is not the
+default port 80.</p>
+<a class="reference internal image-reference" href="_images/pasted-image-30.png"><img alt="_images/pasted-image-30.png" class="align-right" src="_images/pasted-image-30.png" style="width: 203.0px; height: 268.0px;" /></a>
+<p>You can specify more than one URL to post to by separating them by the semi-colon “;”
+character. If desired you can have spaces around the semi-colon character to make it
+more readable, but that is optional.</p>
+<p>Beneath the URL you can select which of the three message types you want to receive:
+the alarms, the regular heartbeats, the regular system health updates, and/or the fibre
+events.</p>
+<p>If you wish to include the events, you can specify which event types you want to include.
+To configure this press the “…” button and select the event types you wish to include
+from the dialog that you will see.</p>
+</section>
+<section id="xml-message-common-items">
+<h2>XML Message Common Items<a class="headerlink" href="#xml-message-common-items" title="Permalink to this headline">¶</a></h2>
+<section id="envelope">
+<h3>Envelope<a class="headerlink" href="#envelope" title="Permalink to this headline">¶</a></h3>
+<p>Every XML message generated by Panoptes is wrapped in our standard envelope.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;Envelope xmlns=&quot;http://www.fotechsolutions.com/envelope&quot;&gt;
+...
+&lt;/Envelope&gt;
+</pre></div>
+</div>
+<p>This envelope is given the namespace “<a class="reference external" href="http://www.fotechsolutions.com/envelope">http://www.fotechsolutions.com/envelope</a>”. Note that this is just a namespace, it
+does not define an xmlSchema. It exists so that if desired you can combine our XML with your own.</p>
+<p>Each envelope will contain exactly two children. The first child will be the Identification section described below. The
+second will be the actual data (e.g. “Heartbeat”, “Event”, etc.) of the message.</p>
+</section>
+<section id="identification">
+<h3>Identification<a class="headerlink" href="#identification" title="Permalink to this headline">¶</a></h3>
+<p>Each of our XML messages, regardless of type, includes a consistent identification section. This section includes the
+information that has been entered in the “System Identity” screen described earlier.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">Identification</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">Panoptes</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">Name</span><span class="o">&gt;</span><span class="n">Voyager</span> <span class="n">Panoptes</span> <span class="p">(</span><span class="n">Production</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">Name</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">UUID</span><span class="o">&gt;</span><span class="mi">5</span><span class="n">aa7e841</span><span class="o">-</span><span class="mi">78</span><span class="n">b8</span><span class="o">-</span><span class="mf">45e4</span><span class="o">-</span><span class="mi">9</span><span class="n">f37</span><span class="o">-</span><span class="n">bfec3924759b</span><span class="o">&lt;/</span><span class="n">UUID</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">SerialNumber</span><span class="o">&gt;</span><span class="n">sn_001</span><span class="o">&lt;/</span><span class="n">SerialNumber</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">Panoptes</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">Custom</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">Name</span><span class="o">&gt;</span><span class="n">Our</span> <span class="n">Local</span> <span class="n">Name</span><span class="o">&lt;/</span><span class="n">Name</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">ID</span><span class="o">&gt;</span><span class="n">our</span><span class="o">-</span><span class="n">local</span><span class="o">-</span><span class="nb">id</span><span class="o">&lt;/</span><span class="n">ID</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">Custom</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">Identification</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Note that if one of the custom fields has been left blank, the corresponding Name or ID tag will be left out. If both custom
+fields have been left blank then the entire Custom section will be left out. But regardless of these settings the Panoptes
+section should always be there and will contain the name and UUID that was configured at the factory.</p>
+</section>
+<section id="some-common-attributes-and-elements">
+<h3>Some Common Attributes and Elements<a class="headerlink" href="#some-common-attributes-and-elements" title="Permalink to this headline">¶</a></h3>
+<p>There are a number of items that you will see repeated in a number of our XML messages. These common items are
+described next.</p>
+<ul class="simple">
+<li><p>id attribute: Any of the XML items that come from our database will include an attribute called “id” which is the primary key of the corresponding record in the database.</p></li>
+</ul>
+<p><strong>New in V13.6</strong></p>
+<ul class="simple">
+<li><p>version attribute: As of V13.6 we have added a version attribute to the main data element (e.g. “Heartbeat”, “Alarm”, etc.) of a given XML message. At this point they will all be set to a version of “1.0” and any future changes will be tracked by a change in this number. A change in the minor number (e.g. from “1.0” to “1.1”) will indicate a change that is back-compatible such as adding a new element. A change in the major number (e.g. from “1.0” to “2.0” will indicate a change that is not back-compatible.</p></li>
+<li><p>UUID: Universally unique identifier. A number of items generate these. These are similar to an “id” except that they are not specific to a given database instance they way a primary key is. Often the UUIDs are values generated by a Helios unit and passed along to any Panoptes units that are interested.</p></li>
+<li><p>Time: Time attributes are found in a number of places. These are always given in the xs:dateTime format and will be converted to the time zone that was configured in the Admin/Notifications page.</p></li>
+</ul>
+<p>Attributes vs. Content: For some elements (e.g. ThreatLevel) you will see similar content in an attribute and as the
+contents of the element. (e.g. &lt;ThreatLevel name=”red”&gt;Red&lt;/ThreatLevel&gt;) This is done to allow the
+contents to be internationalized while leaving the attribute unchanged for reliable computer parsing. (e.g. assuming the
+language is set to Español, &lt;ThreatLevel name=”red”&gt;Rojo&lt;/ThreatLevel&gt;.)</p>
+</section>
+</section>
+<section id="xml-messages-types">
+<h2>XML Messages Types<a class="headerlink" href="#xml-messages-types" title="Permalink to this headline">¶</a></h2>
+<section id="heartbeats">
+<h3>Heartbeats<a class="headerlink" href="#heartbeats" title="Permalink to this headline">¶</a></h3>
+<p>Heartbeats are sent out by the Panoptes system so long as the system and its main communications are healthy. On the
+web browsers you can see the small heart icon in the bottom right corner of the screen pulse each time a heartbeat is
+received. If heartbeats are not received within a certain amount of time you will see the icon change to a broken heart
+and the browser comms will disconnect and try to reconnect to the server. Typically this occurs if the server goes down.</p>
+<p>The XML version of the heartbeats will be sent out if a valid URL has been given and if “Submit heartbeats” has been
+selected on the notifications admin page. A typical XML heartbeat will look like the following. Note that for brevity we do
+not repeat the entire “Identification” section described above.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&#39;1.0&#39;?&gt;
+&lt;Envelope xmlns=&#39;http://www.fotechsolutions.com/envelope&#39;&gt;
+    &lt;Identification&gt;...&lt;/Identification&gt;
+    &lt;Heartbeat version=&#39;1.0&#39;&gt;
+        &lt;Time&gt;2013-02-26T11:01:32Z&lt;/Time&gt;
+    &lt;/Heartbeat&gt;
+&lt;/Envelope&gt;
+</pre></div>
+</div>
+</section>
+<section id="system-health">
+<h3>System Health<a class="headerlink" href="#system-health" title="Permalink to this headline">¶</a></h3>
+<p>System health messages are sent out at regular intervals as well as whenever a change in the health has been detected.
+The details of a system health message vary based on the optional components that have been configured in your
+system. All systems will include “panoptes” and “helios” component types in these messages. Optional component types
+that you may see include “cabinet” which can report on cabinet temperatures (assuming appropriate hardware was
+included in your installation) and “comms” which can report on the health of the network switches and the existence of
+valid network paths between components (assuming appropriate network switches were included in your installation -
+not all switches have this ability).</p>
+<p>The SystemHealth section will include the time of the report (in the same format as described for the Heartbeat message)
+followed by a list of the monitored components of the system. Each component will contain a “type” tag as described
+above, the name of the component - which will be the name that is displayed in the portal UI, and an “IsHealthy” tag
+which will either be “TRUE” or “FALSE”. In the case where this is “FALSE” there will generally be a “Message” tag with a
+short description of the problem.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&#39;1.0&#39;?&gt;
+&lt;Envelope xmlns=&#39;http://www.fotechsolutions.com/envelope&#39;&gt;
+    &lt;Identification&gt;...&lt;/Identification&gt;
+    &lt;SystemHealth version=&#39;1.0&#39;&gt;
+        &lt;Time&gt;2013-02-26T11:18:03Z&lt;/Time&gt;
+        &lt;Component type=&#39;panoptes&#39;&gt;
+            &lt;Name&gt;Panoptes&lt;/Name&gt;
+            &lt;IsHealthy&gt;TRUE&lt;/IsHealthy&gt;
+        &lt;/Component&gt;
+        &lt;Component type=&#39;helios&#39;&gt;
+            &lt;Name&gt;Local DEV&lt;/Name&gt;
+            &lt;IsHealthy&gt;FALSE&lt;/IsHealthy&gt;
+            &lt;Message&gt;Not responding&lt;/Message&gt;
+        &lt;/Component&gt;
+    &lt;/SystemHealth&gt;
+&lt;/Envelope&gt;
+</pre></div>
+</div>
+</section>
+<section id="alarms">
+<h3>Alarms<a class="headerlink" href="#alarms" title="Permalink to this headline">¶</a></h3>
+<p><strong>General Alarm Description</strong></p>
+<p>Alarms are sub-divided into two alarm types. System alarms are generated when there is a physical problem with the
+system, such as a component that is not responding. These will generally correspond with a “FALSE” healthy setting in
+the system health messages. Disturbance alarms are generated when our Helios units detect something along the fibre.
+This includes both fibre breaks as well as event detection such as “digging” and “vehicle” movement. The XML messages
+for both are similar, with some differences in the actual alarm details.</p>
+<p>Within the Alert tag, each XML message will include Type, Time and Status. These will be followed by a Details section
+which will differ based on the type of the alert and a History section showing the history of the alert.</p>
+<ul>
+<li><p>Type: The Type tag includes a “name” attribute identifying the name of the alert type. In the contents portion of the tag will be the english readable description of this name, but the name attribute is really the only one you need to examine. For system alarms this will correspond to the name of the component type as specified in the system health messages, for example “panoptes” or “helios”. For event based alarms this will consist of the name of the event followed by “_alert”, for example, “digging_alert”.</p></li>
+<li><p>Status: The Status tag will show the current status of the alarm. This will be either “New” (the alarm has been received but neither acknowledged nor resolved), “Acknowledged” (the alarm has been recognized by the operator, but still has not been resolved) or “Resolved” (the alarm condition has stopped).:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&#39;1.0&#39;?&gt;
+&lt;Envelope xmlns=&#39;http://www.fotechsolutions.com/envelope&#39;&gt;
+    &lt;Identification&gt;...&lt;/Identification&gt;
+    &lt;Alert id=&#39;813&#39;&gt;
+        &lt;Time&gt;2013-02-26T11:39:01Z&lt;/Time&gt;
+        &lt;Type name=&#39;digging_alert&#39;&gt;Digging Detected&lt;/Type&gt;
+        &lt;Status&gt;Resolved&lt;/Status&gt;
+
+        &lt;ThreatLevel name=&#39;red&#39;&gt;Red&lt;/ThreatLevel&gt;
+
+        &lt;Comments&gt;Turned out to be a farmer with a backhoe. No actual threat.&lt;/Comments&gt;
+        &lt;Location&gt;
+            &lt;Geospatial&gt;
+                &lt;Latitude&gt;19.7400949120483&lt;/Latitude&gt;
+                &lt;Longitude&gt;74.6939082474443&lt;/Longitude&gt;
+            &lt;/Geospatial&gt;
+            &lt;OnFibre&gt;
+                &lt;FibreLine id=&quot;123&quot;&gt;London to Reading&lt;/FibreLine&gt;
+                &lt;Helios id=&quot;123&quot; channel=&quot;1&quot;&gt;Helios 1 (London Switch A1)&lt;/Helios&gt;
+                &lt;Distance units=&quot;m&quot;&gt;183.654&lt;/Distance&gt;
+            &lt;/OnFibre&gt;
+            &lt;OnRoute&gt;
+                &lt;Route id=&quot;25&quot;&gt;London-Reading&lt;/Route&gt;
+                &lt;Marker&gt;Paddington Station&lt;/Marker&gt;
+                &lt;Distance units=&quot;m&quot;&gt;16630.177515&lt;/Distance&gt;
+                &lt;DirectionOfTravel&gt;W&lt;/DirectionOfTravel&gt;
+                &lt;Velocity units=&quot;m/s&quot;&gt;10.355030&lt;/Velocity&gt;
+                &lt;Acceleration units=&quot;m/s2&quot;&gt;0.123274&lt;/Acceleration&gt;
+            &lt;/OnRoute&gt;
+        &lt;/Location&gt;
+        &lt;Details&gt;
+            &lt;Property id=&#39;1001&#39; key=&#39;alert-source&#39;&gt;Local DEV&lt;/Property&gt;
+            &lt;Property id=&#39;1002&#39; key=&#39;event_type&#39;&gt;Digging&lt;/Property&gt;
+            &lt;Property id=&#39;1003&#39; key=&#39;position&#39;&gt;6036m&lt;/Property&gt;
+            &lt;Property id=&#39;1004&#39; key=&#39;fibre_line_name&#39;&gt;LONI (52km)&lt;/Property&gt;
+        &lt;/Details&gt;
+        &lt;History&gt;
+            &lt;Received id=&#39;20001&#39; time=&#39;2013-02-26T11:39:01Z&#39;/&gt;
+            &lt;Confirmed id=&#39;20011&#39; time=&#39;2013-02-26T11:39:47Z&#39;/&gt;
+            &lt;Acknowledged id=&#39;20015&#39; time=&#39;2013-02-26T11:39:56Z&#39; user=&#39;steve&#39;&gt;
+                &lt;Comments&gt;I see the problem.&lt;/Comments&gt;
+            &lt;/Acknowledged&gt;
+            &lt;Resolved id=&#39;20023&#39; time=&#39;2013-02-26T11:42:22Z&#39;/&gt;
+        &lt;/History&gt;
+    &lt;/Alert&gt;
+&lt;/Envelope&gt;
+</pre></div>
+</div>
+</li>
+<li><p>Threat Level: The current threat level of this alarm. This will include an attribute with the name of the level (e.g. ‘red’) and with the contents being the more readable name (e.g. ‘Red’).</p></li>
+<li><p>Comments: An alarm may have generic comments added either automatically by the system or manually by an operator. If present, these will be shown as the content of the comments element.</p></li>
+<li><p>Location: Not all alarms include location information. Event based alarms (e.g. “digging_alert”) will always have a location, and a Helios may if the unit has been configured to report a location. If a location is applicable, it may be described in two different ways.</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>Geospatial: If the Panoptes has been configured to compute geospatial calibrations, this section will be included. It specifies the latitude and longitude of the event.</p></li>
+<li><p>OnFibre: This section describes the position of the event along the fibre line. It includes the name and ID of the fibre line, the helios unit and channel (that’s the MUX channel for systems that contains MUX hardware, otherwise it will always be 1), and the distance in metres along the fibre.</p></li>
+<li><p>OnRoute <strong>(New in V14.2)</strong>: If the Panoptes has been configured with route calibrations, this section will be included. It specifies the position and movement of the event along a specified route. This includes the name of the route, the name of the marker (the zero position of the route), this distance on the route, the direction of travel, the velocity and acceleration of the event along the route.</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Alarm Details</strong></p>
+<p>The details section will include details related to the type of alarm that has been received. All of the details are contained
+in “Property” tags which contain a “key” attribute and the value as the contents of the tag.</p>
+<p>For a description of the various details, and what type of alarms may include them, see Appendix: Alarm and Event
+Types.</p>
+<p><strong>Alarm History</strong></p>
+<p>The final “History” section describes the history of the alarm. This section will grow as the alarm continues. When the
+alarm is first detected a “Received” tag will be added to the history which should have the same time as the “Time” tag in
+the main Alert section.</p>
+<p>Event based alarms will also typically have “Confirmed” tags throughout their history. These are added a fairly regular
+intervals so long as the Helios unit is still detecting the underlying events. Not every underlying event will cause a new
+“Confirmed” tag, they are grouped in order to avoid growing this section too quickly. (Note that it is also possible that the
+first XML for an event based alarm will have both a “Received” and a “Confirmed” tag as often the confirmation is
+determined before the first XML message is sent out.)</p>
+<p>Another tag you may see in the history is an “Acknowledged” tag. These tags are added if an operator manually
+acknowledges the receipt of an alarm. (Note that acknowledgement is not required in all setups so in many installations
+you may never see this tag.) In addition to the time of the acknowledgement, this tag will give the userid of the user who
+performed the acknowledgement and the comments (if any) that they entered at that time. At this time the status of the
+alarm will also change from “New” to “Acknowledged”.</p>
+<p>Sooner or later the alarm will be resolved. At this time a “Resolved” tag will be added to the history and the alarm status
+will change to “Resolved”. If the alarm resolved itself (e.g. the underlying events are no longer detected, or a failed
+component has been replaced) then this tag will only contain the time of the resolution. If it was manually resolved by an
+operator, then the username and any optional comments they added will also be included in this tag. (Note that for most
+alarms you should allow them to resolve automatically. If you resolve most alarms manually, a new alarm of that type will
+be generated - assuming that the physical condition triggering the alarm still exists.)</p>
+<p>It is possible that some custom installations will contain history messages in addition to those found here. These would
+be based on the custom changes described in your contract and the specific details would be given to you separately
+from this document.</p>
+</section>
+<section id="events">
+<h3>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h3>
+<p><strong>New in V13.6</strong></p>
+<p><strong>General Event Description</strong></p>
+<p>Events are issued in response to disturbance alarms generated when Helios units detect something along the fibre. This
+includes both fibre breaks as well as event detection such as “digging” and “vehicle” movement.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;Envelope xmlns=&quot;http://www.fotechsolutions.com/envelope&quot;&gt;
+    &lt;Identification&gt;...&lt;/Identification&gt;
+    &lt;Event id=&quot;813&quot; version=&quot;1.0&quot;&gt;
+        &lt;Time&gt;2015-12-14T08:45:26.460-07:00&lt;/Time&gt;
+        &lt;Type id=&quot;123&quot; name=&quot;train&quot; confidence=&quot;0.612821&quot;&gt;Train Detected&lt;/Type&gt;
+        &lt;Details&gt;
+            &lt;Track id=&quot;12345&quot; uuid=&quot;68339765-d247-430d-ac4a-3018c515058a&quot;/&gt;
+            &lt;Magnitude&gt;148.698&lt;/Magnitude&gt;
+            &lt;Width units=&quot;m&quot;&gt;51.78227&lt;/Width&gt;
+            &lt;Velocity units=&quot;m/s&quot;&gt;45.2&lt;/Velocity&gt;
+            &lt;Acceleration units=&quot;m/s2&quot;&gt;0.01&lt;/Acceleration&gt;
+        &lt;/Details&gt;
+        &lt;Location&gt;
+            &lt;Geospatial&gt;
+                &lt;Latitude&gt;19.7400949120483&lt;/Latitude&gt;
+                &lt;Longitude&gt;74.6939082474443&lt;/Longitude&gt;
+            &lt;/Geospatial&gt;
+            &lt;OnFibre&gt;
+                &lt;FibreLine id=&quot;123&quot;&gt;London to Surrey&lt;/FibreLine&gt;
+                &lt;Helios id=&quot;123&quot; channel=&quot;1&quot;&gt;Helios 1 (London Switch A1)&lt;/Helios&gt;
+            &lt;Distance units=&quot;m&quot;&gt;183.654&lt;/Distance&gt;
+            &lt;/OnFibre&gt;
+            &lt;OnRoute&gt;
+                &lt;Route id=&quot;123&quot;&gt;WTL SRY&lt;/Route&gt;
+                &lt;Marker id=&quot;123&quot;&gt;WTL Switch A1&lt;/Marker&gt;
+                &lt;Distance units=&quot;m&quot;&gt;5083.5&lt;/Distance&gt;
+                &lt;DirectionOfTravel&gt;NE&lt;/DirectionOfTravel&gt;
+                &lt;Velocity units=&quot;m/s&quot;&gt;45.2&lt;/Velocity&gt;
+                &lt;Acceleration units=&quot;m/s2&quot;&gt;0.01&lt;/Acceleration&gt;
+            &lt;/OnRoute&gt;
+        &lt;/Location&gt;
+        &lt;Tags&gt;
+            &lt;Tag id=&quot;123&quot; key=&quot;custom-key&quot; units=&quot;unit&quot;&gt;Value&lt;/Tag&gt;
+        &lt;/Tags&gt;
+    &lt;/Event&gt;
+&lt;/Envelope&gt;
+</pre></div>
+</div>
+<p>Within the Event tag, each XML message will include elements describing the type of the event, the specific details (e.g.
+magnitude, width, etc.) of the event, the location of the event, and additional optional tags related to the event.</p>
+<ul class="simple">
+<li><p>Type: The Type tag includes a “name” attribute identifying the name of the event. In the contents portion of the tag will be the english readable description of this name, but the name attribute is really the only one you need to examine. Additional properties are included to identify Panoptes’ confidence in the event classification and a unique identifier for this type.</p></li>
+<li><p>Details: The event details include a track id which refers to an event track. Specifically events with the same track uuid are considered to be part of the same physical disturbance, for example, a vehicle moving along a road. The magnitude gives an indication of the “loudness” of the event compared to other events of the same type. And the width, velocity and acceleration describe the size and movement of the event along the fibre.</p></li>
+<li><p>Location: The location of the event is described. This section is the same as the Location section described above for the Alert messages.</p></li>
+<li><p>Tags. Finally, an event may contain a number of tags which are reported as key/value pairs. There are a few tags that may be seen automatically, but for the most part these are populated by custom code added on a per-customer basis.</p></li>
+</ul>
+<p>For more information including a list of all the possible event types, event details and event tags, see the chapter
+Appendix: Alarm and Event Types.</p>
+</section>
+</section>
+<section id="testing-the-xml-messages">
+<h2>Testing the XML Messages<a class="headerlink" href="#testing-the-xml-messages" title="Permalink to this headline">¶</a></h2>
+<p>Installed on every Panoptes (and Helios) system is a Python script that echoes any HTTP POST message that it receives.
+It provides a useful means of testing the XML posting of a Panoptes unit. When you run it you must specify the port it will
+listen to on the command line, for example, “http_post_viewer 8081”. Then you enter the IP address and port
+number of the machine that you are running it on in the URL fields of the Reporting tab described earlier. (<a class="reference external" href="http://">http://</a>
+10.255.254.165:8081/ in my test case). As messages are generated you will see them echoed by this program.
+(This is also a good way for you to see exactly what it is that the Panoptes unit sends for a given message.)</p>
+<p>You can find the script in the /usr/local/Fotech/bin directory of any Panoptes or /opt/Fotech/helios/bin directory of any
+Helios unit. Feel free to copy this to any machine you like and to use it for any purpose that you like, but do not modify
+the version that is on the Panoptes or Helios unit itself.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">XML Notifications</a><ul>
+<li><a class="reference internal" href="#overall-protocol">Overall Protocol</a></li>
+<li><a class="reference internal" href="#configuring">Configuring</a></li>
+<li><a class="reference internal" href="#xml-message-common-items">XML Message Common Items</a><ul>
+<li><a class="reference internal" href="#envelope">Envelope</a></li>
+<li><a class="reference internal" href="#identification">Identification</a></li>
+<li><a class="reference internal" href="#some-common-attributes-and-elements">Some Common Attributes and Elements</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xml-messages-types">XML Messages Types</a><ul>
+<li><a class="reference internal" href="#heartbeats">Heartbeats</a></li>
+<li><a class="reference internal" href="#system-health">System Health</a></li>
+<li><a class="reference internal" href="#alarms">Alarms</a></li>
+<li><a class="reference internal" href="#events">Events</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#testing-the-xml-messages">Testing the XML Messages</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rest_api.html"
+                        title="previous chapter">REST API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="email_notifications.html"
+                        title="next chapter">Email (and SMS) Notifications</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xml_notifications.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="email_notifications.html" title="Email (and SMS) Notifications"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rest_api.html" title="REST API"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Panoptes System Integration  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">XML Notifications</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Fotech Group Ltd..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

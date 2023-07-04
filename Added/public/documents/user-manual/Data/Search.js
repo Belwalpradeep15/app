@@ -1,0 +1,1 @@
+define({r:0.5,st:'Stem',n:1,t:[0,90],m:[],u:['../Content/Events and Alarms/Acknowledging Outstanding Alarms.htm'],s:['+','instead','undesir'],p:[['+',32],['any',91],['configuration',0],['enabled',27],['historical',14],['map',39],['overly',42],['select',40],['the',71],['versions',45]]});

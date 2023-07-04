@@ -1,0 +1,3 @@
+alerts_enabled:
+    key: alerts-enabled
+    value: true

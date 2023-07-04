@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<r:TimeSeriesSubmit xmlns:r="http://www.fotechsolutions.com/schemas/repository-0.1.xsd"
+                    xmlns="http://www.fotechsolutions.com/schemas/types-0.1.xsd">
+    <r:Identification>
+        <r:Source fibre-line-id="<%= params[:fibre_line_id] %>" application="<%= params[:application] %>"/>
+    </r:Identification>
+    <TimeSeries>
+        <Time>2008-01-05T17:20:10.223456-07:00</Time>
+        <Location>
+            <DistanceOnLine>200</DistanceOnLine>
+        </Location>
+        <SampleRate>1000</SampleRate>
+        <BinSize>10</BinSize>
+        <Amplitudes>
+          <Float-1D no-values="10">0.001, 0.001, -0.020, 0.001, 0.001, 0.001, 0.001, -0.020, 0.001, 0.001</Float-1D>
+        </Amplitudes>
+    </TimeSeries>
+</r:TimeSeriesSubmit>
+

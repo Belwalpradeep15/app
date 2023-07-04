@@ -1,0 +1,65 @@
+zero: 
+    id: 11
+    fibre_line: calibrated_farnham
+    parent_point: 0
+    distance: 30
+
+one:
+    id: 1
+    fibre_line: calibrated_farnham
+    parent_point: 10
+    distance: 1160
+
+two:
+    id: 2
+    fibre_line: calibrated_farnham
+    parent_point: 2
+    distance: 257.3
+
+three:
+    id: 3
+    fibre_line: calibrated_farnham
+    parent_point: 4
+    distance: 465
+            
+four:
+    id: 4
+    fibre_line: calibrated_farnham
+    parent_point: 5
+    distance: 752
+                
+five:
+    id: 5
+    fibre_line: calibrated_farnham
+    parent_point: 6
+    distance: 829
+                    
+six:
+    id: 6
+    fibre_line: calibrated_farnham
+    parent_point: 7
+    distance: 957.5
+
+seven:
+    id: 7
+    fibre_line: calibrated_farnham
+    parent_point: 8
+    distance: 991
+
+eight:
+    id: 8
+    fibre_line: calibrated_farnham
+    parent_point: 9
+    distance: 997
+
+nine:
+  id: 9
+  fibre_line: borehole 
+  parent_point: 0
+  distance: 0
+
+ten:
+  id: 10
+  fibre_line: borehole
+  parent_point: 2
+  distance: 1562.547

@@ -1,0 +1,4 @@
+et-xmlfile==1.0.1
+jdcal==1.4
+openpyxl==2.5.14
+PyYAML==3.13

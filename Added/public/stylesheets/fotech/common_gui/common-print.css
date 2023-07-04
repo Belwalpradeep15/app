@@ -1,0 +1,26 @@
+/* FILENAME:     common-print.css
+ * AUTHOR:       Steven Klassen
+ * CREATED ON:   2009-04-29
+ * 
+ * LAST CHANGE:
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright (c) 2009 by Fotech Solutions Ltd. All rights reserved.
+ */
+
+table.bordered {
+    border-spacing: 4px;
+}
+
+.noprint {
+    display: none;
+}
+
+.yui-layout .yui-layout-scroll div.yui-layout-bd {
+    overflow: visible;
+}
+

@@ -1,0 +1,22 @@
+# FILENAME:     alert_responses.yml
+# AUTHOR:       Steven Klassen
+# CREATED ON:   2010-08-03
+# 
+# DESCRIPTION:  
+#
+# LAST CHANGE:
+# $Author: $
+#   $Date: $
+#    $Rev: $
+#    $URL: $
+#
+# COPYRIGHT:
+# This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+
+acknowledged:
+    alert: alert1
+    user: alert_user
+    time: "2011-09-15 08:05:00-06"
+    response: acknowledged
+    comments: Here are some comments.
+    

@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Appendix A: Events &#8212; Panoptes System Integration  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Appendix B: System Alarms" href="appendix_b.html" />
+    <link rel="prev" title="MODBUS Example" href="modbus_example.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="appendix_b.html" title="Appendix B: System Alarms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modbus_example.html" title="MODBUS Example"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Panoptes System Integration  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Appendix A: Events</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="appendix-a-events">
+<h1>Appendix A: Events<a class="headerlink" href="#appendix-a-events" title="Permalink to this headline">¶</a></h1>
+<section id="event-types">
+<h2>Event Types<a class="headerlink" href="#event-types" title="Permalink to this headline">¶</a></h2>
+<p>These are the default supported event types. However as of V14 it is possible to define your own event types. This is
+done by defining them in the Helios units, then importing them in Panoptes. See the Helios documentation for more
+details on how to create custom event types. Note that custom event types, also mean custom alarm types. For example
+if you create a custom event type called “myevent” it will imply the custom alarm type of “myevent_alert”.</p>
+<ul class="simple">
+<li><p>broken_rail: Signifies a break in a rail.</p></li>
+<li><p>cable: Signifies someone physically handling the cable which contains the fibre.</p></li>
+<li><p>climbing: Signifies someone climbing over a fence.</p></li>
+<li><p>digging: Signifies manual (shovel) digging near the fibre.</p></li>
+<li><p>drilling: Signifies drilling near the fibre.</p></li>
+<li><p>fence: Signifies a general fence disturbance.</p></li>
+<li><p>fence_cutting: Signifies someone cutting through a fence.</p></li>
+<li><p>fibre_break: Signifies a break in the fibre.</p></li>
+<li><p>flat_wheel: Signifies that a flat wheel has been found on a railway car.</p></li>
+<li><p>gas_leak: Signifies a high pressure gas leak.</p></li>
+<li><p>generic: Used for events with no current classification. These are typically used when researching new event types and are eventually replaced with a more specific classification.</p></li>
+<li><p>heavy_equipment: Signifies heavy equipment moving.</p></li>
+<li><p>leak: Signifies a low pressure, typically liquid, leak.</p></li>
+<li><p>lid_lift: Signifies lifting a man-hole or similar type cover.</p></li>
+<li><p>mech_digging: Signifies machine operating digging, typically a backhoe, near the fibre.</p></li>
+<li><p>rockfall: Signifies a rockfall on or near the fibre.</p></li>
+<li><p>theft: Signifies an attempt at stealing buried cables.</p></li>
+<li><p>train: Signifies the presence of a train.</p></li>
+<li><p>unknown: Used for unclassified events. These are typically used in situations where a few event types are being detected but the user also wants to know when other unidentified disturbances are found on the fibre.</p></li>
+<li><p>vehicle: Signifies the presence of a vehicle such as a car or small truck.</p></li>
+<li><p>walk: Signifies the presence of someone walking near the fibre.</p></li>
+</ul>
+</section>
+<section id="event-tags">
+<h2>Event Tags<a class="headerlink" href="#event-tags" title="Permalink to this headline">¶</a></h2>
+<p>Event tags are a means of adding key/value information to an event on a more or less “ad hoc” basis. There are a small number
+of tags which may be seen on any system. The following are some of the event tags you can expect to see.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210961</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;in_region_user&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;Region_4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">true</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210960</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;threatUUID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;21ac5d7c-84fd-4313-8e3a-ed8a9faeb142&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210959</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_velocity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;0.343138&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210958</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_direction_of_travel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;Anti-Clockwise&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210957</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_distance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;280.730211&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210956</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_marker_name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;JB Marker&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210955</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_path_name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;Field Perimeter&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210954</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_path_id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;10&quot;</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;tag_id&quot;</span><span class="p">:</span> <span class="mi">655210953</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;path_acceleration&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;-0.169597&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m/s2&quot;</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>in_region_user: If the fibre line has user defined regions configured, and if the event lies in a region, this tag will be present with the name of the region given as the value. Note that it is possible for an event to appear in more than one region at the same time, in which case there may be more than one tag with this key.</p></li>
+<li><p>threatUUID: This is the internal threat uuid that is connected to this event. It is there to map the event to the threat object.</p></li>
+</ul>
+<p>OnRoute information: These tags relate to on-route information that is available if configured:</p>
+<ul class="simple">
+<li><p>path_velocity: Velocity of the event.</p></li>
+<li><p>path_direction_of_travel: Direction of travel of the event.</p></li>
+<li><p>path_distance: Distance of the event from the marker.</p></li>
+<li><p>path_marker_name: Name of the marker.</p></li>
+<li><p>path_path_name: Name of the route.</p></li>
+<li><p>path_path_id: ID of the route.</p></li>
+<li><p>path_acceleration: Acceleration of the event.</p></li>
+</ul>
+<p>This is not a complete list. In fact the tags that may appear can change based on the version of the Helios unit that
+creates the event, the settings in the Helios unit that create the event. In order to determine what tags are available
+for you to you, you should use the tools to examine the actual messages you are receiving.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Appendix A: Events</a><ul>
+<li><a class="reference internal" href="#event-types">Event Types</a></li>
+<li><a class="reference internal" href="#event-tags">Event Tags</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modbus_example.html"
+                        title="previous chapter">MODBUS Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="appendix_b.html"
+                        title="next chapter">Appendix B: System Alarms</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/appendix_a.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="appendix_b.html" title="Appendix B: System Alarms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modbus_example.html" title="MODBUS Example"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Panoptes System Integration  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Appendix A: Events</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Fotech Group Ltd..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

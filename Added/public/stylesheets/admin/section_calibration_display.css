@@ -1,0 +1,56 @@
+/* FILENAME:     section_calibrate_display.css
+ * AUTHOR:       Steven Klassen
+ * CREATED ON:   2009-06-04
+ * 
+ * LAST CHANGE:
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+ */
+
+.controlPointDialog {
+    border-style: inset;
+    border-width: 2px;
+    position: absolute;
+    z-index: 10;
+    background: white;
+    margin: none;
+    padding: none;
+}
+
+.controlPointInput {
+    padding: none;
+    margin: none;
+}
+
+.controlPointImage {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    padding-top: 21px;
+    padding-left: -1px;
+    cursor: move;
+}
+
+.editing {
+    background: rgb(200, 200, 200);
+}
+
+.deleteButton {
+    cursor: pointer;
+    position: relative;
+    top: 3px;
+}
+
+.moveButton {
+    cursor: move;
+    vertical-align: middle;
+    height: 22px;
+    width: 18px;
+    position: relative;
+    top: -1px;
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Search xmlns="http://www.fotechsolutions.com/schemas/repository-0.1.xsd">
+  <Target id="1" type="EventType">
+    <Options>
+      <Order field="Description"/>
+    </Options>
+    <Filters>
+      <Filter field="Application" operation="EQUALS">security</Filter>
+    </Filters>
+  </Target>
+  <Target id="2" type="FibreLine">
+    <Options>
+      <Order field="Name"/>
+      <Suppress field="Route"/>
+      <EncodePolygon field="Route" type="gmap" num-levels="4" zoom-factor="32"/>
+    </Options>
+    <Filters>
+      <Filter field="OwnerId" operation="EQUALS">1</Filter>
+      <Filter field="Application" operation="EQUALS">security</Filter>
+    </Filters>
+  </Target>
+</Search>

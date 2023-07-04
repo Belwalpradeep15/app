@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-gb" xml:lang="en-gb" data-mc-search-type="Stem" data-mc-help-system-file-name="index.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Notifications</title>
+        <link href="../Resources/TableStyles/Rounded.css" rel="stylesheet" data-mc-stylesheet-type="table" />
+        <link href="../Resources/Stylesheets/Global_Help.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript" defer="defer">
+        </script>
+    </head>
+    <body>
+        <h1>Notifications</h1>
+        <p>The notifications dialogue is accessed from the  <a href="Admin Menu.htm">Admin Menu</a>.</p>
+        <p>
+            <img src="../Resources/Images/notifications.PNG" />
+        </p>
+        <h2>Explanation</h2>
+        <table style="mc-table-style: url('../Resources/TableStyles/Rounded.css');" class="TableStyle-Rounded" cellspacing="0">
+            <col style="width: 30%;" class="TableStyle-Rounded-Column-Column1" />
+            <col style="width: 70%;" class="TableStyle-Rounded-Column-Column1" />
+            <thead>
+                <tr class="TableStyle-Rounded-Head-Header1">
+                    <th class="TableStyle-Rounded-HeadE-Column1-Header1">This Menu Item...</th>
+                    <th class="TableStyle-Rounded-HeadD-Column1-Header1">Does this...</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="TableStyle-Rounded-Body-Body2">
+                    <td class="TableStyle-Rounded-BodyE-Column1-Body2" style="text-align: left;">General Notification Settings</td>
+                    <td class="TableStyle-Rounded-BodyD-Column1-Body2" style="text-align: left;">
+                        <p>Specifies the time zone origin of the information <span class="mc-variable General.Panoptes variable">Panoptes</span> outputs, the geospatial format, and language.</p>
+                    </td>
+                </tr>
+                <tr class="TableStyle-Rounded-Body-Body1">
+                    <td class="TableStyle-Rounded-BodyE-Column1-Body1" style="text-align: left;">XML&#160;Notifications</td>
+                    <td class="TableStyle-Rounded-BodyD-Column1-Body1" style="text-align: left;">
+                        <p>Specify the complete URL&#160;(including the "<i>http://</i>" prefix and the port number unless it is the default "<i>:80/</i>") where <span class="mc-variable General.Panoptes variable">Panoptes</span> pushes XML data. </p>
+                        <p>Specify multiple machines by separating each URL&#160;with a semi-colon. white space characters can be added on either side of the semi-colon to improve readability.</p>
+                        <p>Select the type of data pushed to the above URL (Alarms, Heartbeats, System Health, etc.) </p>
+                        <p>Each event message includes at least Type, Time, Details, Tags, and Location data. Where routes are defined, those details are included as well. Route information enables the direction and relative distance from real world location. For repeat events, it can further include calculation of velocity and acceleration data.</p>
+                        <p>To select the type of events to push, click <b>...</b> and toggle the desired events by clicking the check boxes to the right of a given event.</p>
+                    </td>
+                </tr>
+                <tr class="TableStyle-Rounded-Body-Body2">
+                    <td class="TableStyle-Rounded-BodyE-Column1-Body2" style="text-align: left;">Email / SMS&#160;Notifications</td>
+                    <td class="TableStyle-Rounded-BodyD-Column1-Body2" style="text-align: left;">
+                        <p>Click <b>Add</b> (<img src="../Resources/Images/add.png" />)&#160;to display the <i>Email/SMS Notification</i> dialog , where you toggle whether the notification is <b>Active</b>. For example, you might set up a vacation schedule that can later be disabled instead of deleted.</p>
+                        <p>Specify a descriptive name for the notification to configure. Type the email address of the recipient(s) email, or if using SMS, type the email address of an email-to-SMS&#160;conversion service or your own email2sms gateway. Type the days and times when to send notifications to this recipient. In this way, it's possible to create several notifications, each addressed to different recipients that aligns with their work schedule.</p>
+                        <p>Specify multiple recipients by separating each with a semi-colon. White space characters can be added on either side of the semi-colon to improve readability.</p>
+                        <p>Select the alarm levels at which to notify recipients. System alarms, which are of a more technical nature, can be sent specifically to systems personnel to investigate. </p>
+                        <p>Event-based alarm notifications can be filtered based on the associated threat level, so that certain users only receive email notification when alerts are red, and others receive notification when alerts reach amber.</p>
+                        <p>Enter a subject line; otherwise, Panoptes inserts a generic subject line.</p>
+                    </td>
+                </tr>
+                <tr class="TableStyle-Rounded-Body-Body1">
+                    <td class="TableStyle-Rounded-BodyB-Column1-Body1" style="text-align: left;">Send Test Email</td>
+                    <td class="TableStyle-Rounded-BodyA-Column1-Body1" style="text-align: left;">Enter a recipient email address  and then click <b>Send Test Email</b> to verify that email functionality is working.</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

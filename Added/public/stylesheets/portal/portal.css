@@ -1,0 +1,107 @@
+/* FILENAME:     portal.css
+ * AUTHOR:       Steven Klassen
+ * CREATED ON:   2010-02-25
+ * 
+ * LAST CHANGE:
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ */
+
+
+div#fibre {
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    height: 100%;
+}
+
+div#section_view {
+  display: block;
+}
+
+div#menubar {
+    margin-top: 13px;
+    margin-left: 5px;
+}
+
+div#active_alerts {
+    font-size: smaller;
+    opacity: 0.70;
+    width: 150px;
+}
+
+div#activeAlertList {
+    height: 125px;
+    overflow: auto;
+}
+
+div#basic_alert_dialog label {
+  float: left;
+  width: 120px;
+}
+
+div#alarmImage {
+  float: right;
+}
+
+.portalTitle {
+    position: absolute;
+    right: 100px;
+    top: 7px;
+    z-index: 1000000;
+    font-weight: bold;
+    opacity: 0.5;
+    background-color:white;
+    margin: 3px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.portalTitle h1 {
+    font-size: large;
+    margin: 3px;
+}
+
+.portalTitle p {
+    font-size: 9pt;
+    margin: 2px;
+}
+
+/* Portal style overrides to update the theme */
+.portal #mapOverlay {
+    border-style: none;
+}
+
+.portal #portal_menu_bar {
+    border: none;
+}
+
+.portal #portal_menu_bar #mymenubar {
+    border: 0px;
+}
+
+.portal #sidebar0, .portal #sidebar1, .portal #sidebar2 {
+    border-bottom: 0px;
+}
+
+.portal #statusbar {
+    border-top: 1px solid #808080;
+}
+
+.portal #content {
+    height: 100%;
+}
+
+.portal #content #map {
+    height: 100%;
+}
+
+.portal #system_health_table_div {
+    height: auto !important;
+}

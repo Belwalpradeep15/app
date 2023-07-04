@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     FILENAME:     preferences.xml
+     AUTHOR:       Steven Klassen
+     CREATED ON:   2009-12-13
+     LAST CHANGE:
+     $Author$
+     $Date$
+     $Rev$
+     $URL$
+     
+     COPYRIGHT:
+     This file is Copyright © 2009 Fotech Solutions Ltd. All rights reserved.
+     
+     -->
+<preferences>
+    <section id="display" label="Display">
+        <preference key="initial-overview" type="dynamic_list" default="list" label="Initial overview">
+            <value value="list">List overview</value>
+            <value value="map">Map overview</value>
+            <query>
+                Document.select("*, 'section_' || id as preference_value, 'i18n: prefs.section.display.initial-overview.section document_id:' || id as preference_label").where(organization_id: current_user.organization_ids, is_overview: true)
+            </query>
+        </preference>
+    </section>
+    <section id="units" label="Units">
+        <preference key="units-distance" type="list" default="m" label="Distance">
+            <value value="ft">Feet</value>
+            <value value="km">Kilometres</value>
+            <value value="m">Metres</value>
+            <value value="mi">Miles</value>
+        </preference>
+        <preference key="precision-distance" type="integer" default="4" label="Distance precision">
+        </preference>
+        <preference key="units-velocity" type="list" default="m_s" label="Velocity">
+            <value value="m_s">Metres per second</value>
+            <value value="ft_s">Feet per second</value>
+            <value value="km_h">Kilometres per hour</value>
+            <value value="mi_h">Miles per hour</value>
+        </preference>
+        <preference key="precision-velocity" type="integer" default="2" label="Velocity precision">
+        </preference>
+        <preference key="units-acceleration" type="list" default="m_s2" label="Acceleration">
+            <value value="m_s2">Metres per second^2</value>
+            <value value="ft_s2">Feet per second^2</value>
+            <value value="km_h2">Kilometres per hour^2</value>
+            <value value="mi_h2">Miles per hour^2</value>
+        </preference>
+        <preference key="precision-acceleration" type="integer" default="2" label="Acceleration precision">
+        </preference>
+        <preference key="units-latlng" type="list" default="deg_dec" label="Lat/Lng">
+            <value value="deg_dec">Decimal degrees</value>
+            <value value="dms">Degrees minutes seconds</value>
+        </preference>
+        <preference key="precision-latlng" type="integer" default="8" label="Lat/Lng precision">
+        </preference>
+    </section>
+    <section id="colours" label="Colours">
+        <preference key="fibre-line-colour" type="colour" default="#000000" label="Fibre line colour"/>
+        <!--<preference key="highlight-colour" type="colour" default="#FFFF4A" label="Highlight colour"/>-->
+    </section>
+    <section id="routes" lavel="Routes">
+        <preference key="on-route-colour" type="colour" default="#FF5050" label="Route colour"/>
+        <preference key="on-route-tick-spacing" type="float" default="1000" label="Marker Spacing"/>
+        <preference key="on-route-tick-spacing-unit" type="list" default="m" label="Marker Spacing Unit">
+            <value value="ft">Feet</value>
+            <value value="km">Kilometres</value>
+            <value value="m">Metres</value>
+            <value value="mi">Miles</value>
+        </preference>
+    </section>
+</preferences>

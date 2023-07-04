@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-gb" xml:lang="en-gb" data-mc-search-type="Stem" data-mc-help-system-file-name="index.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="System Configuration" data-mc-ignored-words="p">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Configuring Events</title>
+        <link href="../Resources/Stylesheets/Global_Help.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript" defer="defer">
+        </script>
+    </head>
+    <body>
+        <h1>Configuring Events</h1>
+        <p class="body">Events differ from alarms in that events are individual disturbances detected by Helios, for example walking. Alarms are triggered when the number and frequency of events at a particular location exceeds predefined limits.</p>
+        <p class="body">Alarms are associated with an organization and are triggered by either certain notifications, or via the <a href="Configuring Threat Accumulator Profiles.htm">threat accumulation</a> profile. Select whether you are prompted to view alarms upon launching Panoptes. Alarms are written to the <span class="mc-variable General.Panoptes variable">Panoptes</span> database regardless of whether alarm notification is selected.</p>
+        <h2>Importing custom event types</h2>
+        <p>Panoptes supports custom event images that you export from Helios and then import into <span class="mc-variable General.ProductName variable">Panoptes</span>. These images are visible in the Panoptes fibre display after you configure an <i>Event alarm</i> using the Helios <b>Admin</b> &gt;&#160;<b>Alarm configurations</b> menu.</p>
+        <div class="note" data-mc-autonum="&lt;b&gt;&lt;span style=&quot;font-size: 16px;&quot; class=&quot;mcFormatSize&quot;&gt;Note:&lt;/span&gt;&lt;/b&gt;"><span class="autonumber"><span><b><span style="font-size: 16px;" class="mcFormatSize">Note:</span></b></span></span>Your Panoptes account requires both <i>Organization Admin</i> and <i>System Admin</i> privileges, which are enabled using the <b>Admin</b> &gt;&#160;<b>Users</b> menu option in order to complete this task.</div>
+        <ol>
+            <li value="1">Using the Helios application, import and then export the desired custom event images using the Helios Admin &gt;&#160;Alarm Types menu option. For further instruction on this step, refer to the Helios help documentation.</li>
+            <li value="2">Using Panoptes, select <b>Admin</b> &gt;&#160;<b>Event Types</b> to display the <i>Existing Event Types</i> window.</li>
+            <li value="3">Click <b>Choose File</b> to display the <i>Open</i> dialog , with which you browse to the .tar file of custom event images that you exported from Helios above, select the .tar file, and then click <b>Open</b>.</li>
+            <li value="4">Click <b>Upload</b> located at the bottom of the <i>Existing Event Types</i> dialog to import the custom images.</li>
+        </ol>
+        <p>Delete any undesired images by clicking (<img src="../Resources/Images/delete.png" />). Images without the (<img src="../Resources/Images/delete.png" />) option are protected by Fotech Solutions Limited or image owner and cannot be deleted. </p>
+        <h2>Custom Event Import File Format</h2>
+        <div class="example">
+            <p><code>---</code> &lt;!-- Several hyphens denote the start of the file --&gt;</p>
+            <p><code>XYZ:</code> &lt;!-- Entry for a given custom event image. Where XYZ&#160;is the file name of your custom image. This group includes a large, medium, and small image to represent the event in different views. It is the ID&#160;that is included in notifications. --&gt;</p>
+            <p><code>name: Custom Image Name </code>&lt;!-- The name by which the image is identified to users throughout Panoptes. --&gt;</p>
+            <p><code>description: A Custom Image that I&#160;whipped up. </code>&lt;!-- A&#160;free-form image that might describe characteristics or intended use for the image. --&gt;</p>
+            <p><code>large_icon: XYZ_large.png</code> &lt;!-- Large version of image. Typically 96 pixels per inch. --&gt;</p>
+            <p class="Code"><code>medium_icon: XYZ.png </code>&lt;!-- Medium version of image. Typically 120 pixels per inch. --&gt;</p>
+            <p class="Code"><code>small_icon: XYZ_small.png</code> &lt;!-- Small version of image. Typically  150 pixels per inch. --&gt;</p>
+            <p><code>removable: false</code> &lt;!-- Whether the image can be deleted from the list of images that appear in Panoptes --&gt;</p>
+            <p><code>ABC:</code>&#160;&lt;!-- Next custom event image --&gt;</p>
+            <p><code>...</code>
+            </p>
+        </div>
+        <h2>Configuring event clearing</h2>
+        <p class="body">Specify  the number of seconds for which to display an event of a given type after the event is first detected. Limiting the duration that an event flag appears on the fibre display can prevent the fibre display from becoming overly cluttered.</p>
+        <ol>
+            <li value="1">From the <b>Admin</b> menu, select <b>Event Clearing</b>. The <a href="Event Clearing.htm">Event Clearing</a> dialog appears.</li>
+            <li value="2">Double-click the right-most cell for the desired fibre line, and type the number of seconds for which to display the event after the event is first detected. <br /><div class="note" data-mc-autonum="&lt;b&gt;&lt;span style=&quot;font-size: 16px;&quot; class=&quot;mcFormatSize&quot;&gt;Note:&lt;/span&gt;&lt;/b&gt;"><span class="autonumber"><span><b><span style="font-size: 16px;" class="mcFormatSize">Note:</span></b></span></span>Because <span class="mc-variable General.Panoptes variable">Panoptes</span> checks the <i>Event Clearing</i> list every 5 seconds, the minimum value you can type to clear an event is <b>5</b>. Typing <b>0</b> disables event clearing for a given fibre line.</div></li>
+            <li value="3">Select whether the clearing interval defined above is applied. If disabled, events are not cleared.<br />Even if the <i>Enabled</i> check box is cleared or <i>0</i> is specified above, event details can be retrieved using the <i>Search Criteria</i> dialog.</li>
+        </ol>
+        <p class="indent"> </p>
+    </body>
+</html>

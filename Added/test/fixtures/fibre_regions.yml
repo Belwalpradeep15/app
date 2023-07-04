@@ -1,0 +1,6 @@
+borehole_region:
+    fibre_line: borehole
+    fibre_region_type_id: 1
+    starting_position: 100
+    length: 1000 
+    description: Some description

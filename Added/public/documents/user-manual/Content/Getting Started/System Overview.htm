@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-gb" xml:lang="en-gb" data-mc-search-type="Stem" data-mc-help-system-file-name="index.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="Getting Started" data-mc-ignored-words="s;F5;fdel;fibreShotSubmit;url;XXX;Redfields;Crookham;GU52;0RJ;p;EDFAs;TEC1;Comms;m;FFT;PSD">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>System Overview</title>
+        <link href="../Resources/Stylesheets/Global_Help.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript" defer="defer">
+        </script>
+    </head>
+    <body>
+        <h1>System Overview</h1>
+        <p>Welcome to Panoptes. The image below is an example of the Panoptes homepage showing a fibre line with outstanding events and alarms.</p>
+        <p>
+            <img src="../Resources/Images/portal-home.png" />
+        </p>
+        <h2>Fibre optic lines</h2>
+        <p>Fibre optic lines are placed underground along a secure perimeter, along a pipeline or any other asset that needs to be monitored or secured and protected. Pulses of light are directed down the fibre and the reflections received are interpreted by the Helios DAS unit to pinpoint current activity at specific locations along the fibre line.</p>
+        <h2>Helios DAS&#160;Unit</h2>
+        <p>The Helios DAS Unit is both an optical transmitter and an optical receiver. It transmits laser light pulses along a fibre line as configured by the user interface. The reflected light received by the unit is used to detect activity along the fibre line. When the Helios unit converts an optical signal to an electrical signal and uses AI software to create activity event reports which it then forwards to the Panoptes server.</p>
+        <h2>Panoptes Server</h2>
+        <p>The Panoptes server acts as both a database of events received from the Helios unit and a web server to which browser clients connect. The Panoptes server forwards details about events that it receives from the Helios unit onto the browser clients while the browser clients are connected. When events received exceed specified criteria, it generates alarms which can alert an operator to take action.</p>
+        <p>If communication between the Panoptes and Helios units is lost, the Helios unit stores events until communication with the Panoptes unit resumes, and it then forwards those stored events to the Panoptes unit.</p>
+        <p>At a local level a Panoptes server is configured to communicate with a number of Helios units monitoring multiple fibre optic lines. A Panoptes server can be configured to provide a system level overview across a number of local Panoptes servers allowing a very large system to be monitored from a single browser.</p>
+        <h2>Browser Client</h2>
+        <p>Browser clients can monitor and analyse incoming events during their current session. They can also query the Panoptes server for historic data. Admin accounts can be used to configure settings that affect all Panoptes users.</p>
+        <h2>Redundant Operation</h2>
+        <p>It is possible to configure a pair of Panoptes servers to operate as a redundant pair. This configuration is generally performed by a Fotech engineer. To change this configuration or add a redundant server to an existing system please consult <a href="Customer-support.htm">Fotech customer support</a>. The pair of Panoptes communicate with any connected Helios and present a single view of the system to the operator. When operating as a redundant pair, the Panoptes servers will remain in synch and provide seamless handover in the event that the primary server is no longer operational.</p>
+        <p>In a system which contains an Aggregated Panoptes, the server at the top level will communicate with whichever local server is currently the primary. Any switchovers will be handled automatically by the application software.</p>
+    </body>
+</html>

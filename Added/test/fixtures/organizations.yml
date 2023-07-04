@@ -1,0 +1,16 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+fotech:
+  name: Fotech Solutions
+  users: system_admin, fotech_basic_user, organization_tech
+
+farnham:
+  name: Farnham Enterprises
+  users: basic_user, organization_admin
+
+alert_org:
+    name: Alert Test Organization
+    users: alert_user
+    
+alert_org2:
+    name: Another Alert Test Org

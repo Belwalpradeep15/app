@@ -1,0 +1,226 @@
+/* FILENAME:     admin.css
+ * AUTHOR:       Steven Klassen
+ * CREATED ON:   2009-04-09
+ * 
+ * LAST CHANGE:
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright (c) 2009 by Fotech Solutions Ltd. All rights reserved.
+ */
+
+/* Fibre line dialog. */
+div#fibre_line_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+
+#fibre_line_dialog th {
+    text-align: left;
+}
+
+/* User dialog. */
+div#user_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+
+#user_dialog th {
+    text-align: left;
+}
+
+div#user_edit_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+
+#user_edit_dialog th {
+    text-align: left;
+}
+
+.user_list td{
+	padding:2px;
+	vertical-align:top;
+}
+
+.user_list ul {
+	list-style-type: circle;
+	margin:0px;
+	margin-left:2px;
+	padding-left:1em;
+}
+
+/* Don't want these links to change color as they are common nav links*/
+a.navigational_link:visited{
+	color:#0000ff;
+}
+
+/* Email Notification List Dialog. */
+div#email_notifications_list_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+
+#email_notifications_list_dialog th {
+    text-align: left;
+}
+
+/* Helios unit dialog. */
+div#helios_unit_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+
+#helios_unit_dialog th {
+    text-align: left;
+}
+
+/* Helios unit properties dialog. */
+div#helios_unit_properties_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+div#helios_unit_properties_dialog div.bd {
+    width: 530px;
+    height: 425px;
+}
+#helios_unit_properties_dialog th {
+    text-align: left;
+}
+
+/* Helios unit multiplexing dialog. */
+div#helios_unit_multiplexing_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+div#helios_unit_multiplexing_dialog div.bd {
+    max-height: 500px;
+    min-width: 300px;
+}
+#helios_unit_properties_dialog th {
+    text-align: left;
+}
+
+/*Helios Zone maintenance styling*/
+div.zone_range_indicator {
+	height:2px;
+	background-color:black;
+}
+div#zones_list a{
+	text-decoration:none;
+	display:block;
+	padding:5px;
+	color:black;
+}
+div#zones_list a.selected{
+	background-color:lightsteelblue;
+}
+div#zones_list a:hover{
+	background-color:blue;
+	color:white;
+	
+}
+
+span.is_dirty{
+	background-image:url('/images/is-dirty-16x16.png'); 
+	background-repeat:no-repeat; 
+	background-position:center center;
+	float: right;
+    width: 16px;
+	padding-left: 5px;
+}
+
+span.is_invalid{
+	background-image:url('/images/is-invalid-16x16.png'); 
+	background-repeat:no-repeat; 
+	background-position:center center;
+	float: right;
+    width: 16px;
+	padding-left: 5px;
+}
+
+span.is_busy{
+	background-image:url('/images/fotech/common_gui/small_spin_indicator.gif'); 
+	background-repeat:no-repeat; 
+	background-position:center center;
+	float: right;
+    width: 16px;
+	padding-left: 5px;
+}
+
+span.inline_warning{
+	background-image:url('/images/error-16x16.png'); 
+	background-repeat:no-repeat; 
+	background-position:center left;
+	padding-left: 21px;
+}
+
+div.warning_box{
+	padding:10px 10px 10px 25px;
+	border:1px solid orange;
+	background-color:gold;
+	background-image:url('/images/error-16x16.png'); 
+	background-repeat:no-repeat; 
+	background-position:5px 10px;
+}
+
+div.success_box{
+	padding:10px 10px 10px 25px;
+	border:1px solid green;
+	background-color:#ccffcc;
+	background-image:url('/images/success-16x16.png'); 
+	background-repeat:no-repeat; 
+	background-position:5px 10px;
+}
+
+/* Event tracking dialog. */
+div#event_tracking_dialog_c {
+    top: 90px;
+    left: 45px;
+}
+
+#event_tracking_dialog th {
+    text-align: left;
+}
+
+/* template_new dialog. */
+#template_new_dialog th {
+    text-align: left;
+}
+
+/* template_new dialog. */
+#new_region_dialog th {
+    text-align: left;
+}
+
+div.event_tracking_dialog_line_list{
+    max-height: 200px;
+    overflow: auto;
+    background: white;
+    padding: 3px;
+    border: solid darkgrey 1px;
+}
+
+#alert_search_form table tr th{
+    text-align: left;
+    padding: 3px;
+}
+
+div.checkbox_list{
+    max-height: 200px;
+    overflow: auto;
+    background: white;
+    padding: 3px;
+    border: solid darkgrey 1px;
+}
+
+#menubar * {
+    outline: none;
+}
+
+.full-width {
+    width: 100%;
+}

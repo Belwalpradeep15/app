@@ -1,0 +1,215 @@
+# A note to developers: This file is loaded into a global variable called APP_CONFIG.
+# Please don't add to this file unless it really is a global configuration value.
+# Access the settings the way you normally would a YAML file. E.g.
+#   APP_CONFIG["monitor"]["map_key"]
+# will return the map key that must be presented to the Google map API.
+#
+# Any settings for the monitor application will be set here. The values that have
+# been checked into the source code repository are not likely to be valid unless you
+# specifically configure your machine and database to match what is here (which you may
+# want to do). For all non-development instances it is expected that these will have to
+# be modified after the code has been checked out and installed onto the target machine.
+#
+# The available settings include the following:
+#
+#  The mapping options:
+#    map_provider       This option is required and can be one of the following:
+#                        'none' - no map is available
+#                        'google' - uses the Google Maps (V2) API
+#                        'cloudmade' - uses the Cloud Made API
+#                        'leaflet' - uses the leaflet API
+#
+#    The following mapping options are required (and only relevant) if the provider is 'google':
+#    initial_map_type   Can be 'normal', 'satellite', 'hybrid', or 'terrain'
+#    map_key            The key presented to the Google map api.
+#    google_map_client  The google_map_client is required for deployments that use a commercial
+#                       google maps license. It must follow the format "client_key,client_hostname"
+#                       If this value is set correctly, map_key will be ignored.
+#                       This is only used if the map_provider is 'google'
+#
+#    The following mapping options are required (and only relevant) if the provider is 'cloudmade' or 'leaflet':
+#    initial_map_type   can be any top level key specified in map_layers (see below)
+#    map_layers         a hash containing the information required to load other map tile layers,
+#                       the next level down will be used as "keys" for initial_map_type, each hash should
+#                       contain, the map tile template (in the leaflet style, see examples below),
+#                       the attribution string, subdomains, and the title (which will appear in the layer selection control)
+#
+#  Other options:
+#    version            The version to be reported in the about box.
+#    build              The subversion build.
+#    authentication     The WWW-Authenticate header. This must match what is specified in
+#                       the Apache configuration in order for the logout to work properly.
+#    auth_provider      This specifies the technology used to authenticate users on the
+#                       system. The possible values are:
+#                       anonymous - No passwords are required, any username is accepted.
+#                                   This should only be used in development machines.
+#                       apache - Passwords are checked using Apache file based authentication.
+#                                This should be the default for production machines.
+#                       mac_ldap - The Mac OS is used to authenticate passwords. This is an
+#                                  option for systems on a Mac Server where you have configured
+#                                  the server to use its LDAP to authenticate web logins.
+monitor:
+    map_provider:       leaflet
+    initial_map_type:   satellite
+    map_layers:
+        streets:
+            title: Streets
+            tile_url_template: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={ACCESS_TOKEN}'
+            id: 'mapbox/streets-v11'
+            ACCESS_TOKEN: 'pk.eyJ1IjoiZm90ZWNoIiwiYSI6ImNraGI3bnE5aTFqbGQydGwybzUxNzhoaGsifQ.2fWv8_Oit8JkD_vcy78aLw'
+            subdomains: [a, b, c, d]
+            noWrap: true
+            attribution: MapBox <a href="http://mapbox.com/about/maps/">Terms and Feedback</a>
+        terrain:
+            title: Terrain
+            tile_url_template: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={ACCESS_TOKEN}'
+            id: 'mapbox/outdoors-v11'
+            ACCESS_TOKEN: 'pk.eyJ1IjoiZm90ZWNoIiwiYSI6ImNraGI3bnE5aTFqbGQydGwybzUxNzhoaGsifQ.2fWv8_Oit8JkD_vcy78aLw'
+            subdomains: [a, b, c, d]
+            noWrap: true
+            attribution: MapBox <a href="http://mapbox.com/about/maps/">Terms and Feedback</a>
+        satellite:
+            title: Satellite
+            tile_url_template: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={ACCESS_TOKEN}'
+            id: 'mapbox/satellite-streets-v11'
+            ACCESS_TOKEN: 'pk.eyJ1IjoiZm90ZWNoIiwiYSI6ImNraGI3bnE5aTFqbGQydGwybzUxNzhoaGsifQ.2fWv8_Oit8JkD_vcy78aLw'
+            subdomains: [a, b, c, d]
+            noWrap: true
+            attribution: MapBox <a href="http://mapbox.com/about/maps/">Terms and Feedback</a>
+
+    version:            --VERSION--
+    authentication:     Basic realm="Fotech Panoptes"
+    usage_log:          /var/log/Fotech/panoptes_access_log
+    system_check_enabled: false
+    i18n_enabled:       false
+    auth_provider:      --AUTH_PROVIDER--
+
+# The following is an authentication string that should be suitable for digest based logins.
+# The nonce and opaque values will be added automatically.
+# authentication:   Digest realm="Fotech Panoptes", domain="/", algorithm="MD5", qop="auth"
+
+repository:
+    support_email:  techsupport@fotechsolutions.com
+
+# The following section contains info regarding alarms
+# comment_tag:   specifies that a particular string must be prepended to all response comments
+#     label:     the label that will appear for the dropdown
+#     items:     yaml array of all the times that will appear in the dropdown
+#alarms:
+#    comment_tag:
+#        label:     Note
+#        items:
+#            - test
+#            - prepend
+#            - this
+#            - thing
+
+# The following section contains the configuration for the portal sub-application.
+#   enabled                 Either true or false. If false attempts to access the portal will produce an error.
+#   user                    The user name (login name) of the user who ownes the fibre line to show.
+#   authenticated           The portal (and all sub pages) requires authentication based on the users defined
+#   fibre_line_id           The id of the fibre line to show, can be set up as an array (e.g. [1, 2, 3] spaces are important) to allow for multiple lines
+#   document_id             Can be used instead of fibre_line_id. This allows the initial page
+#                           to show all the fibres attached to the given document (engineering
+#                           diagram.  ** only implemented for gela portal **
+#   event_clearing_interval The interval that events are auto-cleared in seconds. (0 means no auto-clearing)
+#   browser_refresh_interval The interval that refreshes the browser to eliminate memory leaks in seconds (0 means no refreshing)
+#   layout                  allow for specific layouts to be defined.
+#       menu                defined if there is a menu
+#           location        can be 'sidebar' or 'top', if 'sidebar' and sidebar is not defined below, this will do nothing
+#           items           array of menu items
+#               title       __SWIRL__ will put the helios logo, otherwise just text
+#               submenu     array of menu items as defined in the portal_helper, empty element inserts a divider
+#                               NOTE: includeing a menu item that tries to show and hide a dialog, then including that same feature in the footer or sidebar
+#                               will cause unexpected results
+#       branding            array of images for the branding partial, note this does nothing if the branding partial isn't included somewhere
+#           image           complete path to image for the img src attribute
+#           title           text for the alt and title attributes of the img
+#           width           % of px width of the div that will surround the img.  divs are placed in order and float left, so they will
+#                           wrap appropriately
+#       footer              defines a footer at the bottom of the content
+#           title           string to be displayed at the top of the footer
+#           height          height of the footer
+#           partials        array of partials to be displayed
+#               partial     path to partial
+#               width       width of the div that wraps the partial
+#       sidebar             defines a sidebar
+#           position        left or right
+#           width           width of the sidebar
+#           partials        array of partials to be displayed
+#               partial     full path to partial
+#               height      height of the partial, currently only px is working and it only affects the height of the body (not header) of the partial
+portal:
+    enabled:                    false
+    user:                       admin
+    authenticated:              false
+    fibre_line_id:               [1, 2, 3, 4, 5]
+    ignore_events:               true
+#    event_clearing_interval:    300
+#    browser_refresh_interval:   86400
+#    layout:
+#        menu:
+#            location: sidebar
+#            items:
+#                -   title: __SWIRL__
+#                    submenu:
+#                        - aboutPanoptes
+#                        - reportProblem
+#                        -
+#                        - languages
+#                        -
+#                        - preferences
+#                        - print
+#                -   title: View
+#                    submenu:
+#                        - showLegend
+#                        - showRecent
+#                        - showHeliosStatus
+#                        - adminPages
+#                        -
+#                        - closePopups
+#                -   title: Events
+#                    submenu:
+#                        - filter
+#                        - search
+#                        -
+#                        - clearEvents
+#                        - clearEventFilter
+#        branding:   #relies on branding partial to be included
+#            -
+#                image: /images/custom/dir/thing/fotech.png
+#                title: Hover text
+#                width: 100%
+#            -
+#                image: /images/custom/dir/thing/otherguys.png
+#                title: Hover text
+#                width: 50%
+#            -
+#                image: /images/custom/dir/thing/thirdparty.png
+#                title: Hover text
+#                width: 50%
+#        footer:
+#            title: Title to put on top of header, in specific language
+#            height: 100px
+#            partials:
+#                -
+#                    partial: full partial path
+#                    width: 50%
+#                -
+#                    partial: full partial path
+#                    width: 50%
+#        sidebar:
+#            position: right  #can be left or right
+#            width: 200px
+#            partials:
+#                -
+#                    partial: full partial path
+#                    height: 100px
+#                -
+#                    partial: full partial path
+#                    height: 100px
+#                -
+#                    partial: full partial path
+#                    height: 100px
+
+

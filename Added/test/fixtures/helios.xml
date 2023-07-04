@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<r:AlertSubmit xmlns:r="http://www.fotechsolutions.com/schemas/repository-0.1.xsd"
+    xmlns="http://www.fotechsolutions.com/schemas/types-0.1.xsd">
+
+    <r:Identification>
+        <r:AlertSource>Helios Watchdog</r:AlertSource>
+    </r:Identification>
+    
+    <Alert>
+        <Name>helios</Name>
+        <Comments>A Helios Unit has suffered a system failure.</Comments>
+        <Detail key="helios_unit_id" visible="true">1</Detail>
+        <Detail key="jetty" visible="true">Pontiletto</Detail>
+        <Detail key="component" visible="true">FDEL</Detail>
+        <Detail key="reason" visible="true">The FDEL process has crashed.</Detail>
+    </Alert>
+</r:AlertSubmit>

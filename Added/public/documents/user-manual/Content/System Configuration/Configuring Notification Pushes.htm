@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-gb" xml:lang="en-gb" data-mc-search-type="Stem" data-mc-help-system-file-name="index.xml" data-mc-path-to-help-system="../../" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-toc-path="System Configuration">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" /><title>Configuring Notification Pushes</title>
+        <link href="../Resources/Stylesheets/Global_Help.css" rel="stylesheet" type="text/css" />
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/foundation.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript" defer="defer">
+        </script>
+    </head>
+    <body>
+        <h1>Configuring Notification Pushes</h1>
+        <p>When an event is received by <span class="mc-variable General.ProductName variable">Panoptes</span> from the Helios unit, <span class="mc-variable General.ProductName variable">Panoptes</span> stores the event, but also forwards the event in XML mark-up to a Uniform Resource Locator (URL) that you specify. Software on the receiving end can post the incoming events to a source you specify. </p>
+        <p>Configure the event submission using the <em>XML Notifications</em> pane in the <a href="Admin Menu.htm">Admin Menu</a> &gt; <a href="Notifications.htm">Notifications</a> window. Click <em>...</em> to specify the type of events to submit.</p>
+        <p>Route details including the direction of travel and relative distance of an event from a real world location, and --for repeat events, velocity and acceleration data are supported by the XML&#160;event push. </p>
+        <p>Notification can consist of email or SMS&#160;messages to different email addresses depending on whether a general alarm (based on a threshold volume for a given type of event being exceeded) or a system alarm occurs. For SMS&#160;messages, after subscribing to an email-to-SMS&#160;conversion service, or setting up your own email2sms gateway, specify the mobile device number followed by <i>@email2sms.com</i> where <i>email2sms</i> is replaced by the specific subscription or server email address.</p>
+        <h2>To configure notification pushes</h2>
+        <p>Custom email notification groups can be created, each of which can include one or more recipients, and a date and time schedule can be applied to account for work schedules. Email notifications can further define whether event based alarms or system (technical)&#160;alarms are sent. If event based alarms, further refinement can be applied so that only alarms that reach a certain threat level are sent. </p>
+        <ol>
+            <li value="1">From the <b>Admin</b> menu, click <b>Notifications</b>. The <a href="Notifications.htm">Notifications</a> dialog appears.</li>
+            <li value="2">Specify the details for notifications (events, alarms, etc.)&#160;sent from the Panoptes unit to a specific URL or email address. </li>
+            <li value="3">Click <b>Submit</b>.</li>
+        </ol>
+        <p>Email notifications can be altered by clicking <b>Edit</b> (<img src="../Resources/Images/edit.png" />). They can be disabled (instead of deleted), by clearing the <b>Active</b> check box that appears at the top of the <i>Email Notification</i> dialog.</p>
+        <h2>To configure notification processing</h2>
+        <p>Configure how incoming notifications received from the Panoptes unit are processed by the receiving computer. The receiving machine must be able to accept XML&#160;messages over HTTP.</p>
+        <p style="font-weight: normal;">XML&#160;messages include the system identification details added using the Admin &gt;&#160;<a href="System Identity.htm">System Identity</a> window.</p>
+        <p style="font-weight: normal;">For details about processing XML&#160;notifications using the Helios unit, refer to the Helios help. Specifically, the <i>Streaming and Reporting Data</i> topic.</p>
+    </body>
+</html>

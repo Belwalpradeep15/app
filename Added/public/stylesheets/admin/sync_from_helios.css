@@ -1,0 +1,25 @@
+/* FILENAME:     sync_from_helios.css
+ * AUTHOR:       Karina Simard
+ * CREATED ON:   10-07-06
+ * 
+ * LAST CHANGE:
+ * $Author$
+ *   $Date$
+ *    $Rev$
+ *    $URL$
+ *
+ * COPYRIGHT:
+ * This file is Copyright © 2010 Fotech Solutions Ltd. All rights reserved.
+ */
+
+table.helios_sync_table {
+}
+
+table.helios_sync_table .property_group_header {
+    font-weight:bold;
+    border-bottom: 1px black solid;
+}
+
+table.helios_sync_table .property_name {
+    padding-left: 10px;
+}

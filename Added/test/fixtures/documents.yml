@@ -1,0 +1,8 @@
+
+section_test_document:
+    id: 1
+    description: "Section calibration diagram"
+    size: 0
+    content_type: "image/jpeg"
+    filename: "Russian_pipe_layout.jpg"
+    
