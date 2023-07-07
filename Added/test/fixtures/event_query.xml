@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<EventSearch xmlns="http://www.fotechsolutions.com/schemas/repository-0.1.xsd">
-<Filters>
-  <Filter field="FibreLineId" operation="IN"><%= params[:fibre_lines] %></Filter>
-  <Filter field="Time" operation="GREATER_THAN_OR_EQUALS">2005-11-01T15:03:00-07:00</Filter>
-  <Filter field="Time" operation="LESS_THAN_OR_EQUALS">2012-10-07T15:03:59-07:00</Filter>
-  <Filter field="Coords"><%= params[:coords] %></Filter>
-  </Filters>
-</EventSearch>

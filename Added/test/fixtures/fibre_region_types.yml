@@ -1,9 +1,0 @@
-active:
-  id: 1
-  name: active
-  description: Active
-
-user:
-  id: 2
-  name: user
-  description: User Defined
